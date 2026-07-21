@@ -1,68 +1,78 @@
-# RAM-for-Local-AI
+# RAM-for-Local-AI - README
 
-> 보유한 **시스템 RAM, GPU VRAM, Apple Silicon 통합 메모리**를 기준으로 로컬 AI 모델·양자화·런타임·운영 구성을 선택하기 위한 한국어 가이드와 정적 웹 계산기
+> 보유한 **시스템 RAM, GPU VRAM, Apple Silicon 통합 메모리**를 기준으로 로컬 AI 모델·양자화·런타임을 선택하고, 추론·RAG·서빙·파인튜닝에 필요한 메모리를 계획하기 위한 한국어 가이드
 
-`RAM-for-Local-AI`는 단순한 모델 순위표가 아니다. 이 레포지토리는 다음 질문에 답하는 것을 목표로 한다.
-
-- 내 장비에서 어떤 모델과 양자화를 실제로 실행할 수 있는가?
-- 모델 파일이 메모리에 들어간 뒤 KV 캐시와 작업 버퍼를 얼마나 남길 수 있는가?
-- RAG, 데이터 분석, 비전·OCR, 이미지 생성, 음성 파이프라인에서는 어떤 추가 메모리가 필요한가?
-- 여러 사용자를 동시에 처리하거나 LoRA·QLoRA 파인튜닝을 수행하려면 용량을 어떻게 계산해야 하는가?
-- NVIDIA·AMD·Apple·Intel·CPU 환경에서 어떤 런타임과 형식을 우선 검토해야 하는가?
-
-현재 레포지토리는 **11개 가이드**와 브라우저에서 정적으로 실행되는 **로컬 AI 메모리 계산기**로 구성되어 있다. 각 가이드는 RAM·VRAM·통합 메모리 구간별 추천, Q2·Q3·Q4 및 다른 저정밀 형식, Hugging Face 링크, 실행 예제, 평가·보안·재현성 항목을 함께 다룬다.
-
-> **문서 스냅샷:** 2026-07-20~2026-07-21 KST에 검증된 모델·런타임 정보를 기준으로 한다. 모델 파일, 라이선스, 런타임 API와 하드웨어 지원표는 변경될 수 있으므로 실제 다운로드와 배포 직전에 공식 저장소를 다시 확인해야 한다.
-
-[바로 시작](#바로-시작하기) · [메모리 계산기](#메모리-계산기) · [가이드 목록](#가이드-목록) · [계산 원칙](#이-레포지토리의-계산-원칙) · [GitHub Pages](#github-pages-배포)
+**[웹 메모리 계산기 열기](https://jtech-co.github.io/RAM-for-Local-AI/tools/memory-calculator/)** · [가이드 목록](#가이드-목록) · [작업별 시작 경로](#작업별-시작-경로) · [계산 원칙](#메모리-계산-원칙)
 
 ---
 
-## 바로 시작하기
+## 개요
 
-### 1. 웹 계산기로 먼저 범위를 좁히기
+`RAM-for-Local-AI`는 모델 순위만 나열하는 레포지토리가 아니다. 다음과 같은 실제 선택 문제를 다룬다.
 
-정적 계산기 소스는 [`tools/memory-calculator/`](./tools/memory-calculator/)에 있다.
+- 내 장비에서 어떤 모델과 양자화를 **안정적으로 실행할 수 있는가?**
+- 모델 가중치를 적재한 뒤 KV 캐시, 작업 버퍼와 운영 여유를 얼마나 남길 수 있는가?
+- RAG, 데이터 분석, 비전·OCR, 이미지 생성과 음성 처리에서는 어떤 추가 메모리가 필요한가?
+- 여러 사용자를 처리하거나 LoRA·QLoRA 파인튜닝을 수행할 때 메모리 요구량이 어떻게 달라지는가?
+- NVIDIA·AMD·Apple·Intel·CPU 환경에서 어떤 런타임과 배포 형식을 우선 검토해야 하는가?
 
-```text
-https://jtech-co.github.io/RAM-for-Local-AI/tools/memory-calculator/
-```
+현재 레포지토리는 **11개 가이드**와 브라우저에서 정적으로 실행되는 **로컬 AI 메모리 계산기**로 구성되어 있다.
 
-로컬에서는 레포지토리 루트에서 간단한 정적 서버를 실행할 수 있다.
-
-```bash
-python -m http.server 8000
-```
-
-그다음 주소를 연다.
-
-```text
-http://localhost:8000/tools/memory-calculator/
-```
-
-계산기는 다음 네 가지 운용 형태를 지원한다.
-
-| 운용 형태 | 계산에 포함하는 주요 항목 |
+| 구성 | 현재 범위 |
 |---|---|
-| 추론 | 모델 가중치, KV 캐시, 런타임 workspace, 멀티모달 버퍼, 운영 여유 |
-| RAG | 생성 모델, 임베딩, reranker, vector index, 문서 캐시, parser·OCR worker |
-| 동시 사용자 서빙 | replica, active sequence, KV pool, prefix cache, prefill·decode workspace |
-| 파인튜닝 | 가중치, gradient, optimizer state, activation, adapter, checkpoint staging |
+| 분야별 가이드 | 사이버보안, 프로그래밍·수학·과학, 생산성·RAG, 데이터 분석 |
+| 모달리티별 가이드 | 비전·OCR, 이미지 생성·편집, 오디오·음성 |
+| 운영 가이드 | 양자화, 파인튜닝 메모리, 서빙·동시성, 런타임·하드웨어 |
+| 계산기 | 7개 분야, 24개 세부 작업, 66개 모델 프리셋 |
+| 운용 형태 | 단일 사용자 추론, RAG, API 서빙, 파인튜닝 |
+| 실행 방식 | 서버 API·빌드 과정·텔레메트리가 없는 정적 HTML·CSS·JavaScript |
 
-현재 계산기 카탈로그에는 다음 구성이 포함되어 있다.
+> **콘텐츠 기준일:** 각 문서는 2026-07-20~2026-07-21 KST에 공개된 모델·런타임·하드웨어 정보를 기준으로 검증했다. 모델 파일, 양자화 저장소, 라이선스, 런타임 API와 하드웨어 지원 상태는 변경될 수 있으므로 실제 다운로드와 배포 직전에 공식 저장소를 다시 확인해야 한다.
 
-- 7개 분야
-- 24개 세부 작업
-- 66개 모델 프리셋
-- Q2·Q3·Q4·Q5·Q6·Q8, FP16·BF16·FP8, NF4·AWQ 등 다중 정밀도
-- 전용 GPU, Apple·APU 통합 메모리, CPU 전용, 다중 GPU 배치
-- RAG, 데이터 분석, 비전·OCR, 이미지 생성, 오디오 파이프라인별 추가 입력
+### 이 레포지토리가 제공하는 것과 제공하지 않는 것
 
-### 2. 장비와 작업에 맞는 상세 가이드 열기
+| 제공 | 제공하지 않음 |
+|---|---|
+| RAM·VRAM 구간별 후보 모델과 양자화 | 특정 장비에서의 속도·품질·안정성 보장 |
+| Hugging Face 저장소와 실행 예제 | 모델 가중치 재배포 또는 자동 설치 |
+| KV 캐시·작업 버퍼·RAG·동시성·학습 상태를 포함한 용량 계획 | 모든 런타임·드라이버 조합의 호환성 보장 |
+| 작업별 평가·보안·재현성 체크리스트 | 생성 결과의 정확성·합법성·상업 이용 가능성 보증 |
 
-계산기 결과는 초기 용량 계획용 근사치다. 최종 모델 선택, 정확한 파일명, 런타임 옵션, 품질 검증 방법은 아래 분야·모달리티·운영 가이드에서 확인한다.
+---
 
-### 3. 다운로드 직전에 실제 파일 크기 확인하기
+## 빠른 시작
+
+### 1. 장착 용량이 아니라 사용 가능한 메모리를 확인한다
+
+| 환경 | 확인할 값 | 참고 |
+|---|---|---|
+| NVIDIA·AMD 전용 GPU | 총 VRAM과 현재 사용량 | 디스플레이·드라이버·다른 프로세스가 사용하는 VRAM을 제외한다. |
+| Apple Silicon | 통합 메모리와 현재 memory pressure | CPU·GPU·OS가 같은 메모리를 공유한다. |
+| CPU 전용 | 사용 가능한 시스템 RAM | 운영체제, 파일 캐시, IDE와 데이터 처리 메모리를 함께 남긴다. |
+| 다중 GPU | GPU별 VRAM과 연결 구조 | 런타임이 tensor·pipeline·expert parallel을 지원하는지 먼저 확인한다. |
+
+운영체제 도구에서 확인한 값이 브라우저 자동 탐지보다 우선한다.
+
+### 2. 웹 계산기로 실행 가능한 범위를 좁힌다
+
+**[RAM-for-Local-AI 메모리 계산기](https://jtech-co.github.io/RAM-for-Local-AI/tools/memory-calculator/)**
+
+계산기에서 다음 항목을 선택하거나 입력한다.
+
+1. RAM·VRAM 또는 통합 메모리
+2. 분야와 세부 작업
+3. 모델과 양자화
+4. 컨텍스트 길이, 출력 토큰과 동시 요청 수
+5. RAG·데이터·비전·이미지·오디오별 추가 구성
+6. 추론·서빙·파인튜닝 운용 방식
+
+계산 결과는 후보를 좁히기 위한 **용량 계획값**이다. 최종 판단은 실제 런타임에서 peak RAM·VRAM과 품질을 측정해 확정한다.
+
+### 3. 관련 가이드에서 모델·파일·런타임을 확인한다
+
+계산 결과의 가이드 링크 또는 아래 [가이드 목록](#가이드-목록)에서 정확한 모델 저장소, 양자화 파일명, 실행 옵션과 평가 방법을 확인한다.
+
+### 4. 다운로드 전에 실제 파일 크기를 검증한다
 
 Hugging Face CLI를 사용할 수 있다면 전체 shard와 예상 다운로드 크기를 먼저 확인한다.
 
@@ -70,57 +80,61 @@ Hugging Face CLI를 사용할 수 있다면 전체 shard와 예상 다운로드 
 hf download <organization>/<repository> --dry-run
 ```
 
-GGUF, MLX, AWQ, GPTQ, safetensors는 같은 비트 수로 표시되더라도 실제 크기와 실행 특성이 다를 수 있다. 파일명이나 양자화 태그를 추정하지 말고 모델 카드와 저장소 파일 목록을 확인한다.
+GGUF, MLX, AWQ, GPTQ, `compressed-tensors`, safetensors는 같은 비트 수로 표시되더라도 실제 파일 크기와 실행 특성이 다를 수 있다. 파일명이나 양자화 태그를 추정하지 말고 모델 카드와 저장소 파일 목록을 확인한다.
 
 ---
 
 ## 메모리 계산기
 
-### 주요 기능
+### 지원하는 운용 형태
 
-- 시스템 RAM, GPU VRAM, Apple 통합 메모리 수동 입력
-- 브라우저가 제공하는 범위에서 RAM·GPU 정보 자동 탐지
-- 모델·양자화별 resident weight 추정 또는 실제 파일 크기 직접 입력
-- context length, output tokens, KV cache dtype와 동시 요청 반영
-- RAG index, embedding, reranker, 문서 cache와 parser worker 반영
-- 데이터 working set, DataFrame expansion과 notebook kernel 반영
-- 이미지 해상도, batch, ControlNet, LoRA, upscaler 반영
-- 오디오 길이, 동시 stream, diarization, ASR→LLM→TTS cascade 반영
-- LoRA·QLoRA·full fine-tuning 방식별 학습 메모리 추정
-- Hugging Face와 관련 가이드 링크 제공
-- 계산 결과 복사와 JSON 저장
-- 장식적 글로우·깜빡임 없이 가독성을 우선한 반응형 CLI 스타일 UI
+| 운용 형태 | 계산에 포함하는 주요 항목 |
+|---|---|
+| 단일 사용자 추론 | 모델 가중치, KV 캐시, 런타임 작업 버퍼, 멀티모달 버퍼, 운영 여유 |
+| RAG | 생성 모델, 임베딩, reranker, 벡터 인덱스, 문서 캐시, parser·OCR worker |
+| API 서빙·동시 사용자 | replica, active sequence, KV pool, prefix cache, prefill·decode 작업 버퍼 |
+| 파인튜닝 | 가중치, trainable parameter, gradient, optimizer state, activation, checkpoint staging |
 
-### 자동 탐지의 한계
+분야에 따라 다음 입력이 추가된다.
+
+- **RAG:** 청크 수, 임베딩 차원, 벡터 정밀도, 인덱스 오버헤드, 문서 캐시
+- **데이터 분석:** 원본 데이터 크기, DataFrame 확장률, working set, notebook kernel
+- **비전·OCR:** 페이지·이미지 수, 해상도, visual token, parser worker
+- **이미지 생성:** 해상도, batch, ControlNet, LoRA, 참조 이미지, upscaler
+- **오디오·음성:** 오디오 길이, 동시 stream, diarization, ASR→LLM→TTS cascade
+
+### 적합도 표시를 읽는 법
+
+| 표시 | 의미 |
+|---|---|
+| 여유 | 현재 설정에서 운영 안전 여유를 확보한 시작점 |
+| 적합 | 일반적인 권장 범위 안에서 실행 가능 |
+| 경계 | 적재 가능성이 있으나 첫 요청·긴 입력·동시성에서 peak 측정 필요 |
+| 조정 필요 | offload, context, batch, 동시성 또는 양자화 조정 필요 |
+| 부족 | 현재 설정의 예상 요구량이 입력한 메모리 예산을 초과 |
+
+`여유`나 `적합`은 처리 속도와 답변 품질까지 보장하는 등급이 아니다. 같은 용량에서도 메모리 대역폭, 커널 지원, 드라이버, 컨텍스트와 데이터 형태에 따라 결과가 크게 달라질 수 있다.
+
+### 자동 장치 탐지의 한계
 
 일반 웹 브라우저는 정확한 총 RAM과 VRAM을 항상 제공하지 않는다.
 
 - `navigator.deviceMemory`는 지원되는 브라우저에서도 반올림된 근삿값일 수 있다.
-- 표준 WebGPU·WebGL API만으로는 전용 VRAM 총량을 신뢰성 있게 읽기 어렵다.
-- 계산기는 가능한 경우 GPU 이름과 알려진 제품 사양을 대조하지만, 같은 제품명에 8GB·16GB처럼 여러 변형이 있을 수 있다.
-- Apple Silicon은 CPU와 GPU가 같은 통합 메모리를 사용하므로 전용 VRAM처럼 해석하면 안 된다.
-- 브라우저 개인정보 보호 설정에 따라 GPU 이름 자체가 숨겨질 수 있다.
+- 표준 WebGPU·WebGL API만으로는 전용 VRAM 총량을 일관되게 읽기 어렵다.
+- GPU 이름을 확인하더라도 같은 제품에 8GB·16GB처럼 여러 메모리 변형이 있을 수 있다.
+- Apple Silicon은 전용 VRAM이 아니라 CPU·GPU·OS가 공유하는 통합 메모리를 사용한다.
+- 브라우저 개인정보 보호 설정에 따라 GPU 이름이나 adapter 정보가 숨겨질 수 있다.
 
-따라서 **자동 탐지 결과는 후보값**이며, 운영체제 도구에서 확인한 수동 입력값을 최종 기준으로 사용한다.
+따라서 자동 탐지 결과는 **후보값**이며, 운영체제 도구에서 확인한 수동 입력값을 최종 기준으로 사용한다.
 
 ### 개인정보와 네트워크
 
-계산기는 프레임워크, 서버 API, CDN, 외부 폰트와 텔레메트리를 사용하지 않는 정적 HTML·CSS·JavaScript 구성이다.
+계산기는 프레임워크, 서버 API, CDN, 외부 폰트와 텔레메트리를 사용하지 않는다.
 
 - 계산과 장치 탐지는 브라우저 안에서 수행한다.
-- 입력값은 외부 서버로 전송하지 않는다.
-- 사용자 설정은 브라우저의 로컬 저장소에만 저장될 수 있다.
-- Hugging Face와 문서 링크는 사용자가 직접 클릭할 때만 열린다.
-
-정적 실행에 필요한 주요 파일은 다음과 같다.
-
-```text
-tools/memory-calculator/
-├── index.html
-├── styles.css
-├── catalog.js
-└── app.js
-```
+- 입력값과 계산 결과를 외부 서버로 전송하지 않는다.
+- 사용자 설정은 브라우저의 `localStorage`에만 저장될 수 있다.
+- Hugging Face와 가이드 링크는 사용자가 직접 클릭할 때만 열린다.
 
 ---
 
@@ -128,7 +142,7 @@ tools/memory-calculator/
 
 ### 분야별 가이드
 
-| 분야 | 주요 범위 | 가이드 | 검증일 |
+| 분야 | 주요 범위 | 문서 | 검증일 |
 |---|---|---|---:|
 | 버그바운티·사이버보안 | 승인된 버그바운티, CTF·교육, CVE·위협 인텔리전스, 코드 감사, 보안 자동화 | [cybersecurity.md](./guides/domains/cybersecurity.md) | 2026-07-20 |
 | 프로그래밍·수학·과학 | 범용 코딩, 저장소 에이전트, 수학·과학 추론, 논문 분석, Lean 4 형식증명 | [programming-stem.md](./guides/domains/programming-stem.md) | 2026-07-20 |
@@ -137,7 +151,7 @@ tools/memory-calculator/
 
 ### 모달리티별 가이드
 
-| 모달리티 | 주요 범위 | 가이드 | 검증일 |
+| 모달리티 | 주요 범위 | 문서 | 검증일 |
 |---|---|---|---:|
 | 비전·OCR·문서 이해 | PDF·문서 OCR, 표·수식·차트, screenshot·UI 분석, VLM projector | [vision-ocr.md](./guides/modalities/vision-ocr.md) | 2026-07-21 |
 | 이미지 생성·편집 | Diffusion·DiT, SD·FLUX 계열, ControlNet, LoRA, VAE, upscaler, ComfyUI | [image-generation.md](./guides/modalities/image-generation.md) | 2026-07-21 |
@@ -145,102 +159,67 @@ tools/memory-calculator/
 
 ### 공통 운영 가이드
 
-| 운영 주제 | 주요 범위 | 가이드 | 검증일 |
+| 운영 주제 | 주요 범위 | 문서 | 검증일 |
 |---|---|---|---:|
 | 양자화 | GGUF Q2~Q8, IQ, AWQ, GPTQ, NF4, FP8·FP4, MLX, KV cache quantization | [quantization.md](./guides/operations/quantization.md) | 2026-07-21 |
 | 파인튜닝 메모리 | Full FT, LoRA, QLoRA, DoRA, SFT·DPO·GRPO, FSDP2·ZeRO | [fine-tuning-memory.md](./guides/operations/fine-tuning-memory.md) | 2026-07-21 |
 | 서빙·동시성 | KV pool, continuous batching, queue, SLO, prefix cache, 다중 GPU·tenant | [serving-concurrency.md](./guides/operations/serving-concurrency.md) | 2026-07-21 |
 | 런타임·하드웨어 | CPU, NVIDIA CUDA, AMD ROCm, Apple MLX·Metal, Intel, Vulkan·WebGPU | [runtime-hardware.md](./guides/operations/runtime-hardware.md) | 2026-07-21 |
 
-루트의 날짜 포함 두 파일은 초기 공개 스냅샷과 기존 링크 호환을 위해 남겨 둔 복제본이다. 새 링크에서는 `guides/domains/cybersecurity.md`와 `guides/domains/programming-stem.md`를 기준 경로로 사용한다.
+`guides/` 아래의 날짜 없는 문서를 최신 기준 경로로 사용한다. 루트의 날짜 포함 두 문서는 초기 공개 스냅샷과 기존 외부 링크 호환을 위해 보존한다.
 
 ---
 
-## 이 레포지토리의 계산 원칙
+## 메모리 계산 원칙
 
-### 추론
+모든 운용 형태의 기본 구조는 다음과 같다.
 
 ```text
-추론 peak device memory
+필요 메모리
 ≈ resident model weights
-+ KV cache
-+ activation·attention·quantization workspace
-+ graph·allocator reserve
-+ vision·audio·VAE·projector 등 추가 구성요소
++ 작업에 따라 증가하는 동적 메모리
++ 런타임·통신·allocator 작업 버퍼
++ 운영체제·도구·데이터 처리 메모리
 + 운영 안전 여유
 ```
 
-### RAG
+모델 파일 크기는 위 식의 한 항목일 뿐이다. “다운로드 파일이 10GB이므로 12GB VRAM에서 안전하다”는 식으로 판단하면 긴 prompt, 멀티모달 입력, 동시 요청 또는 checkpoint 저장 시 OOM이 발생할 수 있다.
 
-```text
-RAG 전체 메모리
-≈ 생성 모델과 KV cache
-+ embedding model
-+ reranker
-+ vector index
-+ 원문·metadata cache
-+ parser·OCR worker
-+ query engine와 운영 여유
-```
+| 운용 형태 | 대표적인 동적 메모리 |
+|---|---|
+| 추론 | KV 캐시, attention·activation workspace, graph reserve, vision·audio·VAE·projector |
+| RAG | 임베딩·reranker, 벡터 인덱스, 원문·metadata cache, parser·OCR worker |
+| 온라인 서빙 | active sequence별 KV, prefix cache, prefill·decode buffer, queue와 replica |
+| 파인튜닝 | gradient, optimizer state, saved activation, communication buffer, checkpoint peak |
 
-### 온라인 서빙
-
-```text
-온라인 서빙 메모리
-≈ model weights × replica 수
-+ active sequence별 KV cache
-+ prefix cache
-+ prefill·decode workspace
-+ queue·tokenizer·multimodal buffer
-+ 통신·관측성·운영 여유
-```
-
-### 파인튜닝
-
-```text
-학습 peak accelerator memory
-≈ model weights
-+ trainable parameter copy
-+ gradients
-+ optimizer states
-+ saved activations
-+ logits·temporary workspace
-+ communication buffer
-+ checkpoint·allocator peak
-```
-
-모델 파일 크기는 위 식의 한 항목일 뿐이다. “다운로드 파일이 10GB이므로 12GB VRAM에서 안전하다”는 식으로 판단하면 첫 긴 prompt, 멀티모달 입력, 동시 요청 또는 checkpoint 저장 시 OOM이 발생할 수 있다.
-
----
-
-## 메모리 종류를 읽는 방법
+### 메모리 종류를 읽는 방법
 
 | 환경 | 해석 기준 |
 |---|---|
-| NVIDIA·AMD 전용 GPU | VRAM에 가중치, KV cache와 주요 workspace가 모두 들어갈 때 가장 빠르다. 시스템 RAM offload는 용량을 늘리지만 PCIe 전송 비용이 생긴다. |
+| NVIDIA·AMD 전용 GPU | VRAM에 가중치, KV 캐시와 주요 작업 버퍼가 모두 들어갈 때 가장 빠르다. 시스템 RAM offload는 용량을 늘리지만 PCIe 전송 비용이 생긴다. |
 | Apple Silicon | CPU·GPU·OS가 통합 메모리를 공유한다. 장착 용량 전체를 모델에 배정하지 말고 memory pressure와 swap을 함께 본다. |
 | CPU 전용 | RAM 용량 외에 메모리 채널, 대역폭, NUMA, ISA와 quantized kernel 지원이 처리량을 좌우한다. |
-| 다중 GPU | VRAM 단순 합산만으로 판단하지 않는다. tensor·pipeline·expert parallel 지원과 interconnect를 확인한다. |
-| APU·공유 메모리 | BIOS에서 확보한 GPU 메모리 표시보다 실제 공유 메모리 대역폭과 운영체제 정책이 중요할 수 있다. |
+| 다중 GPU | VRAM을 단순 합산하지 않는다. tensor·pipeline·expert parallel 지원과 interconnect를 확인한다. |
+| APU·공유 메모리 | BIOS의 고정 GPU 메모리 표시보다 실제 공유 메모리 대역폭과 운영체제 정책이 중요할 수 있다. |
 
 ### 장착 메모리와 실사용 가능 메모리
 
-가이드의 메모리 구간은 장착 용량을 빠르게 분류하기 위한 출발점이다. 실제 계획에서는 다음을 먼저 제외한다.
+실제 계획에서는 다음 항목을 먼저 제외한다.
 
 - 운영체제와 백그라운드 서비스
-- 디스플레이와 브라우저·IDE
+- 디스플레이, 브라우저, IDE와 notebook
 - 드라이버·런타임 context
-- 파일 cache와 memory-mapped page
-- allocator fragmentation
+- 파일 캐시와 memory-mapped page
+- allocator fragmentation과 임시 작업 버퍼
 - 장시간 운용을 위한 안전 여유
 
-개인 워크스테이션에서는 처음부터 장착 메모리의 100%를 모델에 할당하지 않는다. 계산기 기본 예약률을 출발점으로 사용하고 실제 peak를 측정해 조정한다.
+개인 워크스테이션에서는 장착 메모리의 100%를 모델에 할당하지 않는다. 계산기의 기본 예약률을 출발점으로 사용하고 실제 peak를 측정해 조정한다.
 
 ---
 
 ## 양자화 빠른 기준
 
-같은 “4비트”라도 `Q4_K_M`, `IQ4_XS`, AWQ W4A16, GPTQ 4-bit, NF4, MLX 4-bit, NVFP4는 같은 형식이 아니다. 런타임과 하드웨어가 실제로 최적화한 형식을 선택해야 한다.
+같은 “4비트”라도 `Q4_K_M`, `IQ4_XS`, AWQ W4A16, GPTQ 4-bit, NF4, MLX 4-bit와 NVFP4는 같은 형식이 아니다. 런타임과 하드웨어가 실제로 최적화한 형식을 선택해야 한다.
 
 | 정밀도·형식 | 일반적인 위치 | 우선 검토하는 상황 |
 |---|---|---|
@@ -252,7 +231,7 @@ RAG 전체 메모리
 | FP16·BF16 | 원본에 가까운 기준선 | 품질 평가, 학습, 고정밀 구성, 서버급 메모리 |
 | FP8·FP4 | 지원 하드웨어 특화 | 해당 GPU와 런타임에 native·optimized kernel이 확인된 서버 배포 |
 | NF4 | QLoRA | frozen 4-bit base에 adapter를 학습하는 파인튜닝 |
-| AWQ·GPTQ·compressed-tensors | CUDA 중심 W4A16·W8A8 | vLLM·SGLang·TensorRT 계열의 지원 matrix가 맞는 서버 추론 |
+| AWQ·GPTQ·`compressed-tensors` | CUDA 중심 W4A16·W8A8 | vLLM·SGLang·TensorRT 계열의 지원 matrix가 맞는 서버 추론 |
 
 특별한 이유가 없다면 다음 순서로 시작한다.
 
@@ -260,7 +239,7 @@ RAG 전체 메모리
 Q4 또는 하드웨어가 잘 지원하는 4-bit 형식
 → context 4K~8K, 동시 요청 1개
 → 실제 peak RAM·VRAM과 품질 측정
-→ Q5/Q6 또는 더 큰 모델 검토
+→ Q5·Q6 또는 더 큰 모델 검토
 → 긴 context와 동시성 단계적 증가
 ```
 
@@ -270,13 +249,13 @@ Q4 또는 하드웨어가 잘 지원하는 4-bit 형식
 
 ## 작업별 시작 경로
 
-| 목표 | 먼저 열 문서 | 다음에 확인할 문서 |
+| 목표 | 먼저 확인할 문서 | 함께 확인할 문서 |
 |---|---|---|
 | 개인 PC에서 코딩 모델 실행 | [프로그래밍·STEM](./guides/domains/programming-stem.md) | [양자화](./guides/operations/quantization.md), [런타임·하드웨어](./guides/operations/runtime-hardware.md) |
 | 로컬 문서 검색·질의응답 | [생산성·RAG](./guides/domains/productivity-rag.md) | [비전·OCR](./guides/modalities/vision-ocr.md), [서빙·동시성](./guides/operations/serving-concurrency.md) |
 | SQL·CSV·Parquet 분석 | [데이터 분석](./guides/domains/data-analysis.md) | [런타임·하드웨어](./guides/operations/runtime-hardware.md) |
 | PDF·표·수식 OCR | [비전·OCR](./guides/modalities/vision-ocr.md) | [생산성·RAG](./guides/domains/productivity-rag.md) |
-| 로컬 이미지 생성 | [이미지 생성](./guides/modalities/image-generation.md) | [양자화](./guides/operations/quantization.md), [런타임·하드웨어](./guides/operations/runtime-hardware.md) |
+| 로컬 이미지 생성·편집 | [이미지 생성](./guides/modalities/image-generation.md) | [양자화](./guides/operations/quantization.md), [런타임·하드웨어](./guides/operations/runtime-hardware.md) |
 | 회의 녹취·TTS·음성 에이전트 | [오디오·음성](./guides/modalities/audio-speech.md) | [서빙·동시성](./guides/operations/serving-concurrency.md) |
 | LoRA·QLoRA 학습 | [파인튜닝 메모리](./guides/operations/fine-tuning-memory.md) | [양자화](./guides/operations/quantization.md), [런타임·하드웨어](./guides/operations/runtime-hardware.md) |
 | 여러 사용자에게 API 제공 | [서빙·동시성](./guides/operations/serving-concurrency.md) | [런타임·하드웨어](./guides/operations/runtime-hardware.md), [양자화](./guides/operations/quantization.md) |
@@ -285,8 +264,6 @@ Q4 또는 하드웨어가 잘 지원하는 4-bit 형식
 ---
 
 ## 레포지토리 구조
-
-핵심 공개 구조는 다음과 같다.
 
 ```text
 RAM-for-Local-AI/
@@ -311,71 +288,31 @@ RAM-for-Local-AI/
         ├── index.html
         ├── styles.css
         ├── catalog.js
-        ├── app.js
-        └── ...  # 정적 데이터·계산 보조 모듈
+        └── app.js
 ```
 
-`guides/` 아래의 날짜 없는 파일을 최신 기준 경로로 사용한다. 루트의 날짜 포함 파일은 초기 스냅샷 보존과 기존 외부 링크 호환을 위한 것이다.
-
----
-
-## GitHub Pages 배포
-
-계산기는 별도 빌드 없이 GitHub Pages에서 실행할 수 있다.
-
-1. GitHub 레포지토리의 **Settings → Pages**를 연다.
-2. **Build and deployment**에서 `Deploy from a branch`를 선택한다.
-3. branch를 `main`, folder를 `/ (root)`로 지정한다.
-4. 배포가 끝나면 다음 경로를 연다.
-
-```text
-https://<GitHub-ID>.github.io/RAM-for-Local-AI/tools/memory-calculator/
-```
-
-자동 장치 탐지는 secure context에서 더 많은 정보를 제공할 수 있으므로 `file://` 직접 실행보다 GitHub Pages 또는 로컬 HTTP 서버를 권장한다.
+`guides/` 아래의 날짜 없는 파일이 최신 기준 문서다. 계산기에서 실제로 로드하는 핵심 파일은 `index.html`, `styles.css`, `catalog.js`, `app.js` 네 개다.
 
 ---
 
 ## 업데이트와 기여
 
-모델 또는 하드웨어 결과를 추가할 때 가능한 한 다음 정보를 포함한다.
+모델·양자화·하드웨어 결과를 추가할 때 가능한 한 다음 정보를 함께 기록한다.
 
-1. 모델명, 개발 조직과 공식 모델 카드
-2. 원본 가중치와 실제 배포 저장소 링크
-3. 정확한 파일명, 양자화 태그, shard 수와 총 다운로드 크기
-4. dense·MoE 구조, 전체·활성 파라미터, context 한도
-5. 하드웨어 모델, 장착 RAM·VRAM·통합 메모리
-6. 운영체제, driver, runtime와 버전
-7. GPU offload, KV dtype, context, batch, 동시 요청 수
-8. 실제 peak RAM·VRAM과 처리 속도
-9. 대표 작업셋의 품질 결과와 실패 사례
-10. 모델·양자화 라이선스와 검증일
+| 구분 | 필요한 정보 |
+|---|---|
+| 모델 | 공식 모델 카드, revision, dense·MoE 구조, 전체·활성 파라미터, context 한도 |
+| 배포 파일 | 저장소, 정확한 파일명·quant tag, shard 수, 총 다운로드 크기, checksum |
+| 환경 | 하드웨어, RAM·VRAM, 운영체제, driver, runtime와 버전 |
+| 실행 설정 | GPU offload, KV dtype, context, batch, 동시 요청 수 |
+| 결과 | peak RAM·VRAM, prompt·generation 처리량, TTFT·TPOT, 실패 사례 |
+| 평가 | 대표 작업셋의 품질 결과, 기준 모델과 비교, 라이선스·검증일 |
 
 “실행됨”만 기록하지 말고, 어떤 설정에서 어느 정도의 여유와 속도로 실행됐는지 재현 가능하게 남긴다.
 
-### 권장 benchmark 항목
-
-```text
-model repository + revision
-quantization + exact filename
-runtime + commit/version
-hardware + driver + OS
-context + input/output length
-KV cache dtype
-batch + concurrency
-prompt processing tokens/s
-output tokens/s
-TTFT + TPOT
-peak RAM + VRAM
-power + temperature
-quality evaluation result
-```
-
-### 카탈로그 유지보수
-
 계산기 모델 데이터는 [`tools/memory-calculator/catalog.js`](./tools/memory-calculator/catalog.js)에 있다. 가이드에서 모델 링크, 파일 크기, 최소 메모리 또는 권장 런타임을 수정할 때 계산기 카탈로그도 함께 검토해야 한다.
 
-향후 구조화 데이터와 문서 생성 스크립트를 추가할 경우 다음 흐름을 권장한다.
+장기적으로는 다음과 같은 단일 데이터 원본 구조가 적합하다.
 
 ```text
 data/models.yaml 또는 data/models.json
@@ -389,9 +326,49 @@ GitHub Actions 링크·schema·중복·검증일 검사
 
 ---
 
+## 개발과 배포
+
+<details>
+<summary>로컬 실행 및 GitHub Pages 설정 보기</summary>
+
+### 로컬 실행
+
+레포지토리 루트에서 정적 서버를 실행한다.
+
+```bash
+python -m http.server 8000
+```
+
+다음 주소를 연다.
+
+```text
+http://localhost:8000/tools/memory-calculator/
+```
+
+`file://` 직접 실행보다 HTTP 또는 HTTPS 환경을 권장한다. 일부 브라우저의 장치 정보 API와 모듈 로딩 동작은 secure context 또는 HTTP 환경에서 더 일관적이다.
+
+### GitHub Pages
+
+1. 레포지토리의 **Settings → Pages**를 연다.
+2. **Build and deployment**에서 `Deploy from a branch`를 선택한다.
+3. branch를 `main`, folder를 `/ (root)`로 지정한다.
+4. 배포가 끝나면 다음 경로를 연다.
+
+```text
+https://<GitHub-ID>.github.io/RAM-for-Local-AI/tools/memory-calculator/
+```
+
+현재 공개 계산기:
+
+- <https://jtech-co.github.io/RAM-for-Local-AI/tools/memory-calculator/>
+
+</details>
+
+---
+
 ## 안전·정확성·라이선스
 
-- 사이버보안 가이드와 모델은 소유하거나 명시적으로 허가받은 시스템, 승인된 버그바운티 범위, CTF, 격리된 연구 환경에서만 사용한다.
+- 사이버보안 가이드와 모델은 소유하거나 명시적으로 허가받은 시스템, 승인된 버그바운티 범위, CTF와 격리된 연구 환경에서만 사용한다.
 - 로컬 실행은 외부 전송을 줄일 수 있지만 prompt, log, vector DB, cache, swap, 임시 이미지·오디오와 생성 파일에 민감정보가 남을 수 있다.
 - 모델이 생성한 코드, SQL, 수식, 과학적 주장, 인용, 보안 판단과 고위험 도메인 결과는 독립적인 도구와 신뢰할 수 있는 출처로 검증한다.
 - `trust_remote_code`, custom node, adapter, pickle, 임의 container와 비공식 quantization artifact는 공급망 위험을 검토한다.
@@ -402,12 +379,12 @@ GitHub Actions 링크·schema·중복·검증일 검사
 
 ## 문서 상태
 
-| 구분 | 수량 | 현재 상태 |
+| 구분 | 수량 | 상태 |
 |---|---:|---|
 | 분야별 가이드 | 4 | 작성 완료 |
 | 모달리티별 가이드 | 3 | 작성 완료 |
 | 공통 운영 가이드 | 4 | 작성 완료 |
-| 정적 웹 계산기 | 1 | 작성 완료 |
+| 정적 웹 계산기 | 1 | 운영 중 |
 | 계산기 모델 프리셋 | 66 | 2026-07-21 카탈로그 기준 |
 
-모델 생태계와 런타임은 빠르게 변한다. 표의 수치는 영구적인 사양이 아니라 **검증일 당시 공개된 모델·파일·문서를 기준으로 한 용량 계획용 스냅샷**이다.
+모델 생태계와 런타임은 빠르게 변한다. 이 레포지토리의 표와 계산 결과는 영구적인 사양이 아니라 **검증일 당시 공개된 모델·파일·문서를 기준으로 한 용량 계획용 스냅샷**이다.
