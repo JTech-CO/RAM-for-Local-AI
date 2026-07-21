@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RAM·VRAM·Apple 통합 메모리와 작업 조건을 기준으로 로컬 AI 모델, 양자화, 컨텍스트, RAG, 서빙 및 파인튜닝 메모리를 계산합니다.">
+  <meta name="color-scheme" content="dark">
+  <title>Memory Calculator · RAM-for-Local-AI</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./catalog.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">계산기로 건너뛰기</a>
+
+  <header class="site-header">
+    <div class="header-copy">
+      <p class="eyebrow">RAM-for-Local-AI / tools / memory-calculator</p>
+      <h1>로컬 AI 메모리 계산기</h1>
+      <p class="subtitle">모델 가중치만이 아니라 KV 캐시, 런타임 버퍼, RAG 인덱스, 데이터 working set, 이미지·오디오 파이프라인, 동시성 및 파인튜닝 상태를 함께 계산합니다.</p>
+    </div>
+    <div class="header-actions" aria-label="계산기 작업">
+      <button class="button button-primary" id="detectButton" type="button">장치 자동 탐지</button>
+      <button class="button" id="copyButton" type="button">결과 복사</button>
+      <button class="button" id="exportButton" type="button">JSON 저장</button>
+      <button class="button button-quiet" id="resetButton" type="button">초기화</button>
+    </div>
+  </header>
+
+  <main id="main" class="page-shell">
+    <section class="notice" aria-labelledby="detection-note-title">
+      <div>
+        <h2 id="detection-note-title">자동 탐지는 근사값입니다</h2>
+        <p><code>navigator.deviceMemory</code>는 일부 브라우저에서만 제공되는 반올림·상한 적용 RAM 값입니다. 표준 웹 API는 정확한 총 VRAM을 제공하지 않습니다. 계산기는 브라우저가 비표준 WebGPU <code>memoryHeaps</code>를 공개한 경우 그 값을 표시하고, 그 외에는 GPU 이름과 알려진 제품 사양을 대조합니다. 변형이 여러 개인 장치는 후보를 제시하며 수동 입력값이 최종 기준입니다.</p>
+      </div>
+      <p class="privacy-note">탐지·계산·저장은 이 브라우저 안에서만 수행됩니다. 외부 API 호출과 텔레메트리는 없습니다.</p>
+    </section>
+
+    <div class="workspace">
+      <form id="calculatorForm" class="control-column" autocomplete="off">
+        <section class="terminal-panel" aria-labelledby="hardware-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="hardware-title">hardware</h2>
+            <span class="panel-comment"># 장착 용량과 메모리 구조</span>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field">
+              <span class="field-label">실행 장치 구조</span>
+              <select id="hardwareMode" name="hardwareMode">
+                <option value="dedicated">전용 GPU + 시스템 RAM</option>
+                <option value="unified">Apple·APU 통합 메모리</option>
+                <option value="cpu">CPU 전용</option>
+                <option value="multi">다중 GPU</option>
+              </select>
+              <span class="field-help">통합 메모리는 CPU·GPU·OS가 같은 풀을 공유합니다.</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">하드웨어 계열</span>
+              <select id="hardwareVendor" name="hardwareVendor">
+                <option value="nvidia">NVIDIA CUDA</option>
+                <option value="amd">AMD ROCm·HIP·Vulkan</option>
+                <option value="apple">Apple Silicon</option>
+                <option value="intel">Intel CPU·XPU·OpenVINO</option>
+                <option value="cpu">범용 CPU</option>
+                <option value="other">기타·미확인</option>
+              </select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">시스템 RAM</span>
+              <span class="input-with-unit"><input id="systemRam" name="systemRam" type="number" min="1" max="4096" step="1" value="32" inputmode="decimal"><span>GB</span></span>
+              <span class="field-help" id="ramSource">수동 입력값</span>
+            </label>
+
+            <label class="field" data-hardware-visible="dedicated multi">
+              <span class="field-label">GPU 1장당 VRAM</span>
+              <span class="input-with-unit"><input id="vramPerGpu" name="vramPerGpu" type="number" min="0" max="1024" step="0.5" value="16" inputmode="decimal"><span>GB</span></span>
+              <span class="field-help" id="vramSource">수동 입력값</span>
+            </label>
+
+            <label class="field" data-hardware-visible="multi">
+              <span class="field-label">GPU 수</span>
+              <span class="input-with-unit"><input id="gpuCount" name="gpuCount" type="number" min="2" max="64" step="1" value="2"><span>장</span></span>
+            </label>
+
+            <label class="field" data-hardware-visible="multi">
+              <span class="field-label">다중 GPU 배치 방식</span>
+              <select id="multiGpuMode" name="multiGpuMode">
+                <option value="shard">한 모델 분할(TP·PP)</option>
+                <option value="replica">GPU별 모델 복제</option>
+              </select>
+              <span class="field-help">분할은 합산 용량을 활용하지만 통신·최대 layer 제약이 있습니다.</span>
+            </label>
+
+            <label class="field" data-hardware-visible="unified">
+              <span class="field-label">통합 메모리</span>
+              <span class="input-with-unit"><input id="unifiedMemory" name="unifiedMemory" type="number" min="4" max="2048" step="1" value="32"><span>GB</span></span>
+              <span class="field-help">Mac에서는 장착 메모리 전체가 아닌 여유분을 계산합니다.</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">모델 GPU 오프로딩</span>
+              <span class="input-with-unit"><input id="gpuOffload" name="gpuOffload" type="number" min="0" max="100" step="5" value="100"><span>%</span></span>
+              <span class="field-help">CPU 전용은 자동으로 0%, 통합 메모리는 100%로 처리합니다.</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">장치 메모리 예약</span>
+              <span class="input-with-unit"><input id="deviceReserve" name="deviceReserve" type="number" min="5" max="60" step="1" value="12"><span>%</span></span>
+              <span class="field-help">디스플레이·드라이버·fragmentation·비상 여유입니다.</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">시스템 메모리 예약</span>
+              <span class="input-with-unit"><input id="systemReserve" name="systemReserve" type="number" min="5" max="70" step="1" value="20"><span>%</span></span>
+              <span class="field-help">OS·브라우저·IDE·파일 캐시를 위해 남깁니다.</span>
+            </label>
+          </div>
+
+          <div class="detected-line" id="detectedLine" aria-live="polite">
+            <span class="status-dot status-neutral" aria-hidden="true"></span>
+            <span>자동 탐지를 실행하지 않았습니다.</span>
+          </div>
+        </section>
+
+        <section class="terminal-panel" aria-labelledby="workload-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="workload-title">workload</h2>
+            <span class="panel-comment"># 분야·작업·런타임</span>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field">
+              <span class="field-label">분야</span>
+              <select id="domain" name="domain"></select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">세부 작업</span>
+              <select id="task" name="task"></select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">운영 방식</span>
+              <select id="operation" name="operation"></select>
+            </label>
+
+            <label class="field">
+              <span class="field-label">런타임</span>
+              <select id="runtime" name="runtime"></select>
+              <span class="field-help" id="runtimeHint">하드웨어와 작업에 따라 자동 추천할 수 있습니다.</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="terminal-panel" aria-labelledby="model-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="model-title">model</h2>
+            <span class="panel-comment"># 모델·양자화·컨텍스트</span>
+          </div>
+
+          <div class="field-grid two-columns">
+            <label class="field field-span-2">
+              <span class="field-label">모델 프리셋</span>
+              <select id="model" name="model"></select>
+              <span class="field-help" id="modelMeta">선택한 분야의 대표 모델을 표시합니다.</span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">양자화·정밀도</span>
+              <select id="quant" name="quant"></select>
+              <span class="field-help" id="quantMeta"></span>
+            </label>
+
+            <label class="field">
+              <span class="field-label">실제 파일·resident 크기 재정의</span>
+              <span class="input-with-unit"><input id="weightOverride" name="weightOverride" type="number" min="0" max="2048" step="0.01" placeholder="자동 계산"><span>GB</span></span>
+              <span class="field-help">모델 카드의 전체 shard 합계를 알 때 입력합니다.</span>
+            </label>
+          </div>
+
+          <div id="customModelFields" class="field-grid three-columns is-hidden" aria-hidden="true">
+            <label class="field">
+              <span class="field-label">전체 파라미터</span>
+              <span class="input-with-unit"><input id="customParams" name="customParams" type="number" min="0.05" max="2000" step="0.1" value="8"><span>B</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">구조</span>
+              <select id="customArchitecture" name="customArchitecture">
+                <option value="dense">Dense</option>
+                <option value="moe">MoE</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">FP16 KV / token</span>
+              <span class="input-with-unit"><input id="customKv" name="customKv" type="number" min="0" max="4" step="0.01" value="0.13"><span>MiB</span></span>
+            </label>
+          </div>
+
+          <div class="field-grid four-columns compact-grid">
+            <label class="field">
+              <span class="field-label">입력 컨텍스트</span>
+              <span class="input-with-unit"><input id="contextTokens" name="contextTokens" type="number" min="256" max="1048576" step="256" value="8192"><span>token</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">최대 출력</span>
+              <span class="input-with-unit"><input id="outputTokens" name="outputTokens" type="number" min="64" max="131072" step="64" value="2048"><span>token</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">동시 sequence</span>
+              <span class="input-with-unit"><input id="concurrency" name="concurrency" type="number" min="1" max="512" step="1" value="1"><span>개</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">KV 캐시 정밀도</span>
+              <select id="kvDtype" name="kvDtype"></select>
+            </label>
+          </div>
+
+          <details class="advanced-block">
+            <summary>고급 모델·서빙 설정</summary>
+            <div class="field-grid three-columns">
+              <label class="field">
+                <span class="field-label">공통 prefix 비율</span>
+                <span class="input-with-unit"><input id="prefixShare" name="prefixShare" type="number" min="0" max="95" step="5" value="0"><span>%</span></span>
+                <span class="field-help">동시 요청이 실제로 같은 prefix KV를 재사용할 때만 적용합니다.</span>
+              </label>
+              <label class="field">
+                <span class="field-label">모델 replica 수</span>
+                <span class="input-with-unit"><input id="replicas" name="replicas" type="number" min="1" max="64" step="1" value="1"><span>개</span></span>
+                <span class="field-help">각 replica는 가중치를 다시 적재합니다.</span>
+              </label>
+              <label class="field checkbox-field">
+                <input id="sequentialAddons" name="sequentialAddons" type="checkbox" checked>
+                <span><strong>보조 모델 순차 실행</strong><small>임베딩·reranker·OCR가 생성 모델과 동시에 GPU에 상주하지 않는다고 가정</small></span>
+              </label>
+            </div>
+          </details>
+        </section>
+
+        <section id="ragSection" class="terminal-panel conditional-panel" data-operation="rag" aria-labelledby="rag-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="rag-title">rag_stack</h2>
+            <span class="panel-comment"># 임베딩·reranker·벡터 인덱스</span>
+          </div>
+          <div class="field-grid three-columns">
+            <label class="field">
+              <span class="field-label">임베딩 모델</span>
+              <select id="embeddingModel" name="embeddingModel"></select>
+            </label>
+            <label class="field">
+              <span class="field-label">Reranker</span>
+              <select id="rerankerModel" name="rerankerModel"></select>
+            </label>
+            <label class="field">
+              <span class="field-label">문서 파서·OCR</span>
+              <select id="parserModel" name="parserModel"></select>
+            </label>
+            <label class="field">
+              <span class="field-label">청크 수</span>
+              <span class="input-with-unit"><input id="ragChunks" name="ragChunks" type="number" min="100" max="1000000000" step="1000" value="100000"><span>개</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">임베딩 차원</span>
+              <span class="input-with-unit"><input id="embeddingDims" name="embeddingDims" type="number" min="64" max="65536" step="64" value="768"><span>dim</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">벡터 정밀도</span>
+              <select id="vectorDtype" name="vectorDtype">
+                <option value="4">FP32 · 4 bytes</option>
+                <option value="2" selected>FP16 · 2 bytes</option>
+                <option value="1">INT8 · 1 byte</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">인덱스·메타데이터 배수</span>
+              <span class="input-with-unit"><input id="indexOverhead" name="indexOverhead" type="number" min="1" max="8" step="0.1" value="1.6"><span>×</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">문서·청크 캐시</span>
+              <span class="input-with-unit"><input id="documentCache" name="documentCache" type="number" min="0" max="2048" step="0.1" value="1"><span>GB</span></span>
+            </label>
+          </div>
+        </section>
+
+        <section id="dataSection" class="terminal-panel conditional-panel" data-domain="data-analysis" aria-labelledby="data-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="data-title">data_working_set</h2>
+            <span class="panel-comment"># DuckDB·Polars·pandas·Python/R</span>
+          </div>
+          <div class="field-grid four-columns">
+            <label class="field">
+              <span class="field-label">원본 데이터 크기</span>
+              <span class="input-with-unit"><input id="datasetSize" name="datasetSize" type="number" min="0" max="100000" step="0.1" value="2"><span>GB</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">메모리 전개 배수</span>
+              <span class="input-with-unit"><input id="datasetExpansion" name="datasetExpansion" type="number" min="0.1" max="20" step="0.1" value="2.5"><span>×</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">조인·정렬 peak 배수</span>
+              <span class="input-with-unit"><input id="workingMultiplier" name="workingMultiplier" type="number" min="0.5" max="10" step="0.1" value="1.5"><span>×</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">커널·엔진 고정 예산</span>
+              <span class="input-with-unit"><input id="notebookReserve" name="notebookReserve" type="number" min="0" max="128" step="0.5" value="2"><span>GB</span></span>
+            </label>
+          </div>
+        </section>
+
+        <section id="visionSection" class="terminal-panel conditional-panel" data-domain="vision-ocr" aria-labelledby="vision-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="vision-title">vision_input</h2>
+            <span class="panel-comment"># 이미지·PDF 페이지·visual token</span>
+          </div>
+          <div class="field-grid three-columns">
+            <label class="field">
+              <span class="field-label">요청당 이미지·페이지</span>
+              <span class="input-with-unit"><input id="imageCount" name="imageCount" type="number" min="1" max="256" step="1" value="1"><span>장</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">이미지당 해상도</span>
+              <span class="input-with-unit"><input id="megapixels" name="megapixels" type="number" min="0.05" max="100" step="0.1" value="2"><span>MP</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">레이아웃·OCR worker RAM</span>
+              <span class="input-with-unit"><input id="visionWorkerRam" name="visionWorkerRam" type="number" min="0" max="128" step="0.5" value="1"><span>GB</span></span>
+            </label>
+          </div>
+        </section>
+
+        <section id="imageGenerationSection" class="terminal-panel conditional-panel" data-domain="image-generation" aria-labelledby="image-generation-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="image-generation-title">image_pipeline</h2>
+            <span class="panel-comment"># 해상도·batch·ControlNet·LoRA</span>
+          </div>
+          <div class="field-grid four-columns">
+            <label class="field">
+              <span class="field-label">가로</span>
+              <span class="input-with-unit"><input id="imageWidth" name="imageWidth" type="number" min="256" max="8192" step="64" value="1024"><span>px</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">세로</span>
+              <span class="input-with-unit"><input id="imageHeight" name="imageHeight" type="number" min="256" max="8192" step="64" value="1024"><span>px</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Batch</span>
+              <span class="input-with-unit"><input id="imageBatch" name="imageBatch" type="number" min="1" max="64" step="1" value="1"><span>장</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">참조 이미지</span>
+              <span class="input-with-unit"><input id="referenceImages" name="referenceImages" type="number" min="0" max="32" step="1" value="0"><span>장</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">ControlNet·adapter</span>
+              <span class="input-with-unit"><input id="controlNets" name="controlNets" type="number" min="0" max="16" step="1" value="0"><span>개</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">LoRA</span>
+              <span class="input-with-unit"><input id="loraCount" name="loraCount" type="number" min="0" max="32" step="1" value="0"><span>개</span></span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="upscaler" name="upscaler" type="checkbox">
+              <span><strong>업스케일러·복원 모델</strong><small>별도 단계 또는 동시 상주 메모리를 추가합니다.</small></span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="imageCpuOffload" name="imageCpuOffload" type="checkbox">
+              <span><strong>텍스트 인코더·VAE CPU offload</strong><small>VRAM을 줄이지만 RAM과 지연을 늘립니다.</small></span>
+            </label>
+          </div>
+        </section>
+
+        <section id="audioSection" class="terminal-panel conditional-panel" data-domain="audio-speech" aria-labelledby="audio-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="audio-title">audio_pipeline</h2>
+            <span class="panel-comment"># 스트림·VAD·화자 분리·cascade</span>
+          </div>
+          <div class="field-grid three-columns">
+            <label class="field">
+              <span class="field-label">동시 오디오 스트림</span>
+              <span class="input-with-unit"><input id="audioStreams" name="audioStreams" type="number" min="1" max="512" step="1" value="1"><span>개</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">최대 파일 길이</span>
+              <span class="input-with-unit"><input id="audioMinutes" name="audioMinutes" type="number" min="0.1" max="100000" step="0.5" value="10"><span>분</span></span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="diarization" name="diarization" type="checkbox">
+              <span><strong>화자 분리·alignment</strong><small>별도 모델과 오디오 특징 캐시를 추가합니다.</small></span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="audioCascade" name="audioCascade" type="checkbox">
+              <span><strong>ASR → LLM → TTS 동시 상주</strong><small>선택 모델 외에 소형 생성·합성 worker 예산을 추가합니다.</small></span>
+            </label>
+          </div>
+        </section>
+
+        <section id="fineTuneSection" class="terminal-panel conditional-panel" data-operation="fine-tuning" aria-labelledby="fine-tune-title">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="fine-tune-title">fine_tuning</h2>
+            <span class="panel-comment"># 모델 상태·activation·optimizer</span>
+          </div>
+          <div class="field-grid four-columns">
+            <label class="field">
+              <span class="field-label">학습 방식</span>
+              <select id="trainMethod" name="trainMethod">
+                <option value="qlora">QLoRA NF4</option>
+                <option value="lora">LoRA BF16/FP16 base</option>
+                <option value="dora">DoRA</option>
+                <option value="full8">Full FT + 8-bit optimizer</option>
+                <option value="fullbf16">Full FT native BF16 Adam</option>
+                <option value="fullclassic">Full FT classic mixed AdamW</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">학습 sequence</span>
+              <span class="input-with-unit"><input id="trainSequence" name="trainSequence" type="number" min="128" max="262144" step="128" value="2048"><span>token</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Micro batch</span>
+              <span class="input-with-unit"><input id="microBatch" name="microBatch" type="number" min="1" max="1024" step="1" value="1"><span>개</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">LoRA rank</span>
+              <span class="input-with-unit"><input id="loraRank" name="loraRank" type="number" min="1" max="1024" step="1" value="16"><span>r</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">LoRA target</span>
+              <select id="loraTarget" name="loraTarget">
+                <option value="attention">Attention projection만</option>
+                <option value="selective" selected>Attention + 일부 MLP</option>
+                <option value="all">모든 linear layer</option>
+              </select>
+            </label>
+            <label class="field checkbox-field">
+              <input id="gradientCheckpointing" name="gradientCheckpointing" type="checkbox" checked>
+              <span><strong>Gradient checkpointing</strong><small>activation 메모리를 줄이고 계산량을 늘립니다.</small></span>
+            </label>
+            <label class="field">
+              <span class="field-label">데이터셋·전처리 캐시</span>
+              <span class="input-with-unit"><input id="trainingDataRam" name="trainingDataRam" type="number" min="0" max="4096" step="0.5" value="4"><span>GB</span></span>
+            </label>
+            <label class="field">
+              <span class="field-label">Checkpoint staging</span>
+              <span class="input-with-unit"><input id="checkpointStaging" name="checkpointStaging" type="number" min="0" max="4096" step="0.5" value="2"><span>GB</span></span>
+            </label>
+          </div>
+        </section>
+      </form>
+
+      <aside class="result-column" aria-labelledby="result-title">
+        <section class="result-panel sticky-result">
+          <div class="panel-heading">
+            <span class="prompt" aria-hidden="true">$</span>
+            <h2 id="result-title">estimate</h2>
+            <span class="panel-comment"># 현재 설정</span>
+          </div>
+
+          <div class="fit-banner" id="fitBanner" data-fit="neutral" aria-live="polite">
+            <span class="fit-label" id="fitLabel">계산 준비</span>
+            <strong id="fitHeadline">입력값을 확인하십시오.</strong>
+            <span id="fitDetail">메모리 구조와 모델을 선택하면 즉시 계산합니다.</span>
+          </div>
+
+          <div class="metric-grid" id="metricGrid">
+            <div class="metric-card">
+              <span>장치 필요량</span>
+              <strong id="deviceRequired">—</strong>
+              <small id="deviceAvailable">가용 —</small>
+            </div>
+            <div class="metric-card">
+              <span>시스템 필요량</span>
+              <strong id="systemRequired">—</strong>
+              <small id="systemAvailable">가용 —</small>
+            </div>
+            <div class="metric-card">
+              <span>가중치·pipeline</span>
+              <strong id="weightSize">—</strong>
+              <small id="weightSource">—</small>
+            </div>
+            <div class="metric-card">
+              <span>KV·activation</span>
+              <strong id="dynamicMemory">—</strong>
+              <small id="dynamicDetail">—</small>
+            </div>
+          </div>
+
+          <div class="memory-meter-group">
+            <div class="meter-row" id="deviceMeterRow">
+              <div class="meter-label"><span>device</span><span id="deviceMeterText">—</span></div>
+              <div class="meter" role="progressbar" aria-label="장치 메모리 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="deviceMeter"></span></div>
+            </div>
+            <div class="meter-row" id="systemMeterRow">
+              <div class="meter-label"><span>system</span><span id="systemMeterText">—</span></div>
+              <div class="meter" role="progressbar" aria-label="시스템 메모리 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="systemMeter"></span></div>
+            </div>
+          </div>
+
+          <div class="capacity-grid">
+            <div>
+              <span class="capacity-label">현재 동시성의 메모리상 최대 context</span>
+              <strong id="maxContext">—</strong>
+            </div>
+            <div>
+              <span class="capacity-label">현재 context의 메모리상 최대 sequence</span>
+              <strong id="maxConcurrency">—</strong>
+            </div>
+          </div>
+
+          <div class="result-subsection">
+            <h3>메모리 분해</h3>
+            <div class="table-scroll">
+              <table class="breakdown-table">
+                <thead><tr><th>항목</th><th>장치</th><th>시스템</th></tr></thead>
+                <tbody id="breakdownBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="result-subsection">
+            <h3>실행 판단</h3>
+            <ul id="warningList" class="warning-list"></ul>
+          </div>
+
+          <div class="result-subsection">
+            <h3>재현 가능한 요약</h3>
+            <pre class="command-output" id="commandOutput" tabindex="0"></pre>
+          </div>
+
+          <div class="model-links" id="selectedLinks"></div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="terminal-panel recommendations-panel" aria-labelledby="recommendations-title">
+      <div class="panel-heading">
+        <span class="prompt" aria-hidden="true">$</span>
+        <h2 id="recommendations-title">recommend</h2>
+        <span class="panel-comment"># 현재 하드웨어에서 여유가 남는 후보</span>
+      </div>
+      <p class="section-copy">선택한 분야·작업에 맞는 모델마다 가능한 가장 높은 정밀도를 탐색합니다. “가능”은 메모리 적재 추정이며 품질·속도·런타임 호환성 보장은 아닙니다.</p>
+      <div class="table-scroll">
+        <table class="recommendation-table">
+          <thead>
+            <tr><th>판정</th><th>모델</th><th>양자화</th><th>장치 추정</th><th>시스템 추정</th><th>선택 이유</th><th>작업</th></tr>
+          </thead>
+          <tbody id="recommendationBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="terminal-panel guides-panel" aria-labelledby="guides-title">
+      <div class="panel-heading">
+        <span class="prompt" aria-hidden="true">$</span>
+        <h2 id="guides-title">man ram-for-local-ai</h2>
+        <span class="panel-comment"># 계산 근거가 되는 가이드</span>
+      </div>
+      <div id="guideGrid" class="guide-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>추정치는 초기 용량 계획용입니다. 실제 모델 revision, shard 합계, runtime build, 드라이버, context 분포와 peak RAM·VRAM을 대상 장비에서 측정하십시오.</p>
+    <p><a href="../../README.md">RAM-for-Local-AI 메인 README</a></p>
+  </footer>
+
+  <dialog id="deviceDialog" class="device-dialog" aria-labelledby="device-dialog-title">
+    <form method="dialog">
+      <div class="dialog-heading">
+        <div>
+          <p class="eyebrow">local hardware probe</p>
+          <h2 id="device-dialog-title">장치 탐지 결과</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="닫기">×</button>
+      </div>
+      <div id="deviceReport" class="device-report"></div>
+      <div id="vramCandidateWrap" class="field is-hidden">
+        <label for="vramCandidate" class="field-label">VRAM 후보 선택</label>
+        <select id="vramCandidate"></select>
+        <span class="field-help">같은 GPU 이름으로 여러 메모리 구성이 판매된 경우 자동 확정하지 않습니다.</span>
+      </div>
+      <div class="dialog-actions">
+        <button class="button button-primary" id="applyDetectionButton" type="button">탐지값 적용</button>
+        <button class="button" value="cancel">닫기</button>
+      </div>
+    </form>
+  </dialog>
+
+  <noscript>
+    <div class="noscript">이 계산기는 JavaScript가 필요합니다. 모든 계산은 로컬 브라우저에서만 실행됩니다.</div>
+  </noscript>
+</body>
+</html>
