@@ -24,8 +24,6 @@
 
 정적 계산기 소스는 [`tools/memory-calculator/`](./tools/memory-calculator/)에 있다.
 
-GitHub Pages 배포 후 계산기 주소는 일반적으로 다음 형식이다.
-
 ```text
 https://jtech-co.github.io/RAM-for-Local-AI/tools/memory-calculator/
 ```
