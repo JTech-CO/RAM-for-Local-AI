@@ -14,7 +14,7 @@
 
 > **문서 스냅샷:** 2026-07-20~2026-07-21 KST에 검증된 모델·런타임 정보를 기준으로 한다. 모델 파일, 라이선스, 런타임 API와 하드웨어 지원표는 변경될 수 있으므로 실제 다운로드와 배포 직전에 공식 저장소를 다시 확인해야 한다.
 
-[바로 시작](#바로-시작하기) · [메모리 계산기](#메모리-계산기) · [가이드 목록](#가이드-목록) · [계산 원칙](#이-레포지토리의-계산-원칙) · [GitHub Pages](#github-pages-배포) · [기여](#업데이트와-기여)
+[바로 시작](#바로-시작하기) · [메모리 계산기](#메모리-계산기) · [가이드 목록](#가이드-목록) · [계산 원칙](#이-레포지토리의-계산-원칙) · [GitHub Pages](#github-pages-배포)
 
 ---
 
@@ -27,7 +27,7 @@
 GitHub Pages 배포 후 계산기 주소는 일반적으로 다음 형식이다.
 
 ```text
-https://<GitHub-ID>.github.io/RAM-for-Local-AI/tools/memory-calculator/
+https://jtech-co.github.io/RAM-for-Local-AI/tools/memory-calculator/
 ```
 
 로컬에서는 레포지토리 루트에서 간단한 정적 서버를 실행할 수 있다.
@@ -308,15 +308,13 @@ RAM-for-Local-AI/
 │       ├── fine-tuning-memory.md
 │       ├── serving-concurrency.md
 │       └── runtime-hardware.md
-├── tools/
-│   └── memory-calculator/
-│       ├── index.html
-│       ├── styles.css
-│       ├── catalog.js
-│       ├── app.js
-│       └── ...  # 정적 데이터·계산 보조 모듈
-├── local_ai_models_for_bug_bounty_cybersecurity_by_memory_2026-07.md
-└── local_ai_models_for_programming_math_science_research_by_memory_2026-07.md
+└── tools/
+    └── memory-calculator/
+        ├── index.html
+        ├── styles.css
+        ├── catalog.js
+        ├── app.js
+        └── ...  # 정적 데이터·계산 보조 모듈
 ```
 
 `guides/` 아래의 날짜 없는 파일을 최신 기준 경로로 사용한다. 루트의 날짜 포함 파일은 초기 스냅샷 보존과 기존 외부 링크 호환을 위한 것이다.
