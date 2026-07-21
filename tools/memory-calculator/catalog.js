@@ -3,60 +3,65 @@ window.RAMAI_CATALOG = {
   "schemaVersion": 1,
   "verified": "2026-07-21",
   "project": "RAM-for-Local-AI",
+  "repository": {
+    "url": "https://github.com/jtech-co/RAM-for-Local-AI",
+    "defaultBranch": "main",
+    "readmePath": "README.md"
+  },
   "guides": {
     "cybersecurity": {
       "label": "버그바운티·사이버보안",
-      "path": "../../local_ai_models_for_bug_bounty_cybersecurity_by_memory_2026-07.md",
+      "path": "guides/domains/cybersecurity.md",
       "group": "domains"
     },
     "programming-stem": {
       "label": "범용 프로그래밍·수학·과학",
-      "path": "../../local_ai_models_for_programming_math_science_research_by_memory_2026-07.md",
+      "path": "guides/domains/programming-stem.md",
       "group": "domains"
     },
     "productivity-rag": {
       "label": "생산성·문서·RAG",
-      "path": "../../guides/domains/productivity-rag.md",
+      "path": "guides/domains/productivity-rag.md",
       "group": "domains"
     },
     "data-analysis": {
       "label": "데이터 분석·BI·SQL",
-      "path": "../../guides/domains/data-analysis.md",
+      "path": "guides/domains/data-analysis.md",
       "group": "domains"
     },
     "vision-ocr": {
       "label": "비전·OCR·문서 이해",
-      "path": "../../guides/modalities/vision-ocr.md",
+      "path": "guides/modalities/vision-ocr.md",
       "group": "modalities"
     },
     "image-generation": {
       "label": "이미지 생성·편집",
-      "path": "../../guides/modalities/image-generation.md",
+      "path": "guides/modalities/image-generation.md",
       "group": "modalities"
     },
     "audio-speech": {
       "label": "오디오·음성",
-      "path": "../../guides/modalities/audio-speech.md",
+      "path": "guides/modalities/audio-speech.md",
       "group": "modalities"
     },
     "quantization": {
       "label": "양자화",
-      "path": "../../guides/operations/quantization.md",
+      "path": "guides/operations/quantization.md",
       "group": "operations"
     },
     "fine-tuning-memory": {
       "label": "파인튜닝 메모리",
-      "path": "../../guides/operations/fine-tuning-memory.md",
+      "path": "guides/operations/fine-tuning-memory.md",
       "group": "operations"
     },
     "serving-concurrency": {
       "label": "서빙·동시성",
-      "path": "../../guides/operations/serving-concurrency.md",
+      "path": "guides/operations/serving-concurrency.md",
       "group": "operations"
     },
     "runtime-hardware": {
       "label": "런타임·하드웨어",
-      "path": "../../guides/operations/runtime-hardware.md",
+      "path": "guides/operations/runtime-hardware.md",
       "group": "operations"
     }
   },

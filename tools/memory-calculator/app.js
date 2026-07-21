@@ -11,9 +11,70 @@
   const form = $("calculatorForm");
   const modelById = new Map(catalog.models.map((model) => [model.id, model]));
   const guideById = catalog.guides;
+  const repository = catalog.repository || {};
   const runtimeById = new Map(catalog.runtimes.map((runtime) => [runtime.id, runtime]));
   const quantById = catalog.quantizations;
   const storageKey = `ram-for-local-ai-memory-calculator-v${catalog.schemaVersion}`;
+
+  function normalizeRepositoryPath(path) {
+    return String(path || "")
+      .trim()
+      .replace(/\\/g, "/")
+      .replace(/^(?:\.\/)+/, "")
+      .replace(/^(?:\.\.\/)+/, "")
+      .replace(/^\/+/, "");
+  }
+
+  function inferRepositoryUrl() {
+    const pagesMatch = window.location.hostname.match(/^([^.]+)\.github\.io$/i);
+    const pathSegments = window.location.pathname.split("/").filter(Boolean);
+    if (pagesMatch && pathSegments.length > 0) {
+      return `https://github.com/${pagesMatch[1]}/${pathSegments[0]}`;
+    }
+    return String(repository.url || "").replace(/\/+$/, "");
+  }
+
+  const repositoryUrl = inferRepositoryUrl();
+  const repositoryBranch = String(repository.defaultBranch || repository.branch || "main");
+
+  function repositoryFileUrl(path) {
+    const value = String(path || "").trim();
+    if (/^https?:\/\//i.test(value)) return value;
+
+    const normalized = normalizeRepositoryPath(value);
+    if (!normalized) return repositoryUrl || "#";
+
+    if (repositoryUrl) {
+      const encodedPath = normalized
+        .split("/")
+        .filter(Boolean)
+        .map((segment) => encodeURIComponent(segment))
+        .join("/");
+      return `${repositoryUrl}/blob/${encodeURIComponent(repositoryBranch)}/${encodedPath}`;
+    }
+
+    return new URL(`../../${normalized}`, window.location.href).href;
+  }
+
+  function repositoryReadmeUrl() {
+    if (repositoryUrl) return `${repositoryUrl}#readme`;
+    const readmePath = normalizeRepositoryPath(repository.readmePath || "README.md");
+    return new URL(`../../${readmePath}`, window.location.href).href;
+  }
+
+  function markExternalLink(anchor, href) {
+    if (!href || !/^https?:\/\//i.test(href)) return;
+    anchor.target = "_blank";
+    anchor.rel = "noopener noreferrer";
+  }
+
+  function applyRepositoryLinks() {
+    const readmeLink = $("repositoryReadmeLink");
+    if (!readmeLink) return;
+    const href = repositoryReadmeUrl();
+    readmeLink.href = href;
+    markExternalLink(readmeLink, href);
+  }
 
   const defaultModelByTask = {
     "security-triage": "foundation-sec-8b",
@@ -1013,11 +1074,11 @@
     const links = [];
     if (estimate.model.hf) links.push({ label: "Hugging Face", href: estimate.model.hf });
     const modelGuide = guideById[estimate.model.guide];
-    if (modelGuide) links.push({ label: modelGuide.label, href: modelGuide.path });
-    links.push({ label: "양자화 가이드", href: guideById.quantization.path });
-    if (estimate.config.operation === "fine-tuning") links.push({ label: "파인튜닝 가이드", href: guideById["fine-tuning-memory"].path });
-    if (estimate.config.operation === "serving") links.push({ label: "서빙 가이드", href: guideById["serving-concurrency"].path });
-    links.push({ label: "런타임·하드웨어", href: guideById["runtime-hardware"].path });
+    if (modelGuide) links.push({ label: modelGuide.label, href: repositoryFileUrl(modelGuide.path) });
+    links.push({ label: "양자화 가이드", href: repositoryFileUrl(guideById.quantization.path) });
+    if (estimate.config.operation === "fine-tuning") links.push({ label: "파인튜닝 가이드", href: repositoryFileUrl(guideById["fine-tuning-memory"].path) });
+    if (estimate.config.operation === "serving") links.push({ label: "서빙 가이드", href: repositoryFileUrl(guideById["serving-concurrency"].path) });
+    links.push({ label: "런타임·하드웨어", href: repositoryFileUrl(guideById["runtime-hardware"].path) });
 
     for (const link of links) {
       const anchor = document.createElement("a");
@@ -1159,8 +1220,12 @@
     grid.replaceChildren();
     for (const [id, guide] of Object.entries(guideById)) {
       const anchor = document.createElement("a");
+      const href = repositoryFileUrl(guide.path);
       anchor.className = "guide-card";
-      anchor.href = guide.path;
+      anchor.href = href;
+      markExternalLink(anchor, href);
+      anchor.dataset.guideId = id;
+      anchor.setAttribute("aria-label", `${guide.label} 가이드를 GitHub에서 열기`);
       const group = document.createElement("span");
       group.textContent = groupLabels[guide.group] || guide.group;
       const title = document.createElement("strong");
@@ -1624,6 +1689,7 @@ rocm-smi --showproductname --showmeminfo vram`;
     if (saved) applyState(saved);
     updateConditionalPanels();
     updateModelMeta();
+    applyRepositoryLinks();
     renderGuides();
     bindEvents();
     calculateAndRender();
