@@ -265,10 +265,10 @@ Q4 또는 하드웨어가 잘 지원하는 4-bit 형식
 
 ---
 
-## 레포지토리 구조 (이미지는 제외)
+## 레포지토리 구조 
 
 ```text
-RAM-for-Local-AI/
+RAM-for-Local-AI/ # 이미지는 제외함
 ├── README.md
 ├── guides/
 │   ├── domains/
