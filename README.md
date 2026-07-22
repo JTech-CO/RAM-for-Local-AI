@@ -4,6 +4,8 @@
 
 **[웹 메모리 계산기 열기](https://jtech-co.github.io/RAM-for-Local-AI/tools/memory-calculator/)** · [가이드 목록](#가이드-목록) · [작업별 시작 경로](#작업별-시작-경로) · [계산 원칙](#메모리-계산-원칙)
 
+<img src="https://raw.githubusercontent.com/JTech-CO/RAM-for-Local-AI/refs/heads/main/images/logo.png" width="50%" alt="logo">
+
 ---
 
 ## 개요
