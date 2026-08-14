@@ -3,10 +3,10 @@
 
 [← 메인 README](../../README.md) · [비전·OCR](./vision-ocr.md) · [이미지 생성](./image-generation.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md)
 
-> **최종 검증일:** 2026-07-21 (KST)
-> **주요 실행 형식:** PyTorch·Transformers, NeMo, `qwen-asr`, `qwen-tts`, CTranslate2·`faster-whisper`, GGML·`whisper.cpp`, vLLM·vLLM-Omni, ONNX Runtime, ExecuTorch, MLX
+> **최종 검증일:** 2026-08-13 (KST)
+> **주요 실행 형식:** PyTorch·Transformers, NeMo, `qwen-asr`, `qwen-tts`, CTranslate2·`faster-whisper`, GGML·`whisper.cpp`·`audio.cpp`, vLLM·vLLM-Omni, ONNX Runtime, ExecuTorch, MLX
 > **범위:** 오프라인·스트리밍 ASR, 자막·타임스탬프, VAD·화자 분리, 음성 번역, TTS·보이스 클로닝·voice design, 오디오 질의응답·캡셔닝, 음성 대화, 노이즈 제거·소스 분리, 로컬 서비스 운영
-> **관련 문서:** [양자화](../operations/quantization.md) (예정) · [파인튜닝 메모리](../operations/fine-tuning-memory.md) (예정) · [서빙·동시성](../operations/serving-concurrency.md) (예정) · [런타임·하드웨어](../operations/runtime-hardware.md) (예정)
+> **관련 문서:** [양자화](../operations/quantization.md) · [파인튜닝 메모리](../operations/fine-tuning-memory.md) · [서빙·동시성](../operations/serving-concurrency.md) · [런타임·하드웨어](../operations/runtime-hardware.md)
 
 이 문서는 보유한 **시스템 RAM**, **GPU VRAM**, 또는 **Apple Silicon 통합 메모리**를 기준으로 로컬 오디오·음성 모델과 파이프라인을 선택하기 위한 실전 가이드다. 단순 녹취뿐 아니라 회의 실시간 자막, 화자별 회의록, 단어 타임스탬프, 음성 번역, TTS·보이스 클로닝, 환경음·음악 이해, end-to-end 음성 대화까지 다룬다.
 
@@ -27,7 +27,7 @@
 
 또한 음성 모델의 양자화 명칭은 LLM과 다르다. `Q2_K`, `Q3_K_M`, `Q4_K_M`은 주로 GGUF·LLM backbone에서 사용되고, ASR·TTS에서는 BF16/FP16, FP8, CTranslate2 INT8, ONNX INT8, NeMo/TensorRT, MLX 4-bit·8-bit, `whisper.cpp`의 `q5_0`·`q8_0`이 더 흔하다. **Q4 파일이 존재한다는 이유만으로 audio encoder, speaker encoder, codec, vocoder까지 안전하게 양자화되었다고 가정하면 안 된다.**
 
-모델 카드·가중치·라이선스·런타임 지원은 계속 바뀐다. 아래 값은 2026-07-21에 확인한 대표값이며, 다운로드 직전 Hugging Face에서 **정확한 파일명, 총 다운로드 크기, 중복 형식, gated access, revision, 라이선스, 지원 언어와 현재 runtime 요구사항**을 다시 확인한다.
+모델 카드·가중치·라이선스·런타임 지원은 계속 바뀐다. 아래 값은 2026-08-13에 확인한 대표값이며, 다운로드 직전 Hugging Face에서 **정확한 파일명, 총 다운로드 크기, 중복 형식, gated access, revision, 라이선스, 지원 언어와 현재 runtime 요구사항**을 다시 확인한다.
 
 > **핵심 원칙:** 먼저 VAD·ASR·TTS를 각각 독립 평가하고, 필요한 경우에만 화자 분리·번역·LLM·voice cloning을 추가한다. 낮은 메모리에서는 모델 정밀도보다 동시 스트림, batch, 오디오 길이, `max_model_len`, TTS 생성 길이를 먼저 줄인다. 보이스 클로닝은 반드시 화자의 명시적 동의와 사용 권한을 확인한다.
 
@@ -374,7 +374,7 @@ LLM은 대부분 transformer weight가 메모리의 중심이지만, 오디오 �
 
 ### 4.4 `whisper.cpp` 대표 파일 크기
 
-[`ggerganov/whisper.cpp`](https://huggingface.co/ggerganov/whisper.cpp/tree/main)의 대표 배포값이다. 파일 목록은 변경될 수 있으므로 직접 확인한다.
+[`ggerganov/whisper.cpp`](https://huggingface.co/ggerganov/whisper.cpp/tree/main)의 대표 배포값이다. GitHub 저장소는 ggml-org 조직으로 이전되었으나 GGML 가중치를 배포하는 Hugging Face 저장소는 `ggerganov/whisper.cpp`를 유지한다. 파일 목록은 변경될 수 있으므로 직접 확인한다.
 
 | Whisper 모델 | F16/원본 GGML | `q5_0` | `q8_0` | 권장 장착 RAM·통합 메모리 |
 |---|---:|---:|---:|---:|
@@ -481,7 +481,7 @@ streaming speech output 지원 상태
 | **Parakeet Unified EN 0.6B** | `.nemo` 약 **2.47 GB** | 영어, offline·streaming 단일 RNN-T, punctuation·capitalization | native unified | 6–8 GB | [모델](https://huggingface.co/nvidia/parakeet-unified-en-0.6b) |
 | **Parakeet TDT 0.6B v3** | one-format 약 **2.51 GB**, repo 약 5.02 GB | 25개 유럽 언어, auto language detection, 고처리량 | 주로 offline/high-throughput | 6–8 GB | [모델](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) |
 | **Voxtral Mini 4B Realtime 2602** | one weight 약 **8.86 GB**, repo 약 17.7 GB | 13개 benchmark 언어에 한국어 포함, configurable delay, 긴 session | native realtime | **16 GB 공식 최소선** | [모델](https://huggingface.co/mistralai/Voxtral-Mini-4B-Realtime-2602) |
-| **Whisper large-v3-turbo** | Transformers 약 1.6 GB대, GGML Q5 약 574 MB | 광범위한 다국어, 성숙한 runtime·도구 | offline; sliding-window pseudo streaming | 4–8 GB | [원본](https://huggingface.co/openai/whisper-large-v3-turbo) · [CTranslate2](https://huggingface.co/Systran/faster-whisper-large-v3-turbo) · [GGML](https://huggingface.co/ggerganov/whisper.cpp) |
+| **Whisper large-v3-turbo** | Transformers 약 1.6 GB대, GGML Q5 약 574 MB | 광범위한 다국어, 성숙한 runtime·도구 | offline; sliding-window pseudo streaming | 4–8 GB | [원본](https://huggingface.co/openai/whisper-large-v3-turbo) · [CTranslate2](https://huggingface.co/deepdml/faster-whisper-large-v3-turbo-ct2) · [GGML](https://huggingface.co/ggerganov/whisper.cpp) |
 | **Canary 1B v2** | 1B급 | 25개 중심 언어의 ASR와 speech-to-text translation | offline/batch 중심 | 8–12 GB | [모델](https://huggingface.co/nvidia/canary-1b-v2) |
 | **SenseVoiceSmall** | 약 234M급 | ASR + language ID + speech emotion + audio event, 경량 다기능 | offline 중심 | 4–6 GB | [모델](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) |
 | **Omnilingual ASR** | 7B encoder 계열 | 1,600개 이상 언어 연구, few-shot 확장 | 연구·batch 중심 | 24 GB 이상부터 실측 | [공식 저장소](https://github.com/facebookresearch/omnilingual-asr) |
@@ -582,7 +582,20 @@ Meta Omnilingual ASR 프로젝트는 1,600개 이상의 언어를 목표로 하�
 
 일반적인 한국어·영어 회의 녹취에서는 Qwen3-ASR, Whisper, Nemotron과 같은 작은 전문 모델이 더 단순하고 효율적일 수 있다.
 
-### 6.8 모델 선택용 최소 평가셋
+### 6.8 2026년 공개된 추가 ASR 후보
+
+2026년 상반기에 Open ASR Leaderboard 상위권에 새 공개 모델이 다수 진입했다. 아래는 한국어를 지원 언어에 포함하는 대표 후보다 (2026-08-13 확인). 기존 기준선(Qwen3-ASR·Whisper)과 같은 평가셋에서 비교한 뒤 교체를 판단한다.
+
+| 모델 | 규모 | 언어·특징 | 라이선스 | Hugging Face |
+|---|---|---|---|---|
+| **ARK-ASR-3B** | 3B | 18개 언어에 한국어 포함, Open ASR Leaderboard 영어 WER 최상위권 | Apache 2.0 | [모델](https://huggingface.co/Audio8/ARK-ASR-3B) |
+| **Cohere Transcribe (03-2026)** | 2B | 14개 언어에 한국어 포함 | Apache 2.0 | [모델](https://huggingface.co/CohereLabs/cohere-transcribe-03-2026) |
+
+표의 규모는 Hugging Face 태그와 공개 자료 표기를 옮긴 값이므로, 정밀 파라미터 수는 각 모델 카드에서 재확인한다.
+
+CPU 전용 추론을 노리는 VibeVoice-ASR-BitNet은 [8.4 경량 대안](#84-경량-대안)에서 다룬다.
+
+### 6.9 모델 선택용 최소 평가셋
 
 언어별로 최소 다음을 포함한다.
 
@@ -748,6 +761,8 @@ metrics:
 | Core ML | Core ML | Apple on-device deployment | iOS·macOS product |
 | ONNX Runtime | ONNX INT8/FP16 | cross-platform, execution provider | Windows·Intel·edge |
 
+`whisper.cpp`는 저장소가 ggml-org 조직(`ggml-org/whisper.cpp`)으로 이전되었고, v1.9.0(2026-06)부터 Whisper 외에 **NVIDIA Parakeet 모델 지원**이 추가되었다. v1.9.2(2026-08-04)는 CJK 언어의 발화 길이 계산을 UTF-8 기준으로 수정해 한국어 세그먼트 처리가 개선되었고, VAD 사용 시 토큰 타임스탬프를 원본 오디오에 매핑하는 문제 수정과 VAD 세그먼트 API 노출이 포함되었다. 한국어 자막·타임스탬프 용도라면 v1.9.2 이상을 사용한다. 한편 `faster-whisper`는 v1.2.1(2025-10) 이후 릴리스가 없는 상태다(2026-08-13 기준).
+
 ### 8.3 `faster-whisper` compute type
 
 대표 선택:
@@ -765,7 +780,8 @@ backend와 hardware에 따라 지원 compute type이 다르므로 `ctranslate2.g
 
 | 모델·도구 | 용도 | 메모리 관점 | 링크 |
 |---|---|---|---|
-| Moonshine | 짧은 발화·edge ASR | 작은 streaming/utterance 모델 | [프로젝트](https://github.com/usefulsensors/moonshine) |
+| Moonshine — Moonshine AI (구 UsefulSensors) | 짧은 발화·edge ASR; `-ko` 한국어 전용 체크포인트 제공 | 작은 streaming/utterance 모델 | [프로젝트](https://github.com/moonshine-ai/moonshine) · [tiny-ko](https://huggingface.co/moonshine-ai/moonshine-tiny-ko) · [base-ko](https://huggingface.co/moonshine-ai/moonshine-base-ko) |
+| VibeVoice-ASR-BitNet | 장시간 ASR의 CPU 전용 추론(BitNet 양자화), 한국어 포함 7개 언어, MIT | 약 2.8B급이지만 GGUF/GGML 동봉으로 CPU 타깃 | [모델](https://huggingface.co/microsoft/VibeVoice-ASR-BitNet) |
 | sherpa-onnx | ASR·TTS·VAD·KWS cross-platform runtime | ONNX와 모바일·embedded 배포 | [프로젝트](https://github.com/k2-fsa/sherpa-onnx) |
 | Vosk | 전통적 offline ASR | 작은 CPU 모델·낮은 요구량 | [프로젝트](https://github.com/alphacep/vosk-api) |
 | SenseVoiceSmall | ASR+emotion+audio event | 4–6 GB급 다기능 | [모델](https://huggingface.co/FunAudioLLM/SenseVoiceSmall) |
@@ -797,6 +813,16 @@ RTF 2.00 → 1시간 audio에 2시간 필요
 ```
 
 batch worker 수를 늘릴 때는 각 worker의 모델 복제 메모리와 storage I/O를 포함한다.
+
+### 8.7 GGML 통합 오디오 런타임: `audio.cpp`와 llama.cpp 오디오 입력
+
+[`audio.cpp`](https://github.com/0xShug0/audio.cpp)는 2026년 등장한 순수 C++/GGML 통합 오디오 추론 엔진으로, "오디오판 llama.cpp"를 표방한다. Python 의존성 없이 TTS·ASR·VAD·화자 분리·voice conversion·음악 생성·코덱을 하나의 런타임에서 다루며, CUDA·HIP(ROCm)·Vulkan·Metal·CPU 백엔드를 지원한다.
+
+- v0.5(2026-07-31) 기준 **44개 모델 패밀리** 지원: TTS는 Qwen3-TTS·IndexTTS2·VibeVoice·Chatterbox·Fish S2 Pro·MOSS-TTS·OmniVoice 등, ASR는 Nemotron 3.5·Qwen3-ASR·Parakeet-TDT·SenseVoice·Fun-ASR-Nano·Voxtral Realtime 등, diarization은 Sortformer 계열이다. 지원 목록은 릴리스마다 바뀌므로 저장소 README에서 확인한다.
+- FunAudioLLM이 이 런타임을 타깃으로 **공식 GGUF**를 발행하기 시작했다: [Fun-ASR-Nano-2512-GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512-GGUF)(2026-07-29, f16/q8_0; 라이선스가 원본 Apache 2.0과 달리 funasr-model-license-1.1로 표기되므로 주의)와 [SenseVoiceSmall-GGUF-audiocpp](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF-audiocpp)(2026-08-12, Apache 2.0, 한국어 포함 5개 언어).
+- 신생 프로젝트이므로 모델별 양자화 품질·스트리밍 기능·API 안정성은 `whisper.cpp`·NeMo 같은 성숙 경로와 같은 평가셋에서 비교한 뒤 채택한다.
+
+llama.cpp도 libmtmd 기반 오디오 입력을 확대해, 기존 Ultravox·Qwen2-Audio·Voxtral·Qwen2.5-Omni에 더해 **Qwen3-ASR, Qwen3-Omni, Gemma 4 오디오 입력**을 지원한다. LLM과 오디오 이해를 GGUF 하나의 스택으로 통합하려는 저메모리 환경에서 유효한 선택지다.
 
 ---
 
@@ -1054,12 +1080,17 @@ Kokoro는 작은 CPU·edge TTS의 기준선이다.
 | 모델 | 주 용도 | 링크 |
 |---|---|---|
 | F5-TTS | flow-matching zero-shot TTS·연구 | [Hugging Face](https://huggingface.co/SWivid/F5-TTS) · [GitHub](https://github.com/SWivid/F5-TTS) |
-| IndexTTS2 | expressive·emotion·duration control | [Hugging Face](https://huggingface.co/IndexTeam/IndexTTS-2) |
+| IndexTTS2 · IndexTTS-2.5 | expressive·emotion·duration control; 2.5(2026-08-10)는 ja/es/ar 추가·RTF 약 2.28배 개선·vLLM 배포 지원, **한국어 미지원**, 자체 라이선스(other) | [IndexTTS-2](https://huggingface.co/IndexTeam/IndexTTS-2) · [IndexTTS-2.5](https://huggingface.co/IndexTeam/IndexTTS-2.5) |
+| Supertonic-3 | 한국 기업 수퍼톤의 온디바이스급 경량 TTS(약 300 MB급), 31개 언어에 **한국어 포함**, OpenRAIL | [Hugging Face](https://huggingface.co/Supertone/supertonic-3) |
+| VoxCPM2 | 39개 언어에 **한국어 포함** zero-shot TTS, Apache 2.0 | [Hugging Face](https://huggingface.co/openbmb/VoxCPM2) |
+| MOSS-TTS | v1.5 기준 31개 언어에 **한국어 포함**, Nano-100M·Realtime 파생 제공, Apache 2.0(버전별 가중치 저장소 ID는 다운로드 전 확인) | [Hugging Face](https://huggingface.co/OpenMOSS-Team/MOSS-TTS) |
 | Fish Speech / OpenAudio | 고품질 multilingual TTS·codec 연구 | [공식 organization](https://huggingface.co/fishaudio) |
 | Dia 1.6B | 다화자 dialogue generation | [Hugging Face](https://huggingface.co/nari-labs/Dia-1.6B) |
 | Spark-TTS 0.5B | controllable TTS·voice conversion | [Hugging Face](https://huggingface.co/SparkAudio/Spark-TTS-0.5B) |
 | OpenVoice V2 | tone-color transfer·cross-lingual clone | [Hugging Face](https://huggingface.co/myshell-ai/OpenVoiceV2) |
 | Seed-VC | zero-shot voice conversion | [GitHub](https://github.com/Plachtaa/seed-vc) |
+
+한국어 TTS 선택지는 기존 Qwen3-TTS·Chatterbox V3·CosyVoice3에 더해 Supertonic·VoxCPM2·MOSS-TTS 계열이 추가되었다. 같은 한국어 문장·같은 reference로 intelligibility와 speaker similarity를 직접 비교한 뒤 선택한다.
 
 ### 10.9 TTS에서 “모델 크기”보다 중요한 항목
 
@@ -1197,7 +1228,7 @@ spoofing risk
 
 ### 11.7 fine-tuning 메모리 빠른 기준
 
-상세 내용은 [파인튜닝 메모리](../operations/fine-tuning-memory.md) (예정)에서 다룬다. TTS fine-tuning은 단순 LLM LoRA보다 복잡할 수 있다.
+상세 내용은 [파인튜닝 메모리](../operations/fine-tuning-memory.md)에서 다룬다. TTS fine-tuning은 단순 LLM LoRA보다 복잡할 수 있다.
 
 ```text
 trainable language/acoustic model
@@ -1400,7 +1431,7 @@ ASR transcript만 LLM에 넣으면 비언어 정보가 사라진다. 반대로 �
 | LAION CLAP | audio-text embedding, zero-shot sound classification·retrieval | [Hugging Face](https://huggingface.co/laion/clap-htsat-unfused) |
 | Microsoft BEATs | general audio representation·classification | [GitHub](https://github.com/microsoft/unilm/tree/master/beats) |
 | PANNs | audio tagging·sound event baseline | [GitHub](https://github.com/qiuqiangkong/audioset_tagging_cnn) |
-| YAMNet | 경량 AudioSet event classification | [TensorFlow Hub](https://tfhub.dev/google/yamnet/1) |
+| YAMNet | 경량 AudioSet event classification | [Kaggle Models](https://www.kaggle.com/models/google/yamnet) |
 | CLMR·music encoders | music similarity·retrieval | task별 checkpoint 검증 |
 
 오디오 검색은 다음처럼 구성할 수 있다.
@@ -2167,11 +2198,11 @@ hf download mistralai/Voxtral-Mini-4B-Realtime-2602 \
 ```bash
 mkdir -p models/whisper
 
-hf download ggerganov/whisper.cpp \
+hf download ggml-org/whisper.cpp \
   ggml-large-v3-turbo-q5_0.bin \
   --local-dir models/whisper
 
-hf download ggerganov/whisper.cpp \
+hf download ggml-org/whisper.cpp \
   ggml-large-v3-turbo-q8_0.bin \
   --local-dir models/whisper
 ```
@@ -3136,7 +3167,7 @@ fine-tuned 모델은 base 대비 다음을 모두 비교한다.
 - peak memory·RTF
 - license·consent audit
 
-관련 운영 문서: [파인튜닝 메모리 가이드](../operations/fine-tuning-memory.md) **(예정)**.
+관련 운영 문서: [파인튜닝 메모리 가이드](../operations/fine-tuning-memory.md).
 
 ---
 
@@ -3795,7 +3826,7 @@ append가 아니라 revision replace를 사용한다.
 
 ## 26. 주요 출처와 저장소
 
-최종 검증일: **2026-07-21 KST**. 모델 파일·라이선스·runtime은 변경될 수 있으므로 다운로드 전에 현재 페이지를 다시 확인한다.
+최종 검증일: **2026-08-13 KST**. 모델 파일·라이선스·runtime은 변경될 수 있으므로 다운로드 전에 현재 페이지를 다시 확인한다.
 
 ### 26.1 ASR·강제 정렬
 
@@ -3815,9 +3846,14 @@ append가 아니라 revision replace를 사용한다.
 - [Fun-ASR Nano 2512](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512)
 - [Fun-ASR MLT Nano 2512](https://huggingface.co/FunAudioLLM/Fun-ASR-MLT-Nano-2512)
 - [Fun-ASR Nano GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-GGUF)
-- [Moonshine Tiny Korean](https://huggingface.co/UsefulSensors/moonshine-tiny-ko)
-- [Moonshine Base Korean](https://huggingface.co/UsefulSensors/moonshine-base-ko)
-- [Moonshine Streaming models](https://huggingface.co/UsefulSensors)
+- [Fun-ASR Nano 2512 GGUF (audio.cpp)](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512-GGUF)
+- [SenseVoiceSmall GGUF (audio.cpp)](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF-audiocpp)
+- [ARK-ASR-3B](https://huggingface.co/Audio8/ARK-ASR-3B)
+- [Cohere Transcribe 03-2026](https://huggingface.co/CohereLabs/cohere-transcribe-03-2026)
+- [VibeVoice-ASR-BitNet](https://huggingface.co/microsoft/VibeVoice-ASR-BitNet)
+- [Moonshine Tiny Korean](https://huggingface.co/moonshine-ai/moonshine-tiny-ko)
+- [Moonshine Base Korean](https://huggingface.co/moonshine-ai/moonshine-base-ko)
+- [Moonshine AI (구 UsefulSensors) 모델 목록](https://huggingface.co/moonshine-ai)
 - [Kyutai STT 1B EN/FR](https://huggingface.co/kyutai/stt-1b-en_fr)
 
 ### 26.2 화자 분리·VAD·복원
@@ -3853,6 +3889,10 @@ append가 아니라 revision replace를 사용한다.
 - [CosyVoice GitHub](https://github.com/FunAudioLLM/CosyVoice)
 - [F5-TTS](https://huggingface.co/SWivid/F5-TTS)
 - [IndexTTS-2](https://huggingface.co/IndexTeam/IndexTTS-2)
+- [IndexTTS-2.5](https://huggingface.co/IndexTeam/IndexTTS-2.5)
+- [Supertonic-3](https://huggingface.co/Supertone/supertonic-3)
+- [VoxCPM2](https://huggingface.co/openbmb/VoxCPM2)
+- [MOSS-TTS](https://huggingface.co/OpenMOSS-Team/MOSS-TTS)
 - [Dia 1.6B](https://huggingface.co/nari-labs/Dia-1.6B)
 - [VibeVoice 1.5B](https://huggingface.co/microsoft/VibeVoice-1.5B)
 - [Piper voices](https://huggingface.co/rhasspy/piper-voices)
@@ -3873,6 +3913,7 @@ append가 아니라 revision replace를 사용한다.
 
 - [whisper.cpp](https://github.com/ggml-org/whisper.cpp)
 - [whisper.cpp models](https://huggingface.co/ggerganov/whisper.cpp)
+- [audio.cpp](https://github.com/0xShug0/audio.cpp)
 - [faster-whisper](https://github.com/SYSTRAN/faster-whisper)
 - [sherpa-onnx](https://github.com/k2-fsa/sherpa-onnx)
 - [NVIDIA NeMo](https://github.com/NVIDIA/NeMo)
@@ -3888,10 +3929,10 @@ append가 아니라 revision replace를 사용한다.
 - [데이터 분석](../domains/data-analysis.md)
 - [비전·OCR](vision-ocr.md)
 - [이미지 생성](image-generation.md)
-- [양자화](../operations/quantization.md) **(예정)**
-- [파인튜닝 메모리](../operations/fine-tuning-memory.md) **(예정)**
-- [서빙·동시성](../operations/serving-concurrency.md) **(예정)**
-- [runtime·하드웨어](../operations/runtime-hardware.md) **(예정)**
+- [양자화](../operations/quantization.md)
+- [파인튜닝 메모리](../operations/fine-tuning-memory.md)
+- [서빙·동시성](../operations/serving-concurrency.md)
+- [runtime·하드웨어](../operations/runtime-hardware.md)
 
 ---
 

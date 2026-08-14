@@ -3,16 +3,16 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md)
 
-> **최종 검증일:** 2026-07-21 (KST)
+> **최종 검증일:** 2026-08-13 (KST)
 > **주요 실행 형식:** GGUF + `llama.cpp`, Transformers, vLLM/SGLang, PaddleOCR, Docling 및 고전 OCR 엔진
 > **범위:** 이미지 OCR, 스캔 PDF, 문서 레이아웃 복원, 표·수식·차트·스크린샷 이해, 구조화 추출, 다국어 OCR, 문서 RAG 전처리
-> **관련 문서:** [양자화](../operations/quantization.md) (예정) · [런타임·하드웨어](../operations/runtime-hardware.md) (예정) · [이미지 생성](./image-generation.md) (예정)
+> **관련 문서:** [양자화](../operations/quantization.md) · [런타임·하드웨어](../operations/runtime-hardware.md) · [이미지 생성](./image-generation.md)
 
 이 문서는 보유한 **시스템 RAM**, **GPU VRAM**, 또는 **Apple Silicon 통합 메모리**만 알아도 로컬 비전·OCR 시스템을 고를 수 있도록 구성한 실전 가이드다. 단순 텍스트 인식뿐 아니라 PDF를 Markdown으로 복원하고, 표·수식·차트를 구조화하며, 화면 캡처·사진·문서 이미지에 대해 질의응답하는 작업까지 다룬다.
 
 비전 모델은 텍스트 LLM보다 메모리 계산이 복잡하다. GGUF 기반 멀티모달 모델은 일반적으로 **언어 모델 본체**와 **vision projector 또는 `mmproj`**를 함께 로드한다. 여기에 PDF 렌더링 이미지, 이미지 디코딩 버퍼, vision encoder의 중간 텐서, visual token, 텍스트 KV 캐시, 출력 버퍼가 추가된다. 따라서 본체 GGUF 파일 하나의 크기만 보고 실행 가능 여부를 판단하면 안 된다.
 
-모델 저장소와 파일명은 계속 수정된다. 아래 크기는 2026-07-21에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, 본체와 projector의 조합, 총크기, revision, 라이선스와 현재 런타임 호환성**을 다시 확인한다.
+모델 저장소와 파일명은 계속 수정된다. 아래 크기는 2026-08-13에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, 본체와 projector의 조합, 총크기, revision, 라이선스와 현재 런타임 호환성**을 다시 확인한다.
 
 > **핵심 원칙:** 먼저 PDF의 기존 텍스트 레이어를 사용하고, 일반 OCR·레이아웃 분석으로 처리한 뒤, VLM은 어려운 페이지·표·차트·수식·사진 영역에 선택적으로 적용하는 하이브리드 파이프라인이 대개 가장 빠르고 정확하며 메모리 효율적이다.
 
@@ -396,12 +396,14 @@ PDF 입력
 
 ### 6.2 Gemma 4
 
-Gemma 4는 E2B, E4B, 12B, 26B-A4B, 31B 계열로 제공되는 멀티모달 모델이다. 문서·PDF, UI·화면, 차트, 다국어 OCR과 일반 이미지 이해를 하나의 모델로 처리하려는 경우 유용하다.
+Gemma 4는 E2B, E4B, 12B, 26B-A4B, 31B 계열로 제공되는 멀티모달 모델이다. E2B·E4B 모델 카드는 라이선스로 기존 Gemma 약관이 아니라 **Apache 2.0**을 명시하며, 12B·26B-A4B·31B는 저장소별 라이선스 표기를 개별 확인한다. 문서·PDF, UI·화면, 차트, 다국어 OCR과 일반 이미지 이해를 하나의 모델로 처리하려는 경우 유용하다. E2B·E4B·12B는 이미지뿐 아니라 오디오·비디오 입력까지 받는 any-to-any 계열이고, 26B-A4B와 31B는 image-text-to-text 계열이다.
 
 - **E2B Q4:** 8 GB급에서 범용 비전 기능을 시작하기 좋은 안전한 선택
 - **E4B Q4:** 8–12 GB급의 성능 중심 선택
 - **12B Q4:** 12–16 GB급에서 문서 QA와 차트 추론의 균형
 - **26B-A4B Q4:** 24 GB급에서 복잡한 시각·텍스트 추론
+- **31B:** 밀집 31B로 2026-08-13 기준 좋아요 수가 계열에서 가장 많은 비전 지원 SKU다(다운로드는 26B-A4B와 비슷한 수준이다). [원본](https://huggingface.co/google/gemma-4-31B-it)과 공식 QAT `q4_0` GGUF가 제공되며, 27B급 밀집 모델과 비슷한 32 GB급 메모리 구간부터 실측한다.
+- Google은 E2B/E4B/12B/26B-A4B/31B 각각에 공식 QAT `q4_0` GGUF 저장소(`gemma-4-*-it-qat-q4_0-gguf`)를 별도로 제공한다.
 - 공식 ggml 저장소의 현재 파일명은 `Q4_0`이므로 `Q4_K_M`을 추정하지 않는다.
 - `mmproj`와 선택적 MTP/draft 파일을 혼동하지 않는다. 첫 배치에서는 본체와 필수 projector만 사용한다.
 
@@ -429,6 +431,8 @@ Qwen3.6은 문서 OCR만을 위한 전용 모델이 아니라 일반 reasoning·
 
 24 GB에서 27B Q4 파일 합계는 약 19.7 GB라 매우 빠듯하다. 32 GB를 실용적 시작점으로 보고 8K 이하 컨텍스트와 한 이미지부터 측정한다.
 
+2026년 2월 이후 Qwen 메인라인(Qwen3.5, Qwen3.6)은 별도 VL 파생 없이 본체가 이미지·비디오 입력을 받는 네이티브 멀티모달로 공개되고 있다. 2026-08-13 기준 "Qwen3.5-VL" 같은 별도 VL 라인은 출시되지 않았으며, 전용 VL 라인으로는 Qwen3-VL 시리즈(공식 GGUF 제공)가 최신이다.
+
 ### 6.5 235B급 모델
 
 Qwen3-VL 235B-A22B Thinking의 Q4 본체만 약 142 GB다. “활성 22B”라는 이유로 22B 모델처럼 메모리 계산하면 안 된다. 전체 전문가 가중치, projector, KV, image token, 런타임과 OS를 고려한다.
@@ -447,6 +451,7 @@ Qwen3-VL 235B-A22B Thinking의 Q4 본체만 약 142 GB다. “활성 22B”라�
 | [SmolVLM 256M Instruct GGUF](https://huggingface.co/ggml-org/SmolVLM-256M-Instruct-GGUF) | 이미지 분류·caption·routing | 매우 작은 메모리 | 정밀 OCR과 복잡 표에는 부적합 | [저장소](https://huggingface.co/ggml-org/SmolVLM-256M-Instruct-GGUF) |
 | [SmolVLM 500M Instruct GGUF](https://huggingface.co/ggml-org/SmolVLM-500M-Instruct-GGUF) | 저사양 이미지 triage | CPU/4 GB 환경 | 긴 문서 구조 복원 한계 | [저장소](https://huggingface.co/ggml-org/SmolVLM-500M-Instruct-GGUF) |
 | [SmolVLM2 2.2B Instruct](https://huggingface.co/HuggingFaceTB/SmolVLM2-2.2B-Instruct) | 이미지·짧은 영상 이해 | 소형 멀티모달 | OCR 전용 모델이 아님 | [저장소](https://huggingface.co/HuggingFaceTB/SmolVLM2-2.2B-Instruct) |
+| [MiniCPM-V 4.6](https://huggingface.co/openbmb/MiniCPM-V-4.6) | 온디바이스 이미지 이해·OCR 보조 | 약 1.2–1.3B 온디바이스 멀티모달(Apache 2.0) | 복잡 문서 구조 복원은 전용 OCR 모델과 비교 | [GGUF](https://huggingface.co/ggml-org/MiniCPM-V-4.6-GGUF) |
 | [Qwen3.5 0.8B](https://huggingface.co/Qwen/Qwen3.5-0.8B) | 멀티모달 프로토타입·routing | 작은 통합 foundation model | 공식 로컬 projector·backend 상태를 배포 전 확인 | [원본](https://huggingface.co/Qwen/Qwen3.5-0.8B) |
 
 작은 범용 VLM은 “페이지가 표인가?”, “사진인가?”, “회전됐는가?”, “OCR 재처리가 필요한가?” 같은 routing에 유용하다. 중요한 문자 추출을 단독으로 맡기지 않는다.
@@ -499,6 +504,23 @@ llama-server -hf Qwen/Qwen3-VL-4B-Instruct-GGUF:Q4_K_M \
 - 규제가 있는 조직에서 라이선스와 모델 provenance를 명확히 관리하는 배포
 
 공식 원본은 Transformers·vLLM 계열 기준으로 먼저 평가한다. GGUF가 필요하면 변환 저장소의 이름만 보고 공식 지원으로 간주하지 말고 source SHA, projector, chat template와 결과를 검증한다. 3B 규모라도 BF16 원본과 vision encoder, 이미지 tensor, KV 캐시를 포함하면 4 GB가 아니라 **8–12 GB급**부터 실측하는 편이 안전하다.
+
+후속으로 [granite-vision-4.1-4b](https://huggingface.co/ibm-granite/granite-vision-4.1-4b)(2026-04 공개)가 나왔고 공식 GGUF(2026-06)도 제공된다. 기업 문서 용도라면 4.0 3B와 4.1 4B를 같은 평가셋에서 비교한다.
+
+### 6.9 2026년 신규 확인 VLM
+
+2026-08-13 검증에서 확인한 신규 범용 VLM이다. 표의 정확한 GGUF 파일 크기는 저장소마다 다르므로 `--dry-run`으로 확인한 뒤 메모리를 산정한다.
+
+| 모델 | 규모 | 라이선스 | 로컬 형식·특징 | 링크 |
+|---|---|---|---|---|
+| **Muse-Glimmer 30B** (Meta) | 밀집 29.6B + 비전 인코더 약 1.8–2B(소스별 상이) | Apache 2.0 | **공식 GGUF** 제공, 131K 컨텍스트, 100+ 언어, 에이전틱 VLM (2026-08 공개). Q4는 Qwen3.6 27B에 준하는 약 32 GB급(추정)부터 실측 | [원본](https://huggingface.co/meta-models/Muse-Glimmer-30B) · [GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) |
+| **LFM2.5-VL 3B** (Liquid AI) | 3.12B | LFM Open License v1.0 | **공식 GGUF** 동시 공개(저장소 ID는 원본 모델 카드에서 확인), 엣지 특화, 16개 언어 (2026-08 공개) | [원본](https://huggingface.co/LiquidAI/LFM2.5-VL-3B) |
+| **North Micro Vision Instruct** (Cohere Labs) | 2.48B | Apache 2.0 | native-resolution 입력, **한국어 포함 11개 언어** (2026-08 공개) | [원본](https://huggingface.co/CohereLabs/North-Micro-Vision-Instruct) |
+| **Mage-VL** (Microsoft) | 4.74B | Apache 2.0 | 이미지·비디오 이해, 스트리밍 지원 (2026-07 공개) | [원본](https://huggingface.co/microsoft/Mage-VL) |
+| **moondream3.1 9B-A2B** | 9B MoE(활성 2B) | moondream-model-license-1.0 | 활성 파라미터가 작은 시각 모델 (2026-06 공개); GGUF 존재는 미확인 | [원본](https://huggingface.co/moondream/moondream3.1-9B-A2B) |
+
+공식 GGUF를 모델과 동시에 배포하는 관행(Muse-Glimmer, LFM2.5-VL 등)이 자리 잡고 있어, 신규 모델도 커뮤니티 변환을 기다리지 않고 llama.cpp 계열에서 바로 실험할 수 있는 경우가 늘고 있다.
+
 ---
 
 ## 7. OCR·문서 파싱 전용 모델
@@ -507,21 +529,23 @@ llama-server -hf Qwen/Qwen3-VL-4B-Instruct-GGUF:Q4_K_M \
 
 | 모델 | 대략 규모 | 강점 | 대표 로컬 형식 | 권장 메모리 | 라이선스·주의 | Hugging Face |
 |---|---:|---|---|---:|---|---|
-| **GLM-OCR** | 약 1B | 텍스트·표·수식·구조화 추출, 작은 GGUF | 공식 GGUF Q8/F16 + mmproj | 4–6 GB | MIT; 공식 SDK pipeline과 단일 모델 실행의 결과가 다를 수 있음 | [원본](https://huggingface.co/zai-org/GLM-OCR) · [GGUF](https://huggingface.co/ggml-org/GLM-OCR-GGUF) |
+| **GLM-OCR** | 약 1.3B | 텍스트·표·수식·구조화 추출, 작은 GGUF | 공식 GGUF Q8/F16 + mmproj | 4–6 GB | MIT; 공식 SDK pipeline과 단일 모델 실행의 결과가 다를 수 있음 | [원본](https://huggingface.co/zai-org/GLM-OCR) · [GGUF](https://huggingface.co/ggml-org/GLM-OCR-GGUF) |
 | **PaddleOCR-VL 1.6** | 약 0.9–1B | 문서 parsing, 표·수식·차트·seal·spotting | 공식 GGUF + PaddleOCR pipeline | 4–8 GB | PaddleOCR 3.x API 사용; pipeline version 고정 | [원본](https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6) · [GGUF](https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6-GGUF) |
-| **HunyuanOCR 1.5** | 소형 end-to-end | parsing·spotting·KIE·번역·multi-image | 원본, 별도 GGUF 후보 | 4–8 GB부터 실측 | Tencent community license; GGUF가 1.5 revision인지 확인 | [원본](https://huggingface.co/tencent/HunyuanOCR) · [GGUF](https://huggingface.co/ggml-org/HunyuanOCR-GGUF) |
-| **LightOnOCR-2 1B** | 1B | 스캔·PDF·Markdown, bbox variant | Transformers/llama.cpp 지원 후보 | 4–8 GB | 모델별 prompt와 bbox variant 구분 | [base](https://huggingface.co/lightonai/LightOnOCR-2-1B-base) · [bbox](https://huggingface.co/lightonai/LightOnOCR-2-1B-bbox) |
-| **Unlimited-OCR** | 3B | one-shot long-horizon document parsing | 커뮤니티 GGUF Q2–Q8/BF16 + mmproj | 6–12 GB | 원본 MIT; GGUF는 커뮤니티 변환, revision 확인 | [원본](https://huggingface.co/baidu/Unlimited-OCR) · [GGUF](https://huggingface.co/sahilchachra/Unlimited-OCR-GGUF) |
-| **DeepSeek-OCR-2** | 3B급 | Markdown, grounding, 동적 crop | Transformers/vLLM/llama.cpp 지원 후보 | 8–16 GB | prompt·dynamic resolution 설정에 민감 | [원본](https://huggingface.co/deepseek-ai/DeepSeek-OCR-2) |
-| **Qianfan-OCR** | 4B | parsing·layout·chart·DocQA·KIE, 다국어 | Transformers/vLLM, quant 검색 | 12–24 GB | 벤더 benchmark는 자체 corpus에서 재검증 | [원본](https://huggingface.co/baidu/Qianfan-OCR) |
+| **HunyuanOCR 1.5** | 소형 end-to-end | parsing·spotting·KIE·번역·multi-image | 원본 + ggml 공식 GGUF | 4–8 GB부터 실측 | Tencent community license; GGUF가 1.5 revision인지 확인 | [원본](https://huggingface.co/tencent/HunyuanOCR) · [GGUF](https://huggingface.co/ggml-org/HunyuanOCR-GGUF) |
+| **LightOnOCR-2 1B** | 1B | 스캔·PDF·Markdown, bbox variant | Transformers + ggml 공식 GGUF | 4–8 GB | 모델별 prompt와 bbox variant 구분 | [base](https://huggingface.co/lightonai/LightOnOCR-2-1B-base) · [bbox](https://huggingface.co/lightonai/LightOnOCR-2-1B-bbox) · [GGUF](https://huggingface.co/ggml-org/LightOnOCR-2-1B-GGUF) |
+| **Nemotron-Parse 2.0** | 0.9B | OCR·layout·문서 파싱 VLM | Transformers | 4–8 GB부터 실측 | NVIDIA open model license | [원본](https://huggingface.co/nvidia/NVIDIA-Nemotron-Parse-2.0) |
+| **OvisOCR2** | 약 0.9B | Qwen3.5-0.8B 기반 경량 OCR | Transformers, 커뮤니티 GGUF·MLX | 4–8 GB부터 실측 | Apache 2.0; 배포 조직(ATH-MaaS) 정체는 확인 후 사용 | [원본](https://huggingface.co/ATH-MaaS/OvisOCR2) |
+| **Unlimited-OCR** | 3B | one-shot long-horizon document parsing | 커뮤니티 GGUF Q2–Q8/BF16 + mmproj | 6–12 GB | 원본 MIT; 공식 GGUF 없음, 커뮤니티 변환 revision 확인 | [원본](https://huggingface.co/baidu/Unlimited-OCR) · [GGUF](https://huggingface.co/sahilchachra/Unlimited-OCR-GGUF) |
+| **DeepSeek-OCR-2** | 3B급 MoE | Markdown, grounding, 동적 crop | Transformers/vLLM; llama.cpp는 DeepSeek-OCR 계열 공식 지원 | 8–16 GB | prompt·dynamic resolution 설정에 민감; ggml GGUF의 대응 revision 확인 | [원본](https://huggingface.co/deepseek-ai/DeepSeek-OCR-2) |
+| **Qianfan-OCR** | 4B | parsing·layout·chart·DocQA·KIE, 다국어 | Transformers/vLLM + ggml 공식 GGUF | 12–24 GB | 벤더 benchmark는 자체 corpus에서 재검증 | [원본](https://huggingface.co/baidu/Qianfan-OCR) · [GGUF](https://huggingface.co/ggml-org/Qianfan-OCR-GGUF) |
 | **Chandra OCR 2** | 5B | Markdown·HTML·JSON 문서 변환 | Transformers | 16–24 GB | 모델 카드·runtime 요구사항 확인 | [원본](https://huggingface.co/datalab-to/chandra-ocr-2) |
 | **VARCO-VISION 2.0 1.7B OCR** | 1.7B | 한국어·영어 문자와 bbox | Transformers | 8–12 GB부터 실측 | character-level bbox 출력; 문서 Markdown parser와 목적이 다름 | [원본](https://huggingface.co/NCSOFT/VARCO-VISION-2.0-1.7B-OCR) |
 | **Sarashina2.2-OCR** | 3B | 일본어 세로쓰기·영어 문서 | Transformers | 8–16 GB | 일본어·영어 특화 | [원본](https://huggingface.co/sbintuitions/sarashina2.2-ocr) |
-| **dots.ocr** | 모델 카드 참조 | 문서 parsing·layout | Transformers/llama.cpp 후보 | 저장소별 실측 | prompt·runtime 버전 확인 | [원본](https://huggingface.co/rednote-hilab/dots.ocr) |
+| **dots.ocr** | 약 3B | 문서 parsing·layout | Transformers + ggml 공식 GGUF | 저장소별 실측 | MIT; 저장소가 rednote-hilab에서 **dots-studio**로 이전, 후속 dots.mocr 존재 | [원본](https://huggingface.co/dots-studio/dots.ocr) · [GGUF](https://huggingface.co/ggml-org/dots.ocr-GGUF) |
 
 ### 7.2 GLM-OCR
 
-GLM-OCR는 작은 메모리에서 복잡 문서를 처리하기 좋은 기준선이다. 공식 GGUF 파일은 다음과 같다.
+GLM-OCR는 작은 메모리에서 복잡 문서를 처리하기 좋은 기준선이다. MIT 라이선스이며 모델 카드가 지원 언어에 **한국어를 명시**하므로 한국어 문서 OCR의 저메모리 후보로도 의미가 있다. 공식 GGUF 파일은 다음과 같다.
 
 | 파일 | 크기 |
 |---|---:|
@@ -575,7 +599,7 @@ Spotting:
 
 ### 7.4 Unlimited-OCR
 
-Unlimited-OCR는 긴 문서를 one-shot 방식으로 파싱하려는 3B급 모델이다. 원본은 BF16이며, 아래 GGUF는 커뮤니티 변환이다.
+Unlimited-OCR는 긴 문서를 one-shot 방식으로 파싱하려는 3B급 모델이다. 원본은 BF16이며, 아래 GGUF는 커뮤니티 변환(sahilchachra 등)이다. 2026-08-13 기준 공식 GGUF는 없고 `llama.cpp` 공식 multimodal 문서에도 기재되어 있지 않으므로, 커뮤니티 변환의 source revision과 실제 동작을 반드시 확인한다. MLX 계열은 mlx-community의 mxfp8 변환이 있다.
 
 | quant | 본체 | projector | 파일 합계 | 권장 해석 |
 |---|---:|---:|---:|---|
@@ -666,7 +690,7 @@ Free OCR.
 
 - **LightOnOCR-2:** base와 bbox variant를 구분한다.
 - **Chandra OCR 2:** Markdown뿐 아니라 HTML/JSON 출력 요구에 적합한지 자체 문서로 검증한다.
-- **dots.ocr:** runtime과 chat template가 빠르게 바뀔 수 있으므로 공식 repository example을 고정한다.
+- **dots.ocr:** 저장소가 rednote-hilab에서 **dots-studio 조직으로 이전**되어 현재 ID는 `dots-studio/dots.ocr`(약 3B, MIT)이다. `llama.cpp` 공식 지원 모델이며 ggml-org 공식 GGUF가 있다. 같은 조직에서 후속 [dots.mocr](https://huggingface.co/dots-studio/dots.mocr)(2026-03)도 공개되었다. runtime과 chat template가 빠르게 바뀔 수 있으므로 공식 repository example을 고정한다.
 
 하나의 benchmark 순위로 선택하지 말고 한국어 문서, 표, 수식, 회전 스캔과 저해상도 screenshot을 분리 평가한다.
 
@@ -703,7 +727,7 @@ VARCO-VISION-2.0-1.7B-OCR는 한국어와 영어 문자를 character-level bbox�
 
 ### 7.11 SmolDocling 256M
 
-[SmolDocling 256M preview](https://huggingface.co/ds4sd/SmolDocling-256M-preview)는 매우 작은 end-to-end 문서 변환 모델로, DocTags 형태를 거쳐 문서 구조를 복원하는 용도에 적합하다. 수백 MB급 모델로 routing·edge prototype·간단 문서 변환을 시도할 수 있지만 다음 한계를 전제로 한다.
+[SmolDocling 256M preview](https://huggingface.co/docling-project/SmolDocling-256M-preview)는 매우 작은 end-to-end 문서 변환 모델로, DocTags 형태를 거쳐 문서 구조를 복원하는 용도에 적합하다. 저장소는 ds4sd에서 **docling-project 조직으로 이전**되어 현재 ID는 `docling-project/SmolDocling-256M-preview`다. 수백 MB급 모델로 routing·edge prototype·간단 문서 변환을 시도할 수 있지만 다음 한계를 전제로 한다.
 
 - preview 모델의 API와 출력 schema가 바뀔 수 있음
 - 복잡한 한국어 표·수식·필기·저해상도 스캔은 큰 OCR VLM보다 약할 수 있음
@@ -1534,6 +1558,16 @@ image → source-language OCR → source validation → translation
 
 한 번의 prompt로 OCR과 번역을 동시에 수행하면 원문 오류와 번역 오류를 구분하기 어렵다. 원문 OCR을 먼저 고정하고 번역 모델 또는 같은 VLM의 두 번째 단계로 번역한다.
 
+### 13.8 한국어 지원 대안 모델
+
+2026-08-13 기준 VARCO-VISION-2.0-1.7B-OCR의 후속 모델은 없고, 한국어 특화 OCR 신모델도 확인되지 않았다. 한국어를 명시적으로 지원하는 대안은 다음과 같다.
+
+- **GLM-OCR:** 모델 카드가 지원 언어에 한국어를 명시하는 약 1.3B OCR 모델. MIT 라이선스와 ggml-org 공식 GGUF 덕분에 4–6 GB급 한국어 문서 OCR의 실용적 시작점이다.
+- **[EXAONE-4.5-33B](https://huggingface.co/LGAI-EXAONE/EXAONE-4.5-33B):** LG AI연구원의 한국어 지원 VLM(이미지+비디오 입력)으로 공식 GGUF·AWQ·FP8이 제공된다. 34.35B 규모이므로 Q4 기준 32 GB 이상 장착 메모리에서 실측하고, EXAONE 독자 라이선스의 사용 조건을 확인한다.
+- **[North Micro Vision Instruct](https://huggingface.co/CohereLabs/North-Micro-Vision-Instruct):** 2.48B, Apache 2.0, 한국어 포함 11개 언어를 지원하는 2026-08 공개 소형 VLM. 저메모리 한국어 문서·화면 이해 후보로 자체 corpus에서 평가할 가치가 있다.
+
+이들 역시 모델 카드의 언어 목록만 믿지 말고 13.4의 한국어 corpus로 실측한 뒤 채택한다.
+
 ---
 
 ## 14. 프롬프트와 출력 스키마
@@ -1951,6 +1985,8 @@ Hugging Face LFS/Xet metadata와 로컬 checksum을 배포 기록에 함께 둔�
 ### 16.1 최신 버전 사용
 
 멀티모달 지원은 빠르게 변경된다. package manager 버전이 오래되면 모델을 인식하지 못할 수 있다.
+
+2026-08-13 기준 `llama.cpp` 공식 multimodal 문서는 **PaddleOCR-VL, GLM-OCR, DeepSeek-OCR, dots.ocr, HunyuanOCR** 다섯 OCR 특화 모델을 지원 목록에 명시한다. 이들 중에는 "특정 프롬프트 구조 필요" 주석이 붙은 항목이 있으므로 모델 카드의 공식 prompt를 그대로 사용한다. ggml-org 조직은 이들 OCR 모델과 Qianfan-OCR, LightOnOCR-2, MiniCPM-V-4.6 등의 **공식 GGUF 변환본**을 제공하므로, 같은 모델의 커뮤니티 변환보다 공식 저장소를 우선한다. Gemma 4(비전+오디오) 같은 범용 멀티모달 모델도 같은 문서의 지원 목록에 있다.
 
 소스 빌드 예:
 
@@ -2692,7 +2728,7 @@ C. multimodal embedding
    이미지 자체와 text query 연결
 ```
 
-처음에는 A를 기준선으로 만들고, caption 또는 multimodal embedding이 retrieval 평가를 실제로 개선하는지 확인한다.
+처음에는 A를 기준선으로 만들고, caption 또는 multimodal embedding이 retrieval 평가를 실제로 개선하는지 확인한다. C 접근의 로컬 후보로는 Qwen 조직이 2026-01에 공개한 Qwen3-VL-Embedding-2B/8B와 Qwen3-VL-Reranker-2B/8B가 있다.
 
 ### 19.5 표 RAG
 
@@ -3451,6 +3487,7 @@ PaddleOCR 3.x는 API와 pipeline이 변경될 수 있다.
 ### 23.1 `llama.cpp`와 GGUF
 
 - [`llama.cpp`](https://github.com/ggml-org/llama.cpp)
+- [`llama.cpp` multimodal 공식 문서](https://github.com/ggml-org/llama.cpp/blob/master/docs/multimodal.md)
 - [Using OCR models with llama.cpp](https://huggingface.co/blog/ggml-org/using-ocr-models-with-llama-cpp)
 - [Hugging Face Hub CLI](https://huggingface.co/docs/huggingface_hub/guides/cli)
 
@@ -3468,13 +3505,19 @@ PaddleOCR 3.x는 API와 pipeline이 변경될 수 있다.
 - [Qianfan-OCR](https://huggingface.co/baidu/Qianfan-OCR)
 - [LightOnOCR-2 1B base](https://huggingface.co/lightonai/LightOnOCR-2-1B-base)
 - [LightOnOCR-2 1B bbox](https://huggingface.co/lightonai/LightOnOCR-2-1B-bbox)
+- [LightOnOCR-2 1B GGUF](https://huggingface.co/ggml-org/LightOnOCR-2-1B-GGUF)
+- [Qianfan-OCR GGUF](https://huggingface.co/ggml-org/Qianfan-OCR-GGUF)
 - [Chandra OCR 2](https://huggingface.co/datalab-to/chandra-ocr-2)
-- [dots.ocr](https://huggingface.co/rednote-hilab/dots.ocr)
+- [dots.ocr](https://huggingface.co/dots-studio/dots.ocr)
+- [dots.ocr GGUF](https://huggingface.co/ggml-org/dots.ocr-GGUF)
+- [dots.mocr](https://huggingface.co/dots-studio/dots.mocr)
+- [NVIDIA-Nemotron-Parse-2.0](https://huggingface.co/nvidia/NVIDIA-Nemotron-Parse-2.0)
+- [OvisOCR2](https://huggingface.co/ATH-MaaS/OvisOCR2)
 - [VARCO-VISION-2.0-1.7B-OCR](https://huggingface.co/NCSOFT/VARCO-VISION-2.0-1.7B-OCR)
 - [Sarashina2.2-OCR](https://huggingface.co/sbintuitions/sarashina2.2-ocr)
 - [Typhoon OCR 1.5 2B](https://huggingface.co/typhoon-ai/typhoon-ocr1.5-2b)
 - [Typhoon OCR 1.5 3B QAT](https://huggingface.co/typhoon-ai/typhoon-ocr1.5-3b-qat)
-- [SmolDocling 256M preview](https://huggingface.co/ds4sd/SmolDocling-256M-preview)
+- [SmolDocling 256M preview](https://huggingface.co/docling-project/SmolDocling-256M-preview)
 
 ### 23.3 범용 VLM
 
@@ -3501,10 +3544,21 @@ PaddleOCR 3.x는 API와 pipeline이 변경될 수 있다.
 - [Gemma 4 12B GGUF](https://huggingface.co/ggml-org/gemma-4-12B-it-GGUF)
 - [Gemma 4 26B-A4B](https://huggingface.co/google/gemma-4-26B-A4B-it)
 - [Gemma 4 26B-A4B GGUF](https://huggingface.co/ggml-org/gemma-4-26B-A4B-it-GGUF)
+- [Gemma 4 31B](https://huggingface.co/google/gemma-4-31B-it)
+- [Muse-Glimmer 30B](https://huggingface.co/meta-models/Muse-Glimmer-30B)
+- [Muse-Glimmer 30B GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF)
+- [LFM2.5-VL 3B](https://huggingface.co/LiquidAI/LFM2.5-VL-3B)
+- [North Micro Vision Instruct](https://huggingface.co/CohereLabs/North-Micro-Vision-Instruct)
+- [Mage-VL](https://huggingface.co/microsoft/Mage-VL)
+- [MiniCPM-V 4.6](https://huggingface.co/openbmb/MiniCPM-V-4.6)
+- [MiniCPM-V 4.6 GGUF](https://huggingface.co/ggml-org/MiniCPM-V-4.6-GGUF)
+- [moondream3.1 9B-A2B](https://huggingface.co/moondream/moondream3.1-9B-A2B)
+- [EXAONE-4.5-33B](https://huggingface.co/LGAI-EXAONE/EXAONE-4.5-33B)
 - [SmolVLM 256M Instruct GGUF](https://huggingface.co/ggml-org/SmolVLM-256M-Instruct-GGUF)
 - [SmolVLM 500M Instruct GGUF](https://huggingface.co/ggml-org/SmolVLM-500M-Instruct-GGUF)
 - [SmolVLM2 2.2B Instruct](https://huggingface.co/HuggingFaceTB/SmolVLM2-2.2B-Instruct)
 - [Granite 4.0 3B Vision](https://huggingface.co/ibm-granite/granite-4.0-3b-vision)
+- [granite-vision-4.1-4b](https://huggingface.co/ibm-granite/granite-vision-4.1-4b)
 - [Granite 4 Vision 소개](https://huggingface.co/blog/ibm-granite/granite-4-vision)
 
 ### 23.4 OCR·layout·문서 도구
@@ -3584,7 +3638,7 @@ PaddleOCR 3.x는 API와 pipeline이 변경될 수 있다.
 
 ## 갱신 및 사용상 주의
 
-- 이 문서는 2026-07-21 KST 기준으로 모델 카드와 저장소를 확인한 선택 가이드다.
+- 이 문서는 2026-08-13 KST 기준으로 모델 카드와 저장소를 확인한 선택 가이드다.
 - Hugging Face 파일명, quant, projector, runtime API, 라이선스와 model revision은 변경될 수 있다.
 - 다운로드 직전 `hf download --dry-run`과 공식 model card를 다시 확인한다.
 - 의료·법률·재무·신원·접근 제어처럼 오류 비용이 큰 작업은 OCR/VLM 출력만으로 자동 확정하지 않는다.

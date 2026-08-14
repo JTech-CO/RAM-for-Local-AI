@@ -1,7 +1,7 @@
 /* Generated from the RAM-for-Local-AI guide set. No network request is made. */
 window.RAMAI_CATALOG = {
   "schemaVersion": 1,
-  "verified": "2026-07-21",
+  "verified": "2026-08-13",
   "project": "RAM-for-Local-AI",
   "repository": {
     "url": "https://github.com/jtech-co/RAM-for-Local-AI",
@@ -963,6 +963,41 @@ window.RAMAI_CATALOG = {
       "systemRamRecommendedGiB": null
     },
     {
+      "id": "antares-1b",
+      "name": "antares 1B",
+      "kind": "llm",
+      "domains": [
+        "cybersecurity"
+      ],
+      "tasks": [
+        "secure-code",
+        "security-agent"
+      ],
+      "paramsB": 1.0,
+      "architecture": "dense",
+      "activeParamsB": null,
+      "hf": "https://huggingface.co/fdtn-ai/antares-1b",
+      "guide": "cybersecurity",
+      "formats": [
+        "q4",
+        "q8",
+        "bf16"
+      ],
+      "exactSizes": {},
+      "kvMiBPerTokenFp16": 0.03,
+      "runtimes": [],
+      "quality": 44,
+      "notes": [
+        "Cisco Foundation AI 취약점 위치특정 터미널 에이전트 (Granite 4.0 1B·128K·Apache-2.0)",
+        "대형 코드 모델 앞단의 경량 1차 스크리너 용도"
+      ],
+      "minDeviceGiB": {},
+      "basePeakGiB": {},
+      "sizeMode": "weights",
+      "projectorIncluded": false,
+      "systemRamRecommendedGiB": null
+    },
+    {
       "id": "qwen35-2b",
       "name": "Qwen3.5 2B",
       "kind": "llm",
@@ -1055,6 +1090,42 @@ window.RAMAI_CATALOG = {
       "quality": 40,
       "notes": [
         "요약·추출·RAG·function calling 중심"
+      ],
+      "minDeviceGiB": {},
+      "basePeakGiB": {},
+      "sizeMode": "weights",
+      "projectorIncluded": false,
+      "systemRamRecommendedGiB": null
+    },
+    {
+      "id": "kanana2-3b",
+      "name": "Kanana 2 3B",
+      "kind": "llm",
+      "domains": [
+        "productivity-rag"
+      ],
+      "tasks": [
+        "document-work",
+        "personal-rag",
+        "team-rag"
+      ],
+      "paramsB": 3.0,
+      "architecture": "dense",
+      "activeParamsB": null,
+      "hf": "https://huggingface.co/kakaocorp/kanana-2-3b-instruct",
+      "guide": "productivity-rag",
+      "formats": [
+        "q4",
+        "q8",
+        "bf16"
+      ],
+      "exactSizes": {},
+      "kvMiBPerTokenFp16": 0.05,
+      "runtimes": [],
+      "quality": 42,
+      "notes": [
+        "한국어 특화 소형(카카오), SWA로 32K 장문 KV 절감",
+        "Kanana Open License — 상업 이용 조건 확인, GGUF는 커뮤니티 변환"
       ],
       "minDeviceGiB": {},
       "basePeakGiB": {},
@@ -1488,6 +1559,105 @@ window.RAMAI_CATALOG = {
       "systemRamRecommendedGiB": null
     },
     {
+      "id": "muse-glimmer-30b",
+      "name": "Muse Glimmer 30B",
+      "kind": "vlm",
+      "domains": [
+        "cybersecurity",
+        "programming-stem",
+        "productivity-rag",
+        "data-analysis",
+        "vision-ocr"
+      ],
+      "tasks": [
+        "secure-code",
+        "security-agent",
+        "general-coding",
+        "repo-agent",
+        "document-work",
+        "personal-rag",
+        "team-rag",
+        "eda-code",
+        "ui-vision",
+        "chart-math"
+      ],
+      "paramsB": 30.0,
+      "architecture": "dense",
+      "activeParamsB": null,
+      "hf": "https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF",
+      "guide": "programming-stem",
+      "formats": [
+        "q4",
+        "q5",
+        "q6",
+        "q8",
+        "bf16"
+      ],
+      "exactSizes": {
+        "q4": 16.8
+      },
+      "kvMiBPerTokenFp16": 0.24,
+      "runtimes": [],
+      "quality": 80,
+      "notes": [
+        "Meta의 24GB VRAM 타깃 에이전트 특화 (Apache-2.0, 2026-08-10)",
+        "이미지 입력 지원 — mmproj·DFlash 드래프터 메모리 별도"
+      ],
+      "minDeviceGiB": {},
+      "basePeakGiB": {},
+      "sizeMode": "weights",
+      "projectorIncluded": false,
+      "systemRamRecommendedGiB": null
+    },
+    {
+      "id": "nemotron35-lightning-30b",
+      "name": "Nemotron 3.5 Lightning 30B-A3B",
+      "kind": "llm",
+      "domains": [
+        "cybersecurity",
+        "programming-stem",
+        "productivity-rag",
+        "data-analysis"
+      ],
+      "tasks": [
+        "security-triage",
+        "secure-code",
+        "security-agent",
+        "general-coding",
+        "repo-agent",
+        "document-work",
+        "personal-rag",
+        "team-rag",
+        "text-to-sql",
+        "eda-code"
+      ],
+      "paramsB": 30.0,
+      "architecture": "moe",
+      "activeParamsB": 3.0,
+      "hf": "https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF",
+      "guide": "programming-stem",
+      "formats": [
+        "q4",
+        "q8"
+      ],
+      "exactSizes": {
+        "q4": 25.4,
+        "q8": 35.0
+      },
+      "kvMiBPerTokenFp16": 0.12,
+      "runtimes": [],
+      "quality": 83,
+      "notes": [
+        "Mamba-2+MoE+어텐션 하이브리드, 최대 1M 컨텍스트 (OpenMDW-1.1, 2026-08-11)",
+        "SSM 계층이 다수라 KV 계수를 동급 attention 모델의 약 절반으로 잡은 근사값 — 긴 컨텍스트는 실측 필요"
+      ],
+      "minDeviceGiB": {},
+      "basePeakGiB": {},
+      "sizeMode": "weights",
+      "projectorIncluded": false,
+      "systemRamRecommendedGiB": null
+    },
+    {
       "id": "qwen36-35b-a3b",
       "name": "Qwen3.6 35B-A3B",
       "kind": "llm",
@@ -1772,7 +1942,7 @@ window.RAMAI_CATALOG = {
     },
     {
       "id": "deepseek-v4-flash",
-      "name": "DeepSeek V4 Flash",
+      "name": "DeepSeek V4 Flash 0731",
       "kind": "llm",
       "domains": [
         "cybersecurity",
@@ -1783,24 +1953,25 @@ window.RAMAI_CATALOG = {
         "repo-agent",
         "math-science"
       ],
-      "paramsB": 236.0,
+      "paramsB": 284.0,
       "architecture": "moe",
-      "activeParamsB": 20.0,
-      "hf": "https://huggingface.co/Preyazz/DeepSeek-V4-Flash-GGUF",
+      "activeParamsB": 13.0,
+      "hf": "https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF",
       "guide": "cybersecurity",
       "formats": [
-        "q3",
+        "q2",
         "q4"
       ],
       "exactSizes": {
-        "q3": 125.0,
-        "q4": 161.0
+        "q2": 96.8,
+        "q4": 155.1
       },
       "kvMiBPerTokenFp16": 0.65,
       "runtimes": [],
       "quality": 96,
       "notes": [
-        "최신 아키텍처와 런타임 지원을 먼저 확인"
+        "0731 공식판(preview 대체) · 1M 컨텍스트 · MIT",
+        "UD-IQ4_XS 약 136.7GB 대안, Jinja 챗템플릿 미제공"
       ],
       "minDeviceGiB": {},
       "basePeakGiB": {},
@@ -1956,6 +2127,42 @@ window.RAMAI_CATALOG = {
       "runtimes": [],
       "quality": 86,
       "notes": [],
+      "minDeviceGiB": {},
+      "basePeakGiB": {},
+      "sizeMode": "weights",
+      "projectorIncluded": false,
+      "systemRamRecommendedGiB": null
+    },
+    {
+      "id": "pythagoras-prover-32b",
+      "name": "Pythagoras-Prover 32B",
+      "kind": "llm",
+      "domains": [
+        "programming-stem"
+      ],
+      "tasks": [
+        "lean-proof"
+      ],
+      "paramsB": 32.0,
+      "architecture": "dense",
+      "activeParamsB": null,
+      "hf": "https://huggingface.co/mradermacher/Pythagoras-Prover-32B-GGUF",
+      "guide": "programming-stem",
+      "formats": [
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6"
+      ],
+      "exactSizes": {},
+      "kvMiBPerTokenFp16": 0.25,
+      "runtimes": [],
+      "quality": 87,
+      "notes": [
+        "miniF2F-Test pass@32 89.75%로 Goedel-Prover-V2-32B 상회 (Apache-2.0, 2026-07-23)",
+        "Q4 약 20 GB(추정) — 저장소 파일 목록 실측 아님, 다운로드 전 확인"
+      ],
       "minDeviceGiB": {},
       "basePeakGiB": {},
       "sizeMode": "weights",
@@ -2849,6 +3056,52 @@ window.RAMAI_CATALOG = {
         "nf4": 10.0,
         "fp8": 13.0,
         "bf16": 14.0
+      },
+      "sizeMode": "pipeline",
+      "projectorIncluded": false,
+      "systemRamRecommendedGiB": 48
+    },
+    {
+      "id": "mage-flow-4b",
+      "name": "Mage-Flow 4B",
+      "kind": "image",
+      "domains": [
+        "image-generation"
+      ],
+      "tasks": [
+        "text-to-image",
+        "image-edit"
+      ],
+      "paramsB": 4.0,
+      "architecture": "dense",
+      "activeParamsB": null,
+      "hf": "https://huggingface.co/Comfy-Org/Mage-Flow",
+      "guide": "image-generation",
+      "formats": [
+        "q4",
+        "q8",
+        "fp8",
+        "bf16"
+      ],
+      "exactSizes": {},
+      "kvMiBPerTokenFp16": 0.0,
+      "runtimes": [],
+      "quality": 84,
+      "notes": [
+        "MIT 라이선스, T2I·편집 각 Base/RL/Turbo(4스텝) 6종 (Microsoft, 2026-07-22)",
+        "BF16 파이프라인 피크 약 18–20GB, int8/FP8 배포로 8–12GB급 현실권"
+      ],
+      "minDeviceGiB": {
+        "q4": 12,
+        "q8": 12,
+        "fp8": 12,
+        "bf16": 24
+      },
+      "basePeakGiB": {
+        "q4": 9.0,
+        "q8": 11.0,
+        "fp8": 11.0,
+        "bf16": 19.0
       },
       "sizeMode": "pipeline",
       "projectorIncluded": false,

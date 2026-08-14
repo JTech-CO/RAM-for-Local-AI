@@ -3,10 +3,10 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-07-21 (KST)
+> **최종 검증일:** 2026-08-13 (KST)
 > **주요 형식·도구:** GGUF·`llama.cpp`, AWQ, GPTQModel, `compressed-tensors`·LLM Compressor, AutoRound, bitsandbytes NF4/INT8, torchao, FP8·MXFP4·NVFP4, EXL3, MLX, ONNX Runtime, OpenVINO·NNCF, Core ML
 > **범위:** 추론용 PTQ·QAT·native low-bit, 가중치·활성화·KV 캐시 양자화, 멀티모달 구성요소, 변환·캘리브레이션·벤치마크·재현성·보안
-> **관련 문서:** [파인튜닝 메모리](./fine-tuning-memory.md) (예정) · [서빙·동시성](./serving-concurrency.md) (예정) · [런타임·하드웨어](./runtime-hardware.md) (예정)
+> **관련 문서:** [파인튜닝 메모리](./fine-tuning-memory.md) · [서빙·동시성](./serving-concurrency.md) · [런타임·하드웨어](./runtime-hardware.md)
 
 이 문서는 “4비트면 메모리가 정확히 4분의 1이 되는가?” 또는 “Q3가 Q4보다 항상 빠른가?” 같은 오해를 피하면서, 보유한 **시스템 RAM**, **GPU VRAM**, **Apple Silicon 통합 메모리**에 맞는 양자화 형식과 런타임을 선택하기 위한 실전 가이드다.
 
@@ -41,7 +41,7 @@
 
 > **핵심 원칙:** 런타임과 하드웨어를 먼저 정하고, 그 런타임이 빠르게 실행하는 형식 중에서 가장 높은 정밀도를 선택한다. 특별한 이유가 없다면 범용 GGUF는 `Q4_K_M`, CUDA W4A16은 검증된 AWQ·GPTQ·compressed-tensors, QLoRA는 NF4, Apple Silicon은 MLX 4-bit 또는 GGUF Q4를 시작점으로 삼는다. Q2·Q3는 “더 큰 모델을 넣기 위한 비용”이므로 실제 작업셋에서 반드시 검증한다.
 
-모델·런타임·kernel 지원은 빠르게 변한다. 이 문서의 지원표는 2026-07-21 기준이며, 배포 직전 공식 문서에서 **현재 버전, 지원 GPU 세대, 모델 아키텍처, quantization config, 파일 revision과 라이선스**를 다시 확인한다.
+모델·런타임·kernel 지원은 빠르게 변한다. 이 문서의 지원표는 2026-08-13 기준이며, 배포 직전 공식 문서에서 **현재 버전, 지원 GPU 세대, 모델 아키텍처, quantization config, 파일 revision과 라이선스**를 다시 확인한다.
 
 ---
 
@@ -184,7 +184,7 @@ FP8/INT4 파일이 있음
 | PTQ·캘리브레이션 | 학습 완료 후 representative data 사용 | AWQ, GPTQ, AutoRound, imatrix, SmoothQuant | 낮은 bit에서 품질 보존 개선 | 데이터 편향·누수·시간·RAM 요구 |
 | QAT | 학습 중 fake quant·scale 학습 | torchao QAT, vendor QAT | 저비트에서 품질 회복 가능 | 학습 비용·구현 복잡도 |
 | QLoRA | frozen 4-bit base + LoRA 학습 | NF4 + double quant | 적은 VRAM으로 adapter 학습 | full-weight QAT와 다름 |
-| native low-bit | pretraining·QAT 단계부터 저비트 구조 | gpt-oss MXFP4, BitNet 계열 | 형식에 맞는 효율 가능 | 임의 BF16 모델의 Q4와 동등 비교 불가 |
+| native low-bit | pretraining·QAT 단계부터 저비트 구조 | gpt-oss·Kimi K3 MXFP4, BitNet 계열 | 형식에 맞는 효율 가능 | 임의 BF16 모델의 Q4와 동등 비교 불가 |
 
 
 ### 2.4 “작은 파일”과 “빠른 추론”은 별개다
@@ -433,9 +433,13 @@ BF16/FP16 기준선
 | K-quants | `Q2_K`~`Q6_K`, `Q4_K_M` | block-wise scale과 mixed tensor policy | 범용 CPU·GPU offload 기본 |
 | IQ quants | `IQ2_XS`, `IQ3_M`, `IQ4_XS`, `IQ4_NL` | importance-aware·codebook 계열의 저비트 선택지 | 저용량·품질 효율 비교 |
 | TQ·ternary 계열 | runtime별 태그 | 극저비트·ternary 실험 | 지원 model·backend가 명확할 때 |
+| microscaling FP4 | `MXFP4`, `MXFP4_MOE`, `NVFP4` | block scale 기반 4-bit float. NVFP4는 4-block E4M3 scale에 CUDA·Vulkan·WebGPU·SYCL backend kernel | gpt-oss·Kimi K3 같은 native MXFP4 계열, NVFP4 체크포인트 변환·실행 |
+| 신형 극저비트 | `Q1_0`, `Q2_0` | 2026년에 추가된 극저비트 타입. TQ·ternary 계열과 별개 | 실험적. backend 지원과 품질을 검증한 후 |
 | 고정밀 | `F16`, `BF16`, `F32` | 원본·기준선·requantization source | 변환·평가·고정밀 추론 |
 | provider mixed recipe | `UD-Q3_K_XL`, `UD-Q4_K_XL` 등 | 배포자가 tensor별 정밀도를 조합한 label | model card의 정확한 recipe를 확인한 후 |
 
+
+MXFP4는 gpt-oss용 지원이 안정적으로 유지되고 있고, NVFP4·`Q1_0`·`Q2_0`은 2026년 4~7월에 걸쳐 backend가 순차 머지된 비교적 새로운 타입이다. 2026-08 기준 `llama-quantize` 타깃 목록에는 `MXFP4_MOE`·`Q1_0`·`Q2_0`이 포함되며, NVFP4는 compressed-tensors NVFP4 체크포인트의 GGUF 변환 경로와 CUDA kernel(2026-07-22에 W4A4 activation 양자화 개선 머지)을 갖췄다. 신규 타입과 신규 architecture 지원(예: DeepSeek-V4는 2026-08-02 머지)은 릴리스마다 바뀌므로, 사용 가능한 타입은 빌드한 버전의 `llama-quantize --help`로 확인한다.
 
 ### 6.2 `S`·`M`·`L`과 provider label
 
@@ -868,7 +872,10 @@ auto-round --help
 | W4AFP8 | 4-bit weights·FP8 activations | Ada/Hopper 계열 | 저메모리와 FP8 연산 결합 |
 | NVFP4·MXFP4 | microscaling 4-bit floating formats | Blackwell급 native 경로 | 최신 FP4 배포 |
 | FP8 KV cache | attention K/V cache FP8 | runtime·model 지원 필요 | 긴 context·동시성 절감 |
+| W2~W8 임의 비트폭(Humming) | 2~8bit weight-only를 dense packing으로 저장. 3·5·6·7-bit도 낭비 없이 표현 | preset은 W2~W8, vLLM 0.26.0+ weight-only 추론은 W2~W7 | 비표준 비트폭의 용량·품질 절충 |
 
+
+임의 비트폭 preset(W2~W8 × A4/A8/A16 16종, “Humming”)과 REAP MoE expert pruning(캘리브레이션 saliency 기반 expert 제거, FP8·NVFP4 양자화와 결합 가능)은 llm-compressor 0.13.0(2026-08-11)과 compressed-tensors 0.18.0(2026-08-08)에서 추가되었다. 해당 임의 비트폭 체크포인트의 weight-only 추론은 vLLM 0.26.0(2026-07-27) 이후 버전이 지원한다.
 
 ### 10.2 지원 알고리즘
 
@@ -996,7 +1003,7 @@ GPU VRAM만 확인 → OOM 또는 swap
 
 ### 11.6 hardware
 
-공식 문서의 현재 지원은 NVIDIA CUDA, Intel XPU, Intel Gaudi, CPU 등으로 확장되어 있다. 세부 최소 GPU 세대와 backend 상태가 바뀌므로 설치 버전의 지원표를 따른다. NVIDIA에서는 NF4/FP4와 `LLM.int8()`의 최소 세대 조건이 다르다.
+0.50.0(2026-07-25) 기준 공식 지원은 NVIDIA CUDA 외에 AMD ROCm(preview에서 안정으로 승격, Windows용 ROCm 휠 포함), Apple Silicon MPS(torch 2.9 이상에서 모든 4-bit·`LLM.int8()` 구성 동작, 8-bit optimizer만 미지원), Intel XPU, Intel Gaudi, CPU(x86-64·ARM64)로 확장되어 있다. 같은 릴리스의 fused 4-bit GEMM(CUDA)은 batch 2~64 구간에서 4-bit 추론을 최대 4배까지 가속해(Turing~Blackwell) “bitsandbytes는 추론에 느리다”는 통념을 상당 부분 완화했다. 세부 최소 GPU 세대와 backend 상태가 바뀌므로 설치 버전의 지원표를 따른다. NVIDIA에서는 NF4/FP4와 `LLM.int8()`의 최소 세대 조건이 다르다.
 
 ### 11.7 언제 선택할까
 
@@ -1040,7 +1047,7 @@ native FP8 hardware의 throughput
   → QAT
 ```
 
-현재 group size, supported module, CUDA/ROCm generation은 release별로 다르므로 API 예제를 복사하기 전에 해당 version 문서를 확인한다.
+v0.18.0(2026-08-03)에서는 NVFP4 학습 프로토타입(Blackwell SM100+ dense linear 대상)이 추가되었고, 최소 PyTorch 요구가 2.11로 상향되었으며 구 v1 `AffineQuantizedTensor` 스택이 제거되어 오래된 예제 코드가 그대로 동작하지 않을 수 있다. 현재 group size, supported module, CUDA/ROCm generation은 release별로 다르므로 API 예제를 복사하기 전에 해당 version 문서를 확인한다.
 
 ### 12.2 Optimum Quanto
 
@@ -1150,7 +1157,7 @@ GPU가 FP8 storage를 읽을 수 있어도 모든 연산이 native FP8은 아닐
 | 형식 | 핵심 | 대표 hardware·runtime | 주의 |
 | --- | --- | --- | --- |
 | MXFP4 | OCP microscaling 계열 FP4 | Blackwell native 경로·일부 software fallback | 모든 GPU에서 native FP4 속도를 내지 않음 |
-| NVFP4 | NVIDIA Blackwell 최적화 FP4 scheme | Blackwell·TensorRT/LLM Compressor/FP-Quant 계열 | calibration·block scale·kernel version 의존 |
+| NVFP4 | NVIDIA Blackwell 최적화 FP4 scheme | Blackwell native 경로 + TensorRT/LLM Compressor/FP-Quant 계열. TensorRT-LLM(1.3 rc)은 Marlin NVFP4를 Ada에서, W4A16 NVFP4를 SM120에서 활성화하는 등 Blackwell 외 경로 확대 중 | calibration·block scale·kernel version 의존 |
 | FP4 일반 | 4-bit floating representation | bitsandbytes·research format 등 | 동일 명칭이어도 codebook·packing이 다름 |
 | INT4 | integer 4-bit + scale/zero point | AWQ·GPTQ·W4A16·OpenVINO | FP4와 동일 형식이 아님 |
 
@@ -1170,7 +1177,20 @@ native MXFP4 checkpoint
 
 모델 architecture, 일부 고정밀 layer, runtime kernel과 전체 active parameter 구조가 다르다.
 
-### 14.3 FP-Quant·Blackwell
+### 14.3 공식 저비트·QAT 체크포인트와 벤더 공식 양자화 배포
+
+gpt-oss는 더 이상 단독 사례가 아니다. 2026년 들어 QAT 기반 native 저비트 배포와 벤더 공식 양자화 체크포인트의 동시 배포가 빠르게 늘었다.
+
+| 모델 | 공개 | 공식 저비트 배포 형태 | 비고 |
+| --- | --- | --- | --- |
+| Kimi K3 (Moonshot, 2.8T MoE) | 2026-07-26 | SFT 단계부터 QAT로 학습한 native MXFP4 weights + MXFP8 activations | gpt-oss에 이은 초대형 native MXFP4. 1M context, SGLang·vLLM day-0 지원 |
+| Inkling (Thinking Machines Lab, 약 952B/41B active) | 2026-07-14 | BF16과 공식 NVFP4 체크포인트(`thinkingmachines/Inkling-NVFP4`) 동시 배포 | Apache 2.0 멀티모달 MoE. Inkling-Small(276B/12B active)도 2026-07-27 공개 |
+| Gemma 4 QAT (Google) | 2026-06-05 | 공식 QAT 체크포인트 — Q4_0 GGUF·모바일 특화 포맷, vLLM용 compressed-tensors 병행 | 라인업 5종 중 4종에 제공 |
+| Muse-Glimmer-30B (Meta) | 2026-08-10 | BF16과 공식 GGUF K-quant(약 17GB) 동시 배포 | 벤더 공식 GGUF 동시 배포 사례. 20~24GB급 장비 타깃, QAT 학습 여부는 공식 미명시 |
+
+이런 공식 체크포인트는 배포자가 지정한 형식·runtime에서 검증된 경로이므로 임의 PTQ 변환본보다 먼저 검토할 가치가 있다. 다만 같은 “4-bit”라도 QAT 여부·형식·kernel 경로가 서로 다르므로 14.5의 원칙을 그대로 적용한다.
+
+### 14.4 FP-Quant·Blackwell
 
 [Transformers FP-Quant](https://huggingface.co/docs/transformers/quantization/fp_quant)는 MXFP4·NVFP4를 위한 PTQ·QAT 계열을 다룬다. Blackwell-native 성능을 목표로 할 때 다음을 확인한다.
 
@@ -1182,14 +1202,14 @@ native MXFP4 checkpoint
 - KV cache 형식
 - BF16 baseline과 정확도
 
-### 14.4 native low-bit 모델의 원칙
+### 14.5 native low-bit 모델의 원칙
 
 - 모델 카드가 지정한 runtime과 dtype을 우선한다.
 - 임의 dequant→requant로 다른 형식으로 바꾸지 않는다.
 - nominal bit만으로 일반 Q4 모델과 품질을 비교하지 않는다.
 - native checkpoint의 non-MXFP4 layer와 runtime overhead를 포함해 메모리를 측정한다.
 
-### 14.5 BitNet
+### 14.6 BitNet
 
 [Transformers BitNet](https://huggingface.co/docs/transformers/quantization/bitnet)과 [Microsoft BitNet](https://github.com/microsoft/BitNet)은 ternary weight `{-1, 0, 1}`와 저비트 activation을 사용하는 native 저비트 계열을 지원한다.
 
@@ -1364,7 +1384,7 @@ MLX-LM의 rotating KV cache·prompt cache는 긴 context의 메모리를 줄이�
 
 ### 17.2 `llama.cpp`
 
-현재 `llama.cpp`는 K·V cache type을 별도로 지정하는 옵션을 제공한다. 정확한 지원 type은 빌드와 model에 따라 다르므로 `llama-cli --help` 또는 `llama-server --help`를 확인한다.
+현재 `llama.cpp`는 K·V cache type을 별도로 지정하는 옵션을 제공한다. 2026-08-13 기준 지원 type 목록은 `f32`·`f16`·`bf16`·`q8_0`·`q4_0`·`q4_1`·`iq4_nl`·`q5_0`·`q5_1`로 변화가 없으며, FP8·FP4 KV type은 아직 없다. 정확한 지원 type은 빌드와 model에 따라 다르므로 `llama-cli --help` 또는 `llama-server --help`를 확인한다.
 
 개념 예시:
 
@@ -1379,9 +1399,11 @@ MLX-LM의 rotating KV cache·prompt cache는 긴 context의 메모리를 줄이�
 
 더 낮은 Q4 계열 KV는 메모리를 더 줄일 수 있지만 model·backend별 품질과 kernel 지원을 확인한다.
 
-### 17.3 vLLM FP8 KV
+### 17.3 vLLM·SGLang의 FP8·FP4 KV
 
-vLLM은 지원되는 환경에서 FP8 KV cache를 제공한다. scale 처리, model 지원, attention backend와 GPU 세대가 맞아야 한다. per-head·세부 quant 기능은 experimental일 수 있으므로 production 배포 전에 정확도와 fallback을 확인한다.
+vLLM은 지원되는 환경에서 FP8 KV cache를 제공하며, v0.27.0(2026-08-10)부터 FlashAttention 4 기반 SM100(Blackwell) 경로의 FP8 KV cache가 추가되었다. scale 처리, model 지원, attention backend와 GPU 세대가 맞아야 한다. per-head·세부 quant 기능은 experimental일 수 있으므로 production 배포 전에 정확도와 fallback을 확인한다.
+
+SGLang은 v0.5.16(2026-07-25)에서 주요 런타임 중 처음으로 FP4 KV cache 경로를 SM120 지원과 함께 추가했다. 아직 실험적 경로이므로 긴 문맥 회상·attention 품질을 별도로 평가한 뒤 사용한다.
 
 ### 17.4 KV quant 품질 평가
 
@@ -1691,7 +1713,7 @@ Apple 개발·로컬 LLM
 
 ## 21. 런타임·하드웨어 지원 매트릭스
 
-아래 표는 2026-07-21의 일반적인 선택 방향이다. 세부 지원은 release마다 바뀌므로 최종 근거는 각 runtime의 현재 compatibility table이다.
+아래 표는 2026-08-13의 일반적인 선택 방향이다. 세부 지원은 release마다 바뀌므로 최종 근거는 각 runtime의 현재 compatibility table이다.
 
 | 형식·도구 | CPU | NVIDIA | AMD | Intel GPU/NPU | Apple Silicon | 대표 강점 | 주요 제한 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1699,7 +1721,7 @@ Apple 개발·로컬 LLM
 | AWQ | runtime별 제한 | Turing~Hopper 중심 | 제한적·version별 | 일부 runtime | 기본 경로 아님 | W4A16 CUDA 생태계 | packing·kernel·model 지원 |
 | GPTQModel·Marlin | 일부 CPU path | Volta~Hopper·Marlin은 세대별 | 제한적 | 일부 Intel GPU | 기본 경로 아님 | GPTQ·Marlin CUDA 생태계 | CUDA 최적화·legacy format 차이 |
 | compressed-tensors·vLLM | 일부 scheme | 주요 서버 경로 | FP8·일부 scheme | 지원표 확인 | 기본 경로 아님 | 고처리량·다중 quant | compute capability·model support |
-| bitsandbytes | CPU backend | CUDA | 진행 중·제한적 | XPU·Gaudi | 기본 경로 아님 | QLoRA·빠른 loading | offload RAM·serving kernel |
+| bitsandbytes | CPU backend | CUDA | ROCm 안정(0.50.0+) | XPU·Gaudi | MPS(torch 2.9+) | QLoRA·빠른 loading | offload RAM·serving kernel |
 | AutoRound | quantization·일부 inference | export·inference | format별 | Intel 최적화 | export별 | 다중 scheme·format | 버전 변화·변환 자원 |
 | torchao | PyTorch path | CUDA | ROCm 일부 | export/backend별 | MPS 지원 범위 확인 | PyTorch-native·QAT | prototype dtype·kernel 범위 |
 | EXL3 | 아님 | 주 대상 | 현재 기본 아님 | 아님 | 아님 | 소비자 CUDA·세밀한 bpw | 전용 runtime·architecture 지원 |
@@ -1975,7 +1997,7 @@ artifact:
     - path: model-Q4_K_M.gguf
       size_bytes: <bytes>
       sha256: <sha256>
-  downloaded_at: 2026-07-21T00:00:00+09:00
+  downloaded_at: 2026-08-13T00:00:00+09:00
   license: <spdx-or-text>
   runtime:
     name: llama.cpp
@@ -2510,6 +2532,7 @@ provenance:
 - [Intel AutoRound](https://github.com/intel/auto-round)
 - [torchao](https://docs.pytorch.org/ao/stable/)
 - [ExLlamaV3·EXL3](https://github.com/turboderp-org/exllamav3)
+- [SGLang](https://github.com/sgl-project/sglang)
 
 ### 28.4 Apple·AMD·엣지
 
@@ -2526,6 +2549,10 @@ provenance:
 - [`gpt-oss-20b`](https://huggingface.co/openai/gpt-oss-20b)
 - [`gpt-oss-120b`](https://huggingface.co/openai/gpt-oss-120b)
 - [OpenAI gpt-oss local inference guide](https://cookbook.openai.com/articles/gpt-oss/run-locally-ollama)
+- [`moonshotai/Kimi-K3`](https://huggingface.co/moonshotai/Kimi-K3)
+- [`thinkingmachines/Inkling-NVFP4`](https://huggingface.co/thinkingmachines/Inkling-NVFP4)
+- [Gemma 4 QAT 발표](https://blog.google/innovation-and-ai/technology/developers-tools/quantization-aware-training-gemma-4/)
+- [`meta-models/Muse-Glimmer-30B-GGUF`](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF)
 - [Microsoft BitNet](https://github.com/microsoft/BitNet)
 
 ### 28.6 관련 레포지토리 문서
@@ -2535,9 +2562,9 @@ provenance:
 - [비전·OCR](../modalities/vision-ocr.md)
 - [이미지 생성](../modalities/image-generation.md)
 - [오디오·음성](../modalities/audio-speech.md)
-- [파인튜닝 메모리](./fine-tuning-memory.md) (예정)
-- [서빙·동시성](./serving-concurrency.md) (예정)
-- [런타임·하드웨어](./runtime-hardware.md) (예정)
+- [파인튜닝 메모리](./fine-tuning-memory.md)
+- [서빙·동시성](./serving-concurrency.md)
+- [런타임·하드웨어](./runtime-hardware.md)
 
 ---
 
@@ -2603,7 +2630,7 @@ embedding: INT8/Q8부터, 4-bit는 retrieval metric 통과 후
 
 ## 30. 갱신 및 사용상 주의
 
-양자화 생태계는 모델 architecture, GPU generation, runtime kernel과 함께 빠르게 변한다. 이 문서는 2026-07-21 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했지만, 다음 항목은 다운로드·배포 직전에 다시 검증해야 한다.
+양자화 생태계는 모델 architecture, GPU generation, runtime kernel과 함께 빠르게 변한다. 이 문서는 2026-08-13 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했지만, 다음 항목은 다운로드·배포 직전에 다시 검증해야 한다.
 
 - runtime의 최신 지원 architecture
 - GPU compute capability와 kernel

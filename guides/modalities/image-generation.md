@@ -3,10 +3,10 @@
 
 [← 메인 README](../../README.md) · [비전·OCR](./vision-ocr.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md)
 
-> **최종 검증일:** 2026-07-21 (KST)  
+> **최종 검증일:** 2026-08-13 (KST)  
 > **주요 실행 형식:** Diffusers, ComfyUI, 단일 `safetensors`, FP16/BF16, FP8, INT8, NF4, GGUF + ComfyUI-GGUF  
 > **범위:** 텍스트→이미지, 이미지→이미지, 인페인팅·아웃페인팅, 지시 기반 편집, 다중 참조, ControlNet·IP-Adapter, LoRA, 업스케일·복원, 로컬 서비스 운영  
-> **관련 문서:** [양자화](../operations/quantization.md) (예정) · [파인튜닝 메모리](../operations/fine-tuning-memory.md) (예정) · [런타임·하드웨어](../operations/runtime-hardware.md) (예정) · [오디오·음성](./audio-speech.md) (예정)
+> **관련 문서:** [양자화](../operations/quantization.md) · [파인튜닝 메모리](../operations/fine-tuning-memory.md) · [런타임·하드웨어](../operations/runtime-hardware.md) · [오디오·음성](./audio-speech.md)
 
 이 문서는 보유한 **시스템 RAM**, **GPU VRAM**, 또는 **Apple Silicon 통합 메모리**를 기준으로 로컬 이미지 생성·편집 모델을 선택하기 위한 실전 가이드다. 최신 대형 DiT뿐 아니라 낮은 메모리에서 여전히 강력한 Stable Diffusion 생태계, 이미지 편집·다중 참조 모델, ControlNet·LoRA·업스케일러까지 하나의 메모리 예산으로 계산한다.
 
@@ -25,7 +25,7 @@
 
 특히 **GGUF Q2·Q3·Q4는 이미지 모델 전체가 아니라 DiT/UNet만 양자화한 파일인 경우가 많다.** 예를 들어 Qwen-Image GGUF를 실행하려면 별도의 Qwen2.5-VL 텍스트 인코더, projector와 VAE가 필요하다. FLUX 계열도 T5/CLIP 또는 해당 세대의 텍스트 인코더와 VAE를 추가로 로드한다.
 
-모델 카드·가중치·라이선스·런타임 지원은 계속 바뀐다. 아래 값은 2026-07-21에 확인한 대표값이며, 다운로드 직전 Hugging Face의 **정확한 파일명, 총 다운로드 크기, gated access, 라이선스, base model revision, 권장 runtime**을 다시 확인한다.
+모델 카드·가중치·라이선스·런타임 지원은 계속 바뀐다. 아래 값은 2026-08-13에 확인한 대표값이며, 다운로드 직전 Hugging Face의 **정확한 파일명, 총 다운로드 크기, gated access, 라이선스, base model revision, 권장 runtime**을 다시 확인한다.
 
 > **핵심 원칙:** 낮은 메모리에서는 해상도·batch·동시성을 먼저 줄이고, 그다음 VAE tiling·CPU offload를 적용하며, 마지막 수단으로 Q2/Q3를 사용한다. 이미지 내 글자, 손·얼굴, 미세 질감, 동일 인물 편집은 저비트 양자화의 영향을 크게 받으므로 Q4와 Q5/Q6 또는 FP8을 반드시 같은 seed로 비교한다.
 
@@ -70,8 +70,8 @@
 | **4 GB** | [Stable Diffusion 1.5](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5), [SANA-Sprint 0.6B](https://huggingface.co/Efficient-Large-Model/Sana_Sprint_0.6B_1024px) | FP16, low-VRAM | 512–768px 단일 이미지, LoRA 1개, 간단 img2img | 16 GB | SDXL은 실행 가능하더라도 매우 공격적인 offload와 tiled VAE가 필요하다. |
 | **6 GB** | [SDXL Base 1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0), SANA-Sprint, SD 1.5 + ControlNet | FP16/BF16 | 768–1024px, batch 1, inpaint·ControlNet 순차 실행 | 16–32 GB | refiner·upscaler·ControlNet을 동시에 GPU에 올리지 않는다. |
 | **8 GB** | SDXL, [SD 3.5 Medium](https://huggingface.co/stabilityai/stable-diffusion-3.5-medium) 저비트, [FLUX.1 dev GGUF](https://huggingface.co/city96/FLUX.1-dev-gguf) Q4 + T5 offload | FP16, NF4/INT8, Q4 | 1024px 생성, SDXL LoRA·ControlNet, FLUX 시험 | 32 GB | Q4 DiT가 들어가도 T5·CLIP·VAE와 activation 때문에 full GPU load는 어렵다. |
-| **12 GB** | [FLUX.2 Klein 4B GGUF](https://huggingface.co/unsloth/FLUX.2-klein-4B-GGUF) Q4/Q5 + encoder offload, [Z-Image Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo) 양자화, SD 3.5 Large Q4 | Q4–Q6, FP8/NF4 | 1024px 고품질 T2I, 제한적 편집·다중 참조 | 32–64 GB | FLUX.2 Klein 4B 공식 full pipeline 기준은 약 13 GB VRAM이므로 12 GB에서는 offload가 전제다. |
-| **16 GB** | [FLUX.2 Klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Z-Image Turbo BF16, SD 3.5 Large/Turbo 양자화 | BF16 또는 Q4–Q8 | 1024px generation·editing, 소수 reference, SDXL 다중 ControlNet | 32–64 GB | FLUX.2 Klein 4B는 공식적으로 약 13 GB VRAM에 맞지만 UI와 고해상도 여유를 남긴다. |
+| **12 GB** | [FLUX.2 Klein 4B GGUF](https://huggingface.co/unsloth/FLUX.2-klein-4B-GGUF) Q4/Q5 + encoder offload, [Z-Image Turbo](https://huggingface.co/Tongyi-MAI/Z-Image-Turbo) 양자화, [Mage-Flow](https://huggingface.co/Comfy-Org/Mage-Flow) int8, SD 3.5 Large Q4 | Q4–Q6, FP8/NF4/INT8 | 1024px 고품질 T2I, 제한적 편집·다중 참조 | 32–64 GB | FLUX.2 Klein 4B 공식 full pipeline 기준은 약 13 GB VRAM이므로 12 GB에서는 offload가 전제다. |
+| **16 GB** | [FLUX.2 Klein 4B](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B), Z-Image Turbo BF16, [Mage-Flow](https://huggingface.co/Comfy-Org/Mage-Flow) FP8/int8, SD 3.5 Large/Turbo 양자화 | BF16, FP8/INT8 또는 Q4–Q8 | 1024px generation·editing, 소수 reference, SDXL 다중 ControlNet | 32–64 GB | FLUX.2 Klein 4B는 공식적으로 약 13 GB VRAM에 맞지만 UI와 고해상도 여유를 남긴다. |
 | **24 GB** | [Ideogram 4 NF4](https://huggingface.co/ideogram-ai/ideogram-4-nf4), [HiDream O1](https://huggingface.co/HiDream-ai/HiDream-O1-Image), [HunyuanImage 2.1 FP8](https://huggingface.co/tencent/HunyuanImage-2.1), [Qwen-Image GGUF](https://huggingface.co/city96/Qwen-Image-gguf) Q4, FLUX.2 Klein 9B Q4 + offload | NF4/FP8/Q4–Q6 | 타이포그래피, 고품질 편집, 1K–2K 단일 이미지 | 64 GB | Qwen-Image는 Q4 본체만 13 GB 안팎이며 텍스트 인코더·VAE를 별도 계산한다. |
 | **32 GB** | [FLUX.2 Klein 9B](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B), Ideogram 4, HiDream O1, [Krea 2 Turbo](https://huggingface.co/krea/Krea-2-Turbo) quant/offload, Qwen-Image Q5/Q6 | FP8/NF4/Q5–Q8 | 2K 단일 생성, multi-reference, 고품질 text rendering | 64–96 GB | Klein 9B 공식 full pipeline은 약 29 GB라서 32 GB에서 batch 1과 제한된 reference가 안전하다. |
 | **48 GB** | [FLUX.2 dev GGUF](https://huggingface.co/unsloth/FLUX.2-dev-GGUF) Q4/Q5, Qwen-Image Q8 + encoder, Krea 2 Raw/Turbo 저비트 | Q4–Q8, FP8 | 전문가용 단일 사용자 워크스테이션, 복잡한 editing·layout | 96 GB | full BF16 checkpoint가 아니라 transformer quant만 들어가는지 확인한다. |
@@ -86,7 +86,7 @@
 
 - **4–6 GB:** 최신 초대형 모델을 억지로 offload하기보다 SD 1.5·SDXL·SANA-Sprint로 prompt, ControlNet, LoRA 작업을 완성한다.
 - **8 GB:** SDXL이 가장 안정적이다. FLUX.1·SD 3.5는 Q4/NF4 transformer와 CPU text encoder로 시험한다.
-- **12–16 GB:** FLUX.2 Klein 4B와 Z-Image Turbo가 최신 성능·속도·메모리의 중심이다. 16 GB가 Klein 4B의 현실적인 full-pipeline 기준이다.
+- **12–16 GB:** FLUX.2 Klein 4B와 Z-Image Turbo에 더해, 2026-07-22 공개된 Microsoft Mage-Flow 4B(MIT, 공식 int8/FP8, Turbo 4-step)가 이 구간의 최신 중심이다. 16 GB가 Klein 4B의 현실적인 full-pipeline 기준이다.
 - **24–32 GB:** Ideogram 4, HiDream O1, Qwen-Image, FLUX.2 Klein 9B, HunyuanImage 2.1을 실제 작업별로 비교한다.
 - **48–96 GB:** FLUX.2 dev·Krea 2·Qwen-Image 고정밀과 여러 보조 모델을 함께 운용할 수 있다.
 - **192 GB VRAM 합계:** 32B급 모델의 다중 인스턴스에는 유용하지만 HunyuanImage 3.0 공식 최소선에는 미달한다.
@@ -98,10 +98,10 @@
 |---|---|---|---|
 | 저사양 일러스트·LoRA 생태계 | SD 1.5 | SDXL | 작은 VRAM, 방대한 checkpoint·ControlNet·LoRA 자산 |
 | 6–12 GB 범용 생성 | SDXL | SD 3.5 Medium, SANA-Sprint | 안정적인 툴 지원과 1024px 품질 |
-| 16 GB 최신 빠른 생성·편집 | FLUX.2 Klein 4B | Z-Image Turbo | 4B는 generation·editing·multi-reference 통합, Z-Image는 8-step 고속 T2I |
+| 16 GB 최신 빠른 생성·편집 | FLUX.2 Klein 4B | Z-Image Turbo, Mage-Flow | 4B는 generation·editing·multi-reference 통합, Z-Image는 8-step 고속 T2I, Mage-Flow는 MIT·4-step Turbo·편집 겸용 |
 | 영어·중국어 text rendering | Z-Image Turbo | Qwen-Image 2512, Ideogram 4 | bilingual 텍스트와 prompt adherence 비교 |
 | 포스터·광고·레이아웃 | Ideogram 4 | Qwen-Image 2512 | JSON prompt, bbox·palette·2K typography |
-| 인물·제품 identity 편집 | Qwen-Image-Edit-2511 | FLUX.2 Klein, HiDream O1 | character consistency·지시 기반 편집·multi-reference |
+| 인물·제품 identity 편집 | Qwen-Image-Edit-2511 | FLUX.2 Klein, HiDream O1, JoyAI-Image-Edit-Plus | character consistency·지시 기반 편집·multi-reference |
 | 스타일 탐색·LoRA 학습 | Krea 2 Raw | SDXL, Z-Image base | Raw는 undistilled base, Turbo는 8-step 배포용 |
 | 고품질 통합 생성·편집 | HiDream O1 | FLUX.2 dev | 별도 VAE·frozen text encoder 없는 unified pixel transformer |
 | 24 GB 2K 생성 | HunyuanImage 2.1 FP8 | Ideogram 4 NF4 | 2K 생성과 텍스트·레이아웃 비교 |
@@ -368,6 +368,7 @@ VAE는 최종 색상·미세 detail·decode 안정성에 직접 관여한다. VA
 | FLUX.1 | 고품질·성숙한 ComfyUI 자산 | T5 XXL 부담, dev 비상업 license | 8–24 GB, 기존 workflow |
 | FLUX.2 Klein | 4B/9B, generation+editing+multi-reference | 9B 비상업, full pipeline 메모리 큼 | 16–32 GB 최신 통합 작업 |
 | FLUX.2 dev | 32B, 고품질 generation/editing | 48–96 GB+, 비상업 open weights | 전문가·연구·서버 |
+| Mage-Flow | 4B NR-MMDiT, MIT, 공식 int8/FP8, Turbo 4-step, 생성+편집 | 신규 생태계, LoRA·커뮤니티 자산 초기 | 12–16 GB 통합 생성·편집 |
 | Z-Image | 6B, bilingual text, Turbo 8-step | Turbo는 negative prompt·CFG 제약 | 12–24 GB 고속 T2I |
 | Qwen-Image | 20B, 중국어·영어 text·editing | 큰 text encoder·VAE, 24 GB+ | 포스터·문자·정밀 편집 |
 | Ideogram 4 | JSON, bbox, palette, native 2K typography | gated·비상업, Qwen3-VL-8B encoder | 디자인·광고·layout |
@@ -416,7 +417,7 @@ VAE는 최종 색상·미세 detail·decode 안정성에 직접 관여한다. VA
 
 | 작업 | 1순위 | 2순위 | 메모리 전략 |
 |---|---|---|---|
-| 빠른 콘셉트 draft | SANA-Sprint, Z-Image Turbo | FLUX.2 Klein 4B | 1–8 step, batch 1–4 |
+| 빠른 콘셉트 draft | SANA-Sprint, Z-Image Turbo | FLUX.2 Klein 4B, Mage-Flow Turbo | 1–8 step, batch 1–4 |
 | 포토리얼 인물 | FLUX.2 dev/Klein, Qwen-Image 2512 | Ideogram 4, HiDream O1 | Q5+·FP8, face crop 평가 |
 | 포스터·메뉴·간판 | Ideogram 4 | Qwen-Image 2512, Z-Image | text encoder 고정밀, 2K tile |
 | 제품 사진 | FLUX.2, Ideogram 4 | Krea 2, Qwen-Image | reference·mask·색상 일관성 |
@@ -425,6 +426,14 @@ VAE는 최종 색상·미세 detail·decode 안정성에 직접 관여한다. VA
 | pose·depth 제어 | SDXL + ControlNet | FLUX/Qwen 전용 control adapter | condition model 순차 로드 |
 | low-VRAM inpaint | SD 1.5/SDXL inpaint | SD 3.5 quant | crop-and-stitch, tiled VAE |
 | 서버급 multimodal | HunyuanImage 3.0 | FLUX.2 dev | tensor parallel·queue |
+
+### 5.4 비디오 겸용 오픈 모델 참고
+
+ComfyUI·`stable-diffusion.cpp`·GGUF 등 로컬 이미지 런타임은 이전부터 Wan2.1/2.2·LTX-2.3·HunyuanVideo 같은 오픈 비디오 모델을 같은 경로로 실행해 왔고, 2026-07 하순 이후에는 MiniMax-H3(`stable-diffusion.cpp` 2026-08-04 추가)가 여기에 더해졌다. 비디오는 이 문서 범위 밖이므로 링크만 남긴다.
+
+- [MiniMax-H3](https://huggingface.co/MiniMaxAI/MiniMax-H3) (2026-07-28): 공식 카드 기준 33B(leejet GGUF 카드는 20B로 표기해 수치가 상이하다 — 반영 전 공식 카드 원문 재확인), T2V·I2V(첫/끝 프레임)·참조 기반 생성에 스테레오 오디오 동기 출력까지 지원. **MiniMax H3 Community License**로 상업 이용 조건 검토가 필요하다. ComfyUI v0.30.0 Day-0, `stable-diffusion.cpp` 지원, [leejet GGUF](https://huggingface.co/leejet/MiniMax-H3-GGUF)는 Q2 약 6.7 GB부터.
+- [LTX-2.5](https://huggingface.co/Lightricks/LTX-2.5) (2026-07-23): Lightricks의 오픈 비디오 모델로, 본체 파라미터 수는 미확인이다(별도로 공개된 22B IC-LoRA Pixel-Spatial-Upscaler는 부속 업스케일러다). ComfyUI v0.32.0 Day-0, QuantStack GGUF 존재.
+- [Wan2.2-Animate-2-14B](https://huggingface.co/Wan-AI/Wan2.2-Animate-2-14B): 캐릭터 애니메이션 v2, ComfyUI 지원(2026-08).
 
 ---
 
@@ -437,6 +446,7 @@ VAE는 최종 색상·미세 detail·decode 안정성에 직접 관여한다. VA
 | --- | --- | --- | --- | --- | ---: | --- | --- |
 | **FLUX.2 klein 4B** | 2026 | 4B rectified-flow transformer | T2I, 지시 편집, 다중 참조 | 공식 FP8 약 4.07 GB | **16 GB VRAM** | Apache 2.0 | [FP8](https://huggingface.co/black-forest-labs/FLUX.2-klein-4b-fp8) · [BF16](https://huggingface.co/black-forest-labs/FLUX.2-klein-4B) |
 | **FLUX.2 klein 9B** | 2026 | 9B rectified-flow transformer | T2I, 고품질 편집·다중 참조 | 공식 FP8 약 9.43 GB | **32 GB VRAM** | FLUX Non-Commercial, gated | [FP8](https://huggingface.co/black-forest-labs/FLUX.2-klein-9b-fp8) · [BF16](https://huggingface.co/black-forest-labs/FLUX.2-klein-9B) |
+| **Mage-Flow** | 2026-07 | 4B NR-MMDiT + Mage-VAE, Qwen3-VL-4B encoder | T2I, 지시 편집, Base/RL/Turbo(4-step) | 공식 int8 ConvRot·FP8, 커뮤니티 GGUF | **12 GB int8 / 16 GB VRAM** | MIT | [ComfyUI 리팩](https://huggingface.co/Comfy-Org/Mage-Flow) · [GGUF](https://huggingface.co/gguf-org/mageflow-gguf) |
 | **Krea 2 Raw** | 2026-06 | 12B dense DiT | 다양성 높은 T2I, LoRA·후학습 기준선 | community FP8·INT8·NVFP4 | **32–48 GB VRAM** | Krea 2 Community License | [Raw](https://huggingface.co/krea/Krea-2-Raw) |
 | **Krea 2 Turbo** | 2026-06 | 12B dense DiT, distilled | 8-step 고속 T2I, 1K–2K | community FP8·INT8·NVFP4 | **32–48 GB VRAM** | Krea 2 Community License | [Turbo](https://huggingface.co/krea/Krea-2-Turbo) |
 | **HiDream-O1-Image** | 2026-05 | 8B pixel-level unified transformer | T2I, 편집, subject personalization, 2K | BF16, community FP8 경로 | **48 GB VRAM/통합 메모리** | MIT | [Full](https://huggingface.co/HiDream-ai/HiDream-O1-Image) · [Dev](https://huggingface.co/HiDream-ai/HiDream-O1-Image-Dev-2604) |
@@ -470,6 +480,8 @@ FLUX.2 사용 시에는 다음을 고정한다.
 - 모델 revision과 single-file checkpoint revision
 - guidance·steps·scheduler
 - 결과 이미지의 metadata·C2PA·watermark 처리 여부
+
+> **FLUX 3는 아직 오픈웨이트가 아니다.** BFL이 2026-07-23 발표한 FLUX 3(이미지+비디오+오디오 통합 멀티모달, 08-05 API GA)는 API·파트너 노드 전용이다. "FLUX 3 Dev" 오픈웨이트는 2026년 후반 공개가 예고만 된 상태라, 2026-08-13 기준 로컬 실행 가능한 최신 오픈웨이트는 여전히 FLUX.2 계열이다.
 
 ### 6.3 Krea 2 Raw와 Turbo
 
@@ -525,8 +537,10 @@ Prompt Agent가 별도 대형 언어 모델을 사용하면 총메모리가 크�
 | --- | ---: | --- | --- | --- |
 | Turbo | 8 NFE | 모델 카드 설정 우선 | 빠른 일반 생성, 사진, 영·중문 텍스트 | GGUF Q3/Q4 |
 | Base | 약 50-step 계열 | 지원 | 다양성·fine-tuning·스타일 | GGUF Q4/Q5 |
-| Omni-Base | 공개 상태 확인 | 생성+편집 foundation | community fine-tuning | 공식 공개 revision 확인 |
-| Edit | 편집 pipeline 설정 | 입력 이미지 필요 | 지시 편집 | 지원 runtime 확인 |
+| Omni-Base | 2026-08-13 기준 가중치 미공개 | 생성+편집 foundation | community fine-tuning | 공개 시 확인 |
+| Edit | 2026-08-13 기준 가중치 미공개 | 입력 이미지 필요 | 지시 편집 | 공개 시 확인 |
+
+Z-Image-Edit와 Z-Image-Omni-Base는 논문·공식 블로그에 소개되어 있으나 2026-08-13 기준 Tongyi-MAI org에 가중치가 공개되지 않았다. 공개 여부는 org 페이지에서 재확인한다.
 
 Z-Image GGUF는 denoiser만 포함하는 경우가 일반적이다. 별도 **Qwen3 4B text encoder와 VAE**를 함께 다운로드해야 한다. 4 GB VRAM 이하 실행 사례는 CPU offload·quantized encoder·낮은 해상도를 포함할 수 있으므로, “Q4 파일 3.86 GB가 4 GB GPU에 완전히 상주한다”는 의미로 해석하지 않는다.
 
@@ -543,6 +557,10 @@ Z-Image GGUF는 denoiser만 포함하는 경우가 일반적이다. 별도 **Qwe
 | BF16 전체 | 최고정밀 기준선 | denoiser 약 40.9 GB | 전체 repo 약 57 GB급 | 64 GB+ |
 
 Qwen-Image 계열은 text encoder가 커서 denoiser Q4만 선택해도 16 GB GPU에서 offload가 필요할 수 있다. 16 GB에서는 Q2/Q3 또는 encoder CPU offload를 사용하고, 24 GB에서는 Q4를 기본점으로 삼는다.
+
+같은 계열의 [Qwen-Image-Layered](https://huggingface.co/Qwen/Qwen-Image-Layered)(2025-12, Apache 2.0, 약 20.4B)는 레이어를 분리해 생성하는 변형으로, unsloth GGUF 변환이 있다. 포스터·합성 작업에서 레이어별 후편집이 필요하면 별도로 평가한다.
+
+> **Qwen-Image-3.0은 아직 오픈웨이트가 아니다.** 2026-08-05 발표된 Qwen-Image-3.0은 API 전용으로, 2026-08-13 기준 가중치·모델 카드·벤치마크가 공개되지 않았다. 로컬 실행 가능한 최신 오픈웨이트는 여전히 Qwen-Image-2512와 Qwen-Image-Edit-2511이다.
 
 ### 6.7 Ovis-Image 7B
 
@@ -565,6 +583,26 @@ Qwen-Image 계열은 text encoder가 커서 denoiser Q4만 선택해도 16 GB GP
 세로쓰기·곡선 텍스트
 동일 문구 20 seed 반복
 ```
+
+### 6.8 Mage-Flow
+
+[Mage-Flow](https://huggingface.co/Comfy-Org/Mage-Flow)는 Microsoft가 2026-07-22 공개한 4B 이미지 생성·편집 스택이다. 경량 latent tokenizer인 Mage-VAE와 **NR-MMDiT**(Native-Resolution Multimodal DiT)를 rectified flow로 결합하고, 텍스트 인코더로 Qwen3-VL-4B를 사용한다. **MIT 라이선스**라서 상업 이용 조건이 단순하다.
+
+- 체크포인트 6종: **T2I와 Edit 각각 Base(30-step) / RL-aligned(20–30 step) / Turbo(4-step)**
+- 512–2048px 임의 종횡비 native 생성(4:1 극단 비율 포함)
+- GenEval 0.90으로 FLUX.2(0.87)·Qwen-Image(0.87)를 상회한다고 주장한다 — 자체 prompt·seed로 재검증한다.
+- A100 BF16 피크 메모리 약 18–20 GB. 공식 **int8 ConvRot·FP8** 양자화가 제공되어, 4B 기준 int8이면 8–12 GB급 콘슈머 GPU가 현실권이다.
+
+| 항목 | 내용 |
+| --- | --- |
+| 원본 저장소 | `microsoft/Mage-Flow` (org 검색에 직접 노출되지 않을 수 있음) |
+| 실사용 표준 경로 | [Comfy-Org/Mage-Flow](https://huggingface.co/Comfy-Org/Mage-Flow) 리팩 — qwen3vl_4b_bf16 인코더 + mage_flow_vae + bf16/fp8/int8_convrot 본체 |
+| 커뮤니티 GGUF | [gguf-org/mageflow-gguf](https://huggingface.co/gguf-org/mageflow-gguf) |
+| 런타임 | ComfyUI 코어 네이티브(v0.29.0+), `stable-diffusion.cpp`는 Mage-Flow-Edit 지원 |
+
+### 6.9 ERNIE-Image 계열
+
+Baidu의 [ERNIE-Image](https://huggingface.co/baidu/ERNIE-Image)는 **8B, Apache 2.0** T2I 계열이다. 표준판 외에 Turbo(고속)·Aes(미학 특화) 변형이 있고, Diffusers `ErnieImagePipeline`으로 실행한다. [unsloth GGUF](https://huggingface.co/unsloth/ERNIE-Image-GGUF) 변환이 있으며 InvokeAI 6.14.0-rc1이 Turbo를 지원한다. 20B급 Qwen-Image보다 작은 Apache 2.0 대안으로 비교 후보에 넣을 만하다.
 
 ---
 
@@ -615,6 +653,8 @@ LoRA 1–3개, scale 기록
 
 8 GB에서는 refiner까지 동시에 상주시키지 말고 base 생성 후 unload한다. 여러 ControlNet·IP-Adapter·upscaler를 함께 쓰면 12–16 GB가 더 안정적이다.
 
+SDXL 전통 UI 생태계에서는 원본 Forge 저장소가 비활성 상태이고 유지보수가 **Forge Neo** 포크 중심으로 이동했다는 정리가 나온다(2026-08 기준 3자 정리 글 근거 — 저장소 활동은 직접 확인한다). 신규 구축이라면 ComfyUI 또는 Forge Neo를 우선 검토한다.
+
 ### 7.4 SD 3.5 Medium의 NF4 경로
 
 SD 3.5 Medium은 bitsandbytes `NF4`를 적용할 수 있지만, 다음을 구분한다.
@@ -651,13 +691,13 @@ SANA는 linear attention과 높은 압축률의 DC-AE를 사용해 고해상도 
 
 | 편집 작업 | 1순위 후보 | 저메모리 대안 | 추가 메모리 요인 | 실패 기준 |
 | --- | --- | --- | --- | --- |
-| 자연어 지시 편집 | Qwen-Image-Edit-2511, FLUX.2 klein | SDXL instruct/edit finetune | 입력 image encoder·conditioning | 비편집 영역 drift |
+| 자연어 지시 편집 | Qwen-Image-Edit-2511, FLUX.2 klein, JoyAI-Image-Edit | Mage-Flow-Edit 4B, SDXL instruct/edit finetune | 입력 image encoder·conditioning | 비편집 영역 drift |
 | 텍스트 교체 | Qwen Edit, Ovis 계열 workflow | SDXL inpaint + 후처리 | 고해상도 crop·OCR 확인 | 철자·font·원근 불일치 |
 | 인물 의상·배경 변경 | FLUX.2, Qwen Edit, HiDream-O1 | SDXL inpaint + IP-Adapter | identity encoder·mask | 얼굴·체형·피부 변화 |
 | 제품 합성 | FLUX.2 multi-ref, Qwen Edit | SDXL + IP-Adapter | 참조 2–4장·고해상도 | 로고·제품 형상 drift |
 | 인페인팅 | SDXL inpaint, Qwen Edit | SD 1.5 inpaint | mask blur·crop·VAE | seam·조명 불일치 |
 | 아웃페인팅 | Qwen Edit, FLUX 계열 | SDXL outpaint workflow | canvas가 커져 latent 증가 | 반복 texture·perspective 붕괴 |
-| 다중 참조 | FLUX.2 9B/KV, HiDream-O1, Qwen Edit | IP-Adapter | 참조별 encoder embedding | 참조 혼합·identity collapse |
+| 다중 참조 | FLUX.2 9B/KV, HiDream-O1, Qwen Edit, JoyAI-Image-Edit-Plus | IP-Adapter | 참조별 encoder embedding | 참조 혼합·identity collapse |
 | skeleton·layout | HiDream-O1 | ControlNet OpenPose·depth | detector + condition network | 포즈는 맞지만 의미 불일치 |
 
 ### 8.2 입력 이미지 메모리
@@ -709,6 +749,15 @@ M_edit_extra ≈ M_input_decode
 - 동일 참조로 여러 prompt를 생성할 때만 cache가 이득이다.
 - reference encoder를 CPU에 두면 초기 encode는 느리지만 반복 denoise VRAM을 확보할 수 있다.
 - 참조 이미지를 1장씩 추가하며 품질과 peak 메모리를 기록한다.
+
+### 8.6 JoyAI-Image-Edit와 Edit-Plus
+
+JD.com이 오픈소스로 공개한 [JoyAI-Image-Edit](https://huggingface.co/jdopensource/JoyAI-Image-Edit)는 이미지 이해·T2I·지시 편집을 통합한 모델로, **8B MLLM + 16B MMDiT** 구성에 **Apache 2.0** 라이선스다. Qwen-Image-Edit-2511의 직접 경쟁자 위치에 있는 오픈 편집 모델이다.
+
+- BF16 전체 저장소는 약 50.6 GB로, BF16 상주는 대형 구간(48 GB+)이나 양자화·offload 경로를 전제한다.
+- **Edit-Plus** 변형은 **다중 참조 1–6장** 편집을 지원한다(jdopensource org에 Diffusers·ComfyUI 배포 별도).
+- ComfyUI 코어가 v0.29.0부터 네이티브 지원하며, Comfy-Org/JoyAI-Image-Edit 리팩과 커뮤니티 GGUF(vantagewithai/JoyAI-Image-Edit-Plus-ComfyUI-GGUF)가 있다.
+- 코드·문서: [jd-opensource/JoyAI-Image](https://github.com/jd-opensource/JoyAI-Image)
 
 ---
 
@@ -857,6 +906,8 @@ M_LoRA_runtime ≈ Σ M_adapter_weights
 | Qwen-Image | 성장 중 | 큰 encoder로 메모리 큼 | Diffusers·ComfyUI | 텍스트·인물·편집 |
 | SANA | 공식 training 지원 | 효율 지향 | 공식 repo·Diffusers | 연구·저메모리 실험 |
 
+Krea 2는 2026-06에 [krea 공식 org](https://huggingface.co/krea)가 retroanime·dotmatrix·vintagetarot 등 **공식 Krea-2 LoRA 9종**을 공개해, Raw로 학습하고 Turbo로 서빙하는 경로의 공식 참조 자산이 생겼다. 자체 LoRA 학습 전 스타일·강도 기준 예제로 활용할 수 있다.
+
 ### 11.3 LoRA 조합 규칙
 
 ```text
@@ -940,7 +991,7 @@ control preprocessor unload
 | 작업 | 권장 스택 |
 | --- | --- |
 | 범용 제작 | SDXL + ControlNet + LoRA + tiled upscale |
-| 최신 품질 | Z-Image-Turbo Q4/Q8 또는 FLUX.1 Q4 |
+| 최신 품질 | Z-Image-Turbo Q4/Q8, Mage-Flow int8, FLUX.1 Q4 |
 | 타이포그래피 | Ovis int4 또는 Qwen-Image Q3 offload |
 | 빠른 serving | SANA-Sprint·Z-Image-Turbo |
 | 스타일 학습 | SDXL LoRA |
@@ -961,6 +1012,7 @@ batch 1
 
 대안:
 
+- Mage-Flow FP8/int8 — 4B 생성+편집, MIT, Turbo 4-step
 - Z-Image-Turbo BF16 또는 Q8
 - FLUX.1 dev Nunchaku/SVDQuant
 - Qwen-Image Q3 + text encoder offload
@@ -1269,6 +1321,7 @@ hf auth login
 
 ```bash
 hf download black-forest-labs/FLUX.2-klein-4b-fp8 --dry-run
+hf download Comfy-Org/Mage-Flow --dry-run
 hf download krea/Krea-2-Turbo --dry-run
 hf download HiDream-ai/HiDream-O1-Image --dry-run
 hf download Qwen/Qwen-Image-2512 --dry-run
@@ -1445,6 +1498,8 @@ Hugging Face revision SHA, local SHA-256, 원본·quant 저장소 URL, 라이선
 ---
 
 ## 16. ComfyUI 구성
+
+> **버전 참고(2026-08-13):** ComfyUI 코어는 v0.29.0(2026-07-29)부터 v0.32.0(08-11)까지 약 2주간 5회 릴리스되며 JoyAI-Image-Edit·Mage-Flow(v0.29), MiniMax-H3(v0.30), Wan-Animate2·int8_convrot VAE 디코드 가속(v0.31), LTX-2.5(v0.32)를 네이티브 지원에 추가했다. FLUX 3·Seedance 2.5·Grok Imagine·Qwen-Image 3.0 Pro는 **파트너(API) 노드**로 추가된 것이며 로컬 오픈웨이트가 아니다.
 
 ### 16.1 기본 디렉터리
 
@@ -1877,7 +1932,9 @@ OOM 후 같은 process를 계속 사용하면 fragmentation·부분 로드 상�
 - CPU·CUDA·ROCm/HIP·Metal·Vulkan·SYCL 등 여러 backend를 시험하는 경우
 - GGUF Q2/Q3/Q4/Q5/Q6/Q8 diffusion model을 쓰는 경우
 - mmap·CPU/GPU placement를 세밀하게 조절하는 경우
-- FLUX·Qwen-Image·Z-Image·Krea 2·HiDream 등 최신 지원을 단일 CLI로 실험하는 경우
+- FLUX.1/.2·Qwen-Image·Z-Image·Ideogram 4·Mage-Flow-Edit 등 최신 지원을 단일 CLI로 실험하는 경우
+
+2026-08-13 기준 README의 지원 목록은 SD 1.x–3.5·SDXL·FLUX.1·FLUX.2-dev/klein·Ideogram 4·Z-Image·Qwen-Image 계열·Chroma 등 T2I와 FLUX.1-Kontext·Qwen-Image-Edit 계열·Mage-Flow-Edit 등 편집 모델에 더해 **비디오**(Wan2.1/2.2, LTX-2.3, HunyuanVideo, MiniMax-H3)까지 확대되어, 이미지 전용 런타임에서 비디오 겸용 런타임으로 확장 중이다. 백엔드는 CPU/CUDA/Vulkan/Metal/OpenCL/SYCL에 ROCm 빌드 배포가 더해졌다. [leejet/ideogram-4-GGUF](https://huggingface.co/leejet/ideogram-4-GGUF)처럼 sd.cpp용 GGUF 변환이 함께 배포되는 모델도 늘고 있다.
 
 프로젝트는 활발히 개발되며 CLI가 바뀔 수 있다. **release 또는 commit SHA를 고정**한다.
 
@@ -2050,6 +2107,8 @@ Z-Image·Qwen·FLUX처럼 companion 파일이 필요한 모델은 wrapper에 필
 
 프로젝트가 공개한 FLUX.1-dev 결과에서는 BF16 대비 3.6× memory reduction과 지원 장치에서 큰 속도 향상을 제시한다. 이 수치는 특정 모델·GPU·software revision의 결과이므로 사용자의 GPU에서 직접 benchmark한다.
 
+단, 2026-08-13 기준 Nunchaku 공식 릴리스는 2026-03의 v1.3.0dev가 마지막으로 갱신이 정체되어 있다. FLUX.2·Qwen-Image 최신 revision·Z-Image 등 신모델 지원 여부는 저장소에서 직접 재확인한다.
+
 ### 19.3 선택 기준
 
 | 상황 | 권장 |
@@ -2168,6 +2227,8 @@ PY
 
 FP8·FlashAttention·fused kernel은 GPU compute capability와 package build에 따라 지원 여부가 다르다.
 
+참고로 BFL·ComfyUI·NVIDIA 협업 FP8 경로는 FLUX.2 dev 메모리를 40% 이상 절감한다고 발표되었고, Blackwell 데이터센터 GPU에서는 NVFP4·CUDA Graphs·torch.compile 조합으로 FLUX.2 dev 추론 6.3× 가속이 제시되었다. 특정 구성 기준 수치이므로 자체 GPU에서 재측정한다.
+
 ### 20.3 AMD ROCm
 
 ROCm은 “AMD GPU면 모두 같은 방식으로 지원”되는 단일 환경이 아니다. [ROCm compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)에서 GPU, 운영체제, kernel, ROCm과 PyTorch 조합을 확인한다.
@@ -2188,6 +2249,8 @@ PyTorch는 AMD 공식 설치 문서의 현재 wheel·container를 사용한다. 
 - ROCm·PyTorch·ComfyUI가 검증된 container digest를 보존한다.
 
 AMD Instinct용 ComfyUI 문서와 Radeon용 예제는 대상 hardware가 다를 수 있으므로 적용 범위를 읽는다.
+
+ROCm GPU 경로 외에, Windows Ryzen AI NPU용으로는 stabilityai가 공식 배포한 NPU 변환(sd3.5-medium-amdnpu, sdxl-amdnpu)이 있다.
 
 ### 20.4 Apple Silicon 통합 메모리
 
@@ -2226,6 +2289,8 @@ export PYTORCH_ENABLE_MPS_FALLBACK=1
 ```
 
 Apple 전용 앱·runtime은 Core ML·Metal·MLX로 최적화된 별도 model format을 사용할 수 있다. Hugging Face BF16 repository를 그대로 넣을 수 있다고 가정하지 않는다.
+
+Apple 전용 앱 중 Draw Things는 2026-07-16 업데이트에서 Krea 2 Raw/Turbo와 Ideogram 4의 8/6-bit 실행을 추가하는 등 최신 모델 반영이 빠른 편이다.
 
 ### 20.5 CPU와 system RAM
 
@@ -2278,7 +2343,9 @@ temporary tiles·latents 별도 scratch
 
 ## 21. 파인튜닝·LoRA 메모리 빠른 기준
 
-상세 계산은 향후 [파인튜닝 메모리 가이드](../operations/fine-tuning-memory.md) **(예정)**에 분리한다. 아래 값은 **batch 1, gradient checkpointing, memory-efficient optimizer, 낮은 rank, 512–1024px, 단일 GPU LoRA**를 가정한 보수적 시작 범위다. 실제 요구량은 optimizer, trainable layer, text encoder 학습, resolution, aspect bucket과 cache 전략에 따라 달라진다.
+상세 계산은 [파인튜닝 메모리 가이드](../operations/fine-tuning-memory.md)에서 다룬다. 아래 값은 **batch 1, gradient checkpointing, memory-efficient optimizer, 낮은 rank, 512–1024px, 단일 GPU LoRA**를 가정한 보수적 시작 범위다. 실제 요구량은 optimizer, trainable layer, text encoder 학습, resolution, aspect bucket과 cache 전략에 따라 달라진다.
+
+도구 측면에서는 LLM 중심이던 [Unsloth](https://github.com/unslothai/unsloth)도 디퓨전 모델 실행·파인튜닝(LoRA/QLoRA/full FT)을 지원한다(2026-08-13 기준 공식 문서 확인, 지원 개시 시점은 미확인). Qwen-Image(-2512/-Edit)·Z-Image·FLUX·SDXL 등을 지원하며 "2× 속도·VRAM 70% 절감"을 주장한다 — 수치는 자체 워크로드로 검증하고, [공식 문서](https://unsloth.ai/docs/basics/diffusion-image)의 지원 모델 목록을 확인한다.
 
 ### 21.1 추론 메모리로 학습 가능 여부를 판단하지 않는다
 
@@ -2395,6 +2462,9 @@ product-style_flux2-klein4b_r16-a16_step2400_base-<shortsha>.safetensors
 | Ideogram 4 | gated, 비상업 라이선스 | 약관 동의, commercial restriction |
 | Krea 2 | Krea community license | 상업·재배포·fine-tune 조건 |
 | HiDream O1 | 공식 카드의 MIT 표기 확인 | dependency·dataset 제한 별도 검토 |
+| Mage-Flow | MIT | Qwen3-VL 인코더 등 component 라이선스 확인 |
+| JoyAI-Image-Edit | Apache 2.0 | Edit-Plus·리팩·커뮤니티 GGUF의 라이선스 승계 확인 |
+| ERNIE-Image | Apache 2.0 | variant(Turbo·Aes)별 모델 카드 확인 |
 | Stable Diffusion 3.5 | Stability Community License | 연 매출 기준 등 commercial 조건 최신 약관 확인 |
 | SDXL | OpenRAIL++ 계열 | prohibited use와 redistribution |
 | SD 1.5 | OpenRAIL-M 계열 | derivative·distribution 조건 |
@@ -2428,6 +2498,8 @@ product-style_flux2-klein4b_r16-a16_step2400_base-<shortsha>.safetensors
 - runtime user에서 cloud credential·SSH key를 제거한다.
 - model volume은 read-only로 mount한다.
 - 다운로드 host와 production host를 분리할 수 있다.
+
+런타임 자체의 보안 공지도 추적한다. 예를 들어 InvokeAI는 v6.13.7(2026-07)에서 `invokeai.yaml`·`api_keys.yaml` 설정·API 키 파일이 유출될 수 있는 취약점을 수정했다 — 이전 버전 사용 시 즉시 갱신한다(후속 6.14.0-rc1은 Krea 2·Ideogram 4·ERNIE Turbo·멀티 GPU 렌더링 지원을 추가했다).
 
 ### 22.3 입력 이미지 검증
 
@@ -2999,7 +3071,7 @@ hf download owner/repo --revision <sha> --dry-run
 
 ## 25. 주요 출처와 저장소
 
-아래 링크는 2026-07-21에 확인한 공식 모델 카드·공식 저장소·주요 runtime 문서다. 커뮤니티 GGUF는 파일 크기와 실제 다운로드 편의를 위해 포함했으며, 원본 모델의 라이선스와 revision을 함께 확인한다.
+아래 링크는 2026-08-13에 확인한 공식 모델 카드·공식 저장소·주요 runtime 문서다. 커뮤니티 GGUF는 파일 크기와 실제 다운로드 편의를 위해 포함했으며, 원본 모델의 라이선스와 revision을 함께 확인한다.
 
 ### 25.1 최신 범용·편집 모델
 
@@ -3012,7 +3084,7 @@ hf download owner/repo --revision <sha> --dry-run
 - [Ideogram 4 NF4](https://huggingface.co/ideogram-ai/ideogram-4-nf4)
 - [Ideogram 4 FP8](https://huggingface.co/ideogram-ai/ideogram-4-fp8)
 - [HiDream O1 Image](https://huggingface.co/HiDream-ai/HiDream-O1-Image)
-- [HiDream O1 project](https://hidream.ai/hidream-o1)
+- [HiDream O1 Image Dev-2604](https://huggingface.co/HiDream-ai/HiDream-O1-Image-Dev-2604)
 - [Krea 2 Raw](https://huggingface.co/krea/Krea-2-Raw)
 - [Krea 2 Turbo](https://huggingface.co/krea/Krea-2-Turbo)
 - [Krea 2 official code](https://github.com/krea-ai/krea-2)
@@ -3023,6 +3095,12 @@ hf download owner/repo --revision <sha> --dry-run
 - [Z-Image Base](https://huggingface.co/Tongyi-MAI/Z-Image)
 - [HunyuanImage 2.1](https://huggingface.co/tencent/HunyuanImage-2.1)
 - [HunyuanImage 3.0](https://huggingface.co/tencent/HunyuanImage-3.0)
+- [Mage-Flow ComfyUI 리팩 — Comfy-Org](https://huggingface.co/Comfy-Org/Mage-Flow)
+- [Mage-Flow 튜토리얼 — ComfyUI Docs](https://docs.comfy.org/tutorials/image/mage-flow/mage-flow)
+- [JoyAI-Image-Edit — jdopensource](https://huggingface.co/jdopensource/JoyAI-Image-Edit)
+- [JoyAI-Image — GitHub](https://github.com/jd-opensource/JoyAI-Image)
+- [ERNIE-Image — Baidu](https://huggingface.co/baidu/ERNIE-Image)
+- [Qwen-Image-Layered](https://huggingface.co/Qwen/Qwen-Image-Layered)
 
 ### 25.2 Stable Diffusion·SANA
 
@@ -3039,6 +3117,8 @@ hf download owner/repo --revision <sha> --dry-run
 - [T5 v1.1 XXL Encoder GGUF — city96](https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf)
 - [Qwen-Image GGUF — city96](https://huggingface.co/city96/Qwen-Image-gguf)
 - [Qwen-Image-Edit-2509 GGUF — QuantStack](https://huggingface.co/QuantStack/Qwen-Image-Edit-2509-GGUF)
+- [Ideogram 4 GGUF — leejet](https://huggingface.co/leejet/ideogram-4-GGUF)
+- [Mage-Flow GGUF — gguf-org](https://huggingface.co/gguf-org/mageflow-gguf)
 - [ComfyUI-GGUF](https://github.com/city96/ComfyUI-GGUF)
 
 ### 25.4 실행 도구
@@ -3055,6 +3135,8 @@ hf download owner/repo --revision <sha> --dry-run
 - [ROCm PyTorch installation](https://rocm.docs.amd.com/projects/ai-ecosystem/en/latest/frameworks/pytorch/install.html)
 - [ComfyUI on ROCm](https://rocm.docs.amd.com/projects/comfyui/en/latest/)
 - [stable-diffusion.cpp](https://github.com/leejet/stable-diffusion.cpp)
+- [Unsloth 디퓨전 모델 문서](https://unsloth.ai/docs/basics/diffusion-image)
+- [InvokeAI releases](https://github.com/invoke-ai/InvokeAI/releases)
 
 ### 25.5 관련 RAM-for-Local-AI 문서
 
@@ -3074,8 +3156,8 @@ hf download owner/repo --revision <sha> --dry-run
 ```text
 4–6 GB    SD 1.5 / SANA-Sprint / SDXL low-VRAM
 8 GB      SDXL 중심, FLUX.1 Q4 시험
-12 GB     FLUX.2 Klein 4B Q4/Q5 + offload
-16 GB     FLUX.2 Klein 4B 또는 Z-Image Turbo
+12 GB     FLUX.2 Klein 4B Q4/Q5 + offload / Mage-Flow int8
+16 GB     FLUX.2 Klein 4B / Z-Image Turbo / Mage-Flow FP8
 24 GB     Ideogram 4 NF4 / HiDream O1 / Qwen-Image Q4 / Hunyuan 2.1 FP8
 32 GB     FLUX.2 Klein 9B / Qwen Q5-Q6 / Krea 2 quant
 48 GB     FLUX.2 dev Q4-Q5 / Qwen Q8 / Krea 2 staged
@@ -3089,9 +3171,9 @@ hf download owner/repo --revision <sha> --dry-run
 기본 선택은 다음과 같다.
 
 - **저메모리 범용:** SDXL
-- **16 GB 최신 균형:** FLUX.2 Klein 4B 또는 Z-Image Turbo
+- **16 GB 최신 균형:** FLUX.2 Klein 4B, Z-Image Turbo 또는 Mage-Flow(MIT, Turbo 4-step)
 - **글자·포스터:** Ideogram 4 또는 Qwen-Image
-- **통합 편집:** FLUX.2 Klein/dev, HiDream O1, Qwen-Image-Edit
+- **통합 편집:** FLUX.2 Klein/dev, HiDream O1, Qwen-Image-Edit, JoyAI-Image-Edit
 - **스타일·LoRA 연구:** Krea 2 Raw 또는 SDXL 생태계
 - **서버급 연구:** FLUX.2 dev BF16; HunyuanImage 3.0은 Base 3×80 GB, Instruct·Distilled 8×80 GB부터 검토
 
@@ -3110,7 +3192,7 @@ hf download owner/repo --revision <sha> --dry-run
 
 ## 갱신 및 사용상 주의
 
-- 이 문서는 **2026-07-21 KST** 기준 공개 모델 카드·저장소·runtime 문서를 바탕으로 작성했다.
+- 이 문서는 **2026-08-13 KST** 기준 공개 모델 카드·저장소·runtime 문서를 바탕으로 작성했다.
 - Hugging Face 파일명, quant tag, 모델 revision, gated access, API와 라이선스는 변경될 수 있다.
 - 다운로드 직전 `hf download --dry-run`으로 실제 파일과 총용량을 확인한다.
 - 공식 최소 VRAM은 특정 설정의 실행 가능 사례일 수 있으므로 이 문서의 보수적 장착 메모리와 다를 수 있다.

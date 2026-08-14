@@ -1,7 +1,7 @@
 # 로컬 AI 모델 선택 가이드
 ## 버그바운티·사이버보안 연구·학습·프로그래밍용 — RAM/VRAM/Apple 통합 메모리별
 
-> **최종 검증일:** 2026-07-20 (KST)  
+> **최종 검증일:** 2026-08-13 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`  
 > **범위:** 승인된 버그바운티, 사내 보안 점검, CTF/교육, 악성코드 분석 샌드박스, 코드 감사, 보안 자동화 및 일반 프로그래밍
 
@@ -42,8 +42,10 @@
 | **16 GB 최소 / 24 GB 권장** | [gpt-oss-20b](https://huggingface.co/unsloth/gpt-oss-20b-GGUF) | Q4_K_M/MXFP4 | 11.6 GB | 8K | 에이전트·추론에 강함. 16 GB는 OS 여유가 매우 작음 |
 | **24 GB** | [Devstral Small 2 24B](https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF) | Q4_K_M | 14.9 GB | 8K–16K | 저장소 수준 코드 수정·소프트웨어 엔지니어링 에이전트 |
 | **24 GB** | [Qwen3.6-35B-A3B](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) | UD-Q3_K_M | 15.4 GB | 8K | MoE 코딩·프런트엔드·도구 사용. Q4는 32 GB 권장 |
+| **24 GB 최소 / 32 GB 권장** | [Muse-Glimmer-30B](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) | Q4_K_M | 16.8 GB | 8K–16K | Meta의 24 GB VRAM 타깃 에이전트 특화. 이미지 입력 지원, projector·드래프터 별도 |
 | **32 GB** | [Qwen3.6-35B-A3B](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) | UD-Q4_K_M | 18.0 GB | 16K | 현재 중형 로컬 코딩/에이전트의 강력한 기본 선택 |
 | **32 GB** | [Gemma 4 31B](https://huggingface.co/unsloth/gemma-4-31B-it-GGUF) | Q4_K_M | 19.1 GB | 8K–16K | 범용 추론·멀티모달 분석. 영상/이미지는 추가 메모리 필요 |
+| **32 GB 최소 / 48 GB 권장** | [Nemotron-3.5-Lightning-30B-A3B](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) | Q4_K_M | 25.4 GB | 16K | 하이브리드 MoE·최대 1M 컨텍스트. 25.4 GB로 32 GB에서는 KV 여유가 작아 컨텍스트 실측 필요 |
 | **48 GB** | [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | Q3_K_M | 33.3 GB | 8K–16K | 대형 코드베이스·에이전트. Q4 39.2 GB는 48 GB에서 빠듯함 |
 | **48 GB** | [Mistral Small 4 119B](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF) | IQ2/UD-Q2 | 34.9–40.2 GB | 8K | 품질 저하를 감수한 대형 모델 실험용 |
 | **64 GB** | [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | Q4_K_M | 39.2 GB* | 16K | 코드 에이전트의 실용 구간. 저장소별 Q4 크기 차이 확인 필요 |
@@ -52,9 +54,9 @@
 | **96 GB** | [Mistral Small 4 119B](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF) | UD-Q4_K_M | 59.2 GB | 16K | 대형 범용/에이전트 모델의 현실적인 Q4 구간 |
 | **96 GB** | [Devstral 2 123B](https://huggingface.co/unsloth/Devstral-2-123B-Instruct-2512-GGUF) | Q4 계열 | 75.5–78.5 GB | 8K–16K | 고급 저장소 에이전트. 96 GB에서도 긴 컨텍스트는 주의 |
 | **128 GB** | Devstral 2 / Mistral Small 4 | Q4–Q5 | 60–90+ GB | 16K–32K | 더 긴 저장소 컨텍스트와 병렬 슬롯 운용에 적합 |
-| **192 GB** | [DeepSeek-V4-Flash](https://huggingface.co/Preyazz/DeepSeek-V4-Flash-GGUF) | Q3/Q4 | 약 125/161 GB | 8K–16K | 최신 아키텍처 지원 여부를 먼저 확인하는 실험 구간 |
-| **256 GB 이상** | V4 Flash 고품질 양자화·다중 모델 | Q4–Q6 | 모델별 상이 | 측정 후 확대 | 서버급. NUMA·메모리 대역폭·스토리지 속도가 중요 |
-| **768 GB–1 TB+** | DeepSeek V4 Pro·초대형 MoE | 저비트부터 | 수백 GB | 4K부터 | 연구용. 전용 포크/백엔드 제약과 매우 긴 로딩 시간을 감수 |
+| **192 GB** | [DeepSeek-V4-Flash-0731](https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF) | IQ4 | 약 136.7 GB | 8K–16K | 최신 아키텍처 지원 여부를 먼저 확인하는 실험 구간. Q4(약 155.1 GB)는 192–256 GB 구간 |
+| **256 GB 이상** | V4-Flash-0731 고품질 양자화·다중 모델 | Q4–Q6 | 모델별 상이 | 측정 후 확대 | 서버급. NUMA·메모리 대역폭·스토리지 속도가 중요 |
+| **768 GB–1 TB+** | DeepSeek V4 Pro·Kimi K3·초대형 MoE | 저비트부터 | 수백 GB | 4K부터 | 연구용. 전용 포크/백엔드 제약과 매우 긴 로딩 시간을 감수 |
 
 \* Qwen3-Coder-Next Q4는 저장소와 동적 양자화 방식에 따라 약 **39.2 GB에서 48.4 GB**까지 차이가 난다. 파일명을 보고 판단해야 한다.
 
@@ -178,6 +180,7 @@
 | 모델 | 구조·주용도 | Q2 대표 크기 | Q3 대표 크기 | Q4 대표 크기 | 권장 총 메모리 | GGUF / 모델 카드 |
 |---|---|---:|---:|---:|---:|---|
 | **Qwen3.5-0.8B** | 초경량 범용·코딩·다국어·비전 | 0.418 GB | 0.470 GB | **0.535 GB** | 4 GB | [Unsloth GGUF](https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF) |
+| **antares-1b** | Cisco Foundation AI, 취약점 위치 특정 터미널 에이전트, Granite 4.0 1B 베이스·128K | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **약 0.7 GB(추정)** | 4 GB | [공식 모델 카드](https://huggingface.co/fdtn-ai/antares-1b) |
 | **Qwen3.5-2B** | 저사양 코딩·로그 요약·도구 보조 | 0.967 GB | 1.11 GB | **1.29 GB** | 4–6 GB | [Unsloth GGUF](https://huggingface.co/unsloth/Qwen3.5-2B-GGUF) |
 | **Ministral 3 3B Reasoning** | 소형 추론·비전·온디바이스 | 공식 미제공 | 공식 미제공 | **2.15 GB** | 6–8 GB | [Mistral 공식 GGUF](https://huggingface.co/mistralai/Ministral-3-3B-Reasoning-2512-GGUF) |
 | **Qwen3.5-4B** | 저사양 범용 코딩·비전·에이전트 입문 | 1.94 GB | 2.11 GB | **2.78 GB** | 8 GB | [Unsloth GGUF](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) |
@@ -193,7 +196,9 @@
 
 - **8 GB 이하:** Qwen3.5-4B Q4를 기준선으로 사용한다.
 - **12–16 GB 보안 연구:** Foundation-Sec-8B Q4로 도메인 질의·트리아지를 하고, Qwen3.5-9B Q4로 일반 코딩을 보완한다.
+- **취약점 위치 특정(경량 에이전트):** 같은 Cisco Foundation AI 팀의 antares-1b(Q4 약 0.7 GB 추정, Granite 4.0 1B 베이스, Apache-2.0, GGUF 제공)로 취약 파일 후보를 먼저 좁힌 뒤 Foundation-Sec-8B나 코드 모델로 심층 분석한다. 더 낮은 사양에는 antares-350m 변형이 있다.
 - **16 GB 단일 모델:** Ministral 3 14B Q4가 균형적이다. 멀티모달 기능을 쓰면 컨텍스트를 줄인다.
+- **한국어 저사양(선택):** kanana-2-3b Q4(약 2 GB, 32K)는 한국어 토크나이저 효율이 높아 4–8 GB 한국어 환경의 보조로 쓸 만하다. 다만 공식 GGUF 저장소는 없고 mradermacher·dummy9996 등 커뮤니티 변환판만 있으며, 라이선스는 Apache가 아닌 KananaOpenLicense다. 보안·코딩 성능은 동급 범용 모델로 별도 확인한다.
 
 ## 4.2 중대형: 20B–35B
 
@@ -205,6 +210,8 @@
 | **Gemma 4 31B** | 대형 멀티모달·추론·문서 분석 | 11.8 GB | 13.2 GB | **19.1 GB** | Q3 24 GB, Q4 32 GB | [Unsloth GGUF](https://huggingface.co/unsloth/gemma-4-31B-it-GGUF) |
 | **Qwen3.6-27B** | 범용·코딩·에이전트 | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **19.1 GB** | 32 GB | [ggml-org GGUF](https://huggingface.co/ggml-org/Qwen3.6-27B-GGUF) |
 | **Qwen3.6-35B-A3B** | 35B 총/3B 활성 MoE, 프런트엔드·코딩·도구 사용·저장소 추론 | 12.3 GB | 15.4 GB | **18.0 GB** | Q3 24 GB, Q4 32 GB | [Unsloth GGUF](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) |
+| **Muse-Glimmer-30B** | 약 29.6B dense + 비전 인코더, 이미지 입력·에이전트 특화(Meta meta-models) | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **16.8 GB** | 24–32 GB | [공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) |
+| **Nemotron-3.5-Lightning-30B-A3B** | 30B 총/3B 활성 MoE, Mamba-2+MoE+어텐션 하이브리드, 최대 1M | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **25.4 GB** | 32 GB 최소, 48 GB 권장 | [ggml-org GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) |
 
 ### 이 구간의 추천
 
@@ -212,6 +219,8 @@
 - **코딩 + 일반 추론 + 도구 사용:** Qwen3.6-35B-A3B Q4
 - **추론/에이전트와 16 GB 최소 장비:** gpt-oss-20b. 단, 16 GB 통합 메모리에서는 브라우저·IDE를 정리하고 8K 컨텍스트부터 시작한다.
 - **스크린샷·UI·문서 이미지 분석:** Gemma 4 또는 Devstral 비전 기능. projector와 이미지 버퍼 용량을 별도로 남긴다.
+- **24–32 GB 비전·에이전트:** Muse-Glimmer-30B Q4(16.8 GB, Apache-2.0). 24 GB VRAM 타깃의 에이전트 특화 모델로 이미지 입력을 지원한다. 동봉된 DFlash 드래프터(약 1.6 GB)와 projector(약 1.4 GB)까지 올리면 합계가 약 19.8 GB이므로 24 GB에서는 KV 여유가 작다.
+- **긴 컨텍스트 하이브리드(32 GB 최소, 48 GB 권장):** Nemotron-3.5-Lightning-30B-A3B Q4(25.4 GB, OpenMDW-1.1). Mamba-2+MoE+어텐션 하이브리드로 최대 1M 컨텍스트를 표방하지만, 25.4 GB 가중치는 32 GB에서 KV 여유가 작으므로 컨텍스트를 실측으로 정하고, 긴 컨텍스트가 필요하면 48 GB급을 쓴다.
 
 ## 4.3 대형: 80B–125B
 
@@ -270,6 +279,8 @@ CVE/권고 ID
 2. 48–64 GB: Qwen3-Coder-Next Q3/Q4
 3. 96 GB 이상: Devstral 2 또는 Mistral Small 4 Q4
 
+경량 1차 스크리너로 fdtn-ai antares-1b/350m(Cisco Foundation AI)를 함께 쓸 수 있다. grep/find/cat를 실행하며 취약 파일 위치를 좁히는 터미널 에이전트로, Granite 4.0 1B 베이스에 128K 컨텍스트, Apache-2.0이며 GGUF를 제공한다. 대형 코드 모델의 심층 분석 전에 후보 파일을 추리는 용도로 적합하다. 위치 특정 결과도 “가설”로 취급하고 도구로 검증한다.
+
 권장 워크플로:
 
 1. 저장소 구조와 신뢰 경계를 먼저 요약한다.
@@ -327,6 +338,14 @@ CVE/권고 ID
 | 최종 검증 | 정적/동적 분석 도구 + 사람 | 재현 가능성, 오탐 제거, 정책 준수 |
 
 모델 두 개를 동시에 메모리에 올리기 어렵다면 순차 실행하고, JSON/Markdown 산출물을 다음 단계 입력으로 넘긴다.
+
+## 5.8 입출력 가드레일·안전 분류 (선택)
+
+에이전트 입출력이나 외부 제보를 정책 기준으로 선별해야 할 때, 별도의 안전 분류기를 파이프라인 앞단에 둘 수 있다.
+
+**추천:** Shieldstral-1.0-3B
+
+자연어로 작성한 모더레이션 정책을 추론 시점에 입력받아 단일 토큰으로 안전 점수를 산출하는 정책 적응형 분류기다(텍스트+이미지). Ministral 3 3B 베이스에 Pixtral 비전 인코더를 얹었고 12개 언어를 지원한다. Apache-2.0이며 BF16 기준 약 16 GB VRAM에서 동작한다. 공식 GGUF 저장소는 없고 변환 가이드만 제공되므로, GGUF가 필요하면 직접 변환한다. 분류기 판정도 최종 근거가 아니라 승인 게이트의 보조 신호로 취급한다.
 
 ---
 
@@ -646,10 +665,11 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 
 | 모델 | 알려진 구조/특성 | 커뮤니티 GGUF 대표 크기 | 현실적 메모리 | 링크·주의사항 |
 |---|---|---:|---:|---|
-| **DeepSeek-V4-Flash** | 약 284B 총/13B 활성 MoE, 최대 1M 컨텍스트 계열 | Q2_K 약 96 GB, Q3_K_M 약 125 GB, Q4_K_M 약 161 GB | Q2 128 GB, Q3 192 GB, Q4 192–256 GB | [공식 기본 모델](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash) · [커뮤니티 GGUF](https://huggingface.co/Preyazz/DeepSeek-V4-Flash-GGUF) · 백엔드 지원 확인 |
+| **DeepSeek-V4-Flash-0731** | 284B 총/13B 활성 MoE(MTP 포함 실측 304B), CSA+HCA 하이브리드 어텐션, 최대 1M 컨텍스트, MIT. preview를 대체한 공식판 | UD-Q2_K_XL 약 96.8 GB, UD-IQ4_XS 약 136.7 GB, UD-Q4_K_XL 약 155.1 GB | Q2 128 GB, IQ4 192 GB, Q4 192–256 GB | [공식 기본 모델(0731)](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731) · [unsloth GGUF](https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF) · bartowski·lmstudio-community·ggml-org 판 존재 · Jinja 챗템플릿 미제공(전용 스크립트) |
 | **GLM-5.2** | 초대형 장문·에이전트 계열, 1M 컨텍스트 배포 존재 | 저장소 샤드 합계 확인 | 저비트도 384–512 GB 이상을 예상하고 실측 | [Unsloth GGUF](https://huggingface.co/unsloth/GLM-5.2-GGUF) |
 | **Kimi-K2.7-Code** | 장기 코드 에이전트·도구 사용 계열 | 저장소 샤드 합계 확인 | 384–768 GB+ 실험 구간 | [Unsloth GGUF](https://huggingface.co/unsloth/Kimi-K2.7-Code-GGUF) |
-| **DeepSeek-V4-Pro** | 약 1.6T 총/49B 활성급 초대형 MoE 계열 | 커뮤니티 Q2_K-XL이 약 535 GiB로 보고됨 | 768 GB–1 TB+ 권장 | [공식 기본 모델](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro) · [커뮤니티 GGUF](https://huggingface.co/teamblobfish/DeepSeek-V4-Pro-GGUF) · 특정 포크/Metal·CPU 제약 확인 |
+| **DeepSeek-V4-Pro** | 약 1.6T 총/49B 활성급 초대형 MoE 계열 | 커뮤니티 Q2_K-XL이 약 535 GiB로 보고됨 | 768 GB–1 TB+ 권장 | [공식 기본 모델](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro) · [커뮤니티 GGUF](https://huggingface.co/teamblobfish/DeepSeek-V4-Pro-GGUF) · 특정 포크/Metal·CPU 제약 확인 · V4-Pro-0813 공식판은 API만 공개(2026-08-12), HF 가중치 미공개 |
+| **Kimi K3** | 2.8T 총/104B 활성 MoE, MXFP4 QAT(4bit 사실상 네이티브), 1M 컨텍스트, 텍스트+이미지 입력. Kimi K3 License(MIT 변형·MIT 아님) | UD-Q2_K_XL 약 861 GB, UD-Q4_K_XL 약 1,509 GB | Q2 약 1 TB, Q4 1.5 TB+ | [공식 기본 모델](https://huggingface.co/moonshotai/Kimi-K3) · [unsloth GGUF](https://huggingface.co/unsloth/Kimi-K3-GGUF) · 초고사양 전용 |
 
 ### 초대형 모델에서 반드시 확인할 것
 
@@ -703,7 +723,7 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 - [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp)
 - [Hugging Face Hub CLI 문서](https://huggingface.co/docs/huggingface_hub/guides/cli)
 
-## 소형·중형 GGUF
+## 소형·중형 모델·GGUF
 
 - [Qwen3.5-0.8B-GGUF](https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF)
 - [Qwen3.5-2B-GGUF](https://huggingface.co/unsloth/Qwen3.5-2B-GGUF)
@@ -715,11 +735,14 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 - [Foundation-Sec-8B-Reasoning](https://huggingface.co/fdtn-ai/Foundation-Sec-8B-Reasoning)
 - [Foundation-Sec-8B Q4_K_M GGUF](https://huggingface.co/fdtn-ai/Foundation-Sec-8B-Reasoning-Q4_K_M-GGUF)
 - [Foundation-Sec-8B 다중 양자화 GGUF](https://huggingface.co/mradermacher/Foundation-Sec-8B-Reasoning-GGUF)
+- [antares-1b (Cisco Foundation AI, 취약점 위치 특정)](https://huggingface.co/fdtn-ai/antares-1b)
+- [Shieldstral-1.0-3B (안전 분류기, 본체 repo — 공식 GGUF 없음)](https://huggingface.co/mistralai/Shieldstral-1.0-3B)
 - [Gemma 4 E2B GGUF](https://huggingface.co/unsloth/gemma-4-E2B-it-GGUF)
 - [Gemma 4 E4B GGUF](https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF)
 - [Gemma 4 12B GGUF](https://huggingface.co/unsloth/gemma-4-12b-it-GGUF)
 - [Gemma 4 26B-A4B GGUF](https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF)
 - [Gemma 4 31B GGUF](https://huggingface.co/unsloth/gemma-4-31B-it-GGUF)
+- [kanana-2-3b-instruct (한국어 저사양, 본체 repo — 공식 GGUF 없음)](https://huggingface.co/kakaocorp/kanana-2-3b-instruct)
 
 ## 코딩·에이전트·대형 GGUF
 
@@ -730,6 +753,8 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 - [Devstral Small 2 24B GGUF](https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF)
 - [Qwen3.6-27B GGUF](https://huggingface.co/ggml-org/Qwen3.6-27B-GGUF)
 - [Qwen3.6-35B-A3B GGUF](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF)
+- [Muse-Glimmer-30B GGUF (Meta meta-models)](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF)
+- [NVIDIA Nemotron-3.5-Lightning-30B-A3B GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF)
 - [Qwen3-Coder-Next GGUF](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF)
 - [Qwen 공식 Qwen3-Coder-Next GGUF](https://huggingface.co/Qwen/Qwen3-Coder-Next-GGUF)
 - [Mistral Small 4 119B GGUF](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF)
@@ -737,10 +762,12 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 
 ## 초대형·실험적
 
-- [DeepSeek-V4-Flash](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash)
-- [DeepSeek-V4-Flash 커뮤니티 GGUF](https://huggingface.co/Preyazz/DeepSeek-V4-Flash-GGUF)
+- [DeepSeek-V4-Flash-0731](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731)
+- [DeepSeek-V4-Flash-0731 GGUF (unsloth)](https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF)
 - [GLM-5.2 GGUF](https://huggingface.co/unsloth/GLM-5.2-GGUF)
 - [Kimi-K2.7-Code GGUF](https://huggingface.co/unsloth/Kimi-K2.7-Code-GGUF)
+- [Kimi K3](https://huggingface.co/moonshotai/Kimi-K3)
+- [Kimi K3 GGUF (unsloth)](https://huggingface.co/unsloth/Kimi-K3-GGUF)
 - [DeepSeek-V4-Pro](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro)
 - [DeepSeek-V4-Pro 커뮤니티 GGUF](https://huggingface.co/teamblobfish/DeepSeek-V4-Pro-GGUF)
 

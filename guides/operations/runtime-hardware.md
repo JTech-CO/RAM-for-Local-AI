@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-07-21 (KST)
+> **최종 검증일:** 2026-08-13 (KST)
 > **주요 하드웨어:** x86-64·Arm CPU, NVIDIA CUDA GPU, AMD ROCm/HIP GPU·APU, Apple Silicon, Intel CPU·Arc·Data Center GPU·NPU, Vulkan·WebGPU 지원 장치, 엣지·모바일 장치
 > **주요 런타임:** `llama.cpp`, Ollama, MLX-LM·MLX-VLM, vLLM, SGLang, TensorRT-LLM, OpenVINO GenAI·OVMS, PyTorch·Transformers, ONNX Runtime, MLC LLM·WebLLM, ExLlamaV3
 > **관련 문서:** [양자화](./quantization.md) · [파인튜닝 메모리](./fine-tuning-memory.md) · [서빙·동시성](./serving-concurrency.md)
@@ -34,7 +34,7 @@
 
 > **핵심 원칙:** 먼저 하드웨어와 운영체제가 공식 지원하는 런타임을 고르고, 그 런타임에서 최적화된 양자화 형식을 선택한다. 모델 파일이 메모리에 들어간다는 사실만으로 실용적인 속도·동시성·안정성이 보장되지는 않는다.
 
-지원 범위와 기본 버전은 빠르게 변한다. 이 문서의 버전 표기는 2026-07-21의 스냅샷이며, 실제 설치 직전에는 각 프로젝트의 **stable 문서, release notes, hardware matrix, security advisory**를 다시 확인한다. `latest`, `nightly`, `dev` 컨테이너 태그는 재현 가능한 배포에 사용하지 않는다.
+지원 범위와 기본 버전은 빠르게 변한다. 이 문서의 버전 표기는 2026-08-13의 스냅샷이며, 실제 설치 직전에는 각 프로젝트의 **stable 문서, release notes, hardware matrix, security advisory**를 다시 확인한다. `latest`, `nightly`, `dev` 컨테이너 태그는 재현 가능한 배포에 사용하지 않는다.
 
 ---
 
@@ -92,7 +92,7 @@
 | NVIDIA 데이터센터 GPU | vLLM·SGLang | TensorRT-LLM | BF16·FP8·W4A16 | TP·EP·NVLink/NVSwitch·NCCL topology 확인 |
 | AMD Radeon | `llama.cpp` HIP 또는 Vulkan | Ollama Vulkan·ROCm, vLLM 지원 범위 | GGUF 우선, 지원 시 FP8·AWQ 계열 | 공식 ROCm compatibility selector에서 GPU·OS를 먼저 확인 |
 | AMD Instinct | vLLM·SGLang ROCm | `llama.cpp` HIP | BF16·FP8·W4A16·GGUF | ROCm·PyTorch·runtime 버전을 묶어 pin |
-| Apple Silicon | MLX-LM·MLX-VLM | `llama.cpp` Metal, SGLang MLX | MLX 4/8-bit, GGUF Q4/Q5 | 통합 메모리는 OS·앱·GPU가 공유하므로 memory pressure를 확인 |
+| Apple Silicon | MLX-LM·MLX-VLM | `llama.cpp` Metal, Ollama(MLX 엔진), SGLang MLX | MLX 4/8-bit, GGUF Q4/Q5 | 통합 메모리는 OS·앱·GPU가 공유하므로 memory pressure를 확인 |
 | Intel Xeon CPU | `llama.cpp`·OpenVINO GenAI | SGLang CPU | GGUF·OpenVINO INT4/INT8 | AMX·AVX-512·VNNI와 NUMA·DIMM 채널 확인 |
 | Intel Arc·Data Center GPU | OpenVINO·native PyTorch XPU | vLLM XPU·SGLang XPU, `llama.cpp` SYCL/Vulkan | OpenVINO IR·INT4/INT8, 지원 HF 형식 | IPEX가 아닌 native PyTorch XPU/OpenVINO를 우선 |
 | Windows 범용 GPU | `llama.cpp` Vulkan·CUDA·HIP | Ollama, WinML/ONNX Runtime | GGUF 또는 ONNX | 서버급 vLLM은 WSL2/Linux가 일반적 |
@@ -748,7 +748,7 @@ production 변경 전 다른 database·VM workload에 미치는 영향을 확인
 
 ### 9.1 compute capability를 먼저 확인
 
-NVIDIA runtime의 kernel 지원은 제품명보다 compute capability에 의해 결정되는 경우가 많다. 2026-07 기준 공식 CUDA GPU 목록의 대표 계열은 다음과 같다.
+NVIDIA runtime의 kernel 지원은 제품명보다 compute capability에 의해 결정되는 경우가 많다. 2026-08 기준 공식 CUDA GPU 목록의 대표 계열은 다음과 같다.
 
 | architecture·제품군 예 | compute capability 예 | 운영 의미 |
 | --- | ---: | --- |
@@ -763,6 +763,8 @@ NVIDIA runtime의 kernel 지원은 제품명보다 compute capability에 의해 
 | Turing T4·RTX 20 | 7.5 | vLLM 현재 최소선의 대표 예 |
 
 정확한 값은 [NVIDIA CUDA GPU compute capability](https://developer.nvidia.com/cuda/gpus)에서 확인한다.
+
+> **2026-08 하드웨어 시황 주의:** 2026년의 DRAM·GDDR7·LPDDR5X 가격 급등이 로컬 AI 장비의 가격과 출시 일정에 직접 영향을 주고 있다. RTX PRO 6000 Blackwell 96GB는 2025-04 출시가 약 $8,435에서 2026-08 NVIDIA 마켓플레이스 기준 $16,000 수준으로 올랐고, DGX Spark(GB10, 128GB 통합 메모리)는 $3,999에서 $4,699로 인상되었다. RTX 50 SUPER 리프레시는 2026-08-13 기준 미출시이며 공식 발표가 없다(연기·보류 보도만 존재). 발표되지 않은 SKU와 메모리 용량은 루머로 취급하고 구매 계획의 근거로 삼지 않는다. 가격과 가용성은 구매 시점에 다시 확인한다.
 
 ### 9.2 driver·toolkit·wheel은 서로 다르다
 
@@ -907,7 +909,7 @@ GPU·APU 제품
   ∩ 사용할 quant·attention kernel
 ```
 
-> **검증일 스냅샷:** 2026-07-16에 공개된 ROCm 7.14.0 문서가 최신 계열이지만, 설치 시점의 production release와 장치별 지원표를 다시 확인한다. `rocm/dev-*`나 nightly image가 동작한다는 사실은 production 지원을 의미하지 않는다.
+> **검증일 스냅샷(2026-08-13):** ROCm 릴리스 라인이 이원화되어 있다. 기존 안정 라인은 7.2.x(Windows·Linux 단일 릴리스, RDNA3·RDNA4·Strix Halo 자동 감지)이고, TheRock 기반 신규 릴리스 트레인은 7.9–7.13 프리뷰를 거쳐 **7.14(2026-07-15)부터 production**으로 전환되어 Linux와 Windows를 함께 제공하며 RDNA4·Ryzen AI·Instinct MI350 계열을 지원한다. `llama.cpp` CI도 ROCm 7.14 타깃으로 이동했다. 어느 라인을 쓰든 설치 시점의 production release와 장치별 지원표를 다시 확인한다. `rocm/dev-*`나 nightly image가 동작한다는 사실은 production 지원을 의미하지 않는다.
 
 ### 10.1 Instinct와 Radeon의 운영 차이
 
@@ -1157,6 +1159,8 @@ powermetrics --help
 
 이 표는 모델별 보장이 아니라 초기 용량 계획이다. 실제 MLX·GGUF artifact 크기와 KV 캐시를 다시 계산한다.
 
+**2026-08-13 기준 제품 현황:** M5(2025-10)는 최대 32GB·약 153GB/s, 2026-03-11 출시된 MacBook Pro 14/16의 M5 Pro는 최대 64GB·약 307GB/s, M5 Max는 최대 128GB이며 GPU 코어 수에 따라 약 460GB/s(32코어)에서 614GB/s(40코어)로 안내된다. Mac Studio의 M5 세대는 아직 출시되지 않았고 현행 모델은 M4 Max·M3 Ultra(최대 512GB)다. 여기 적은 용량·대역폭은 보도와 제품 페이지 요약을 근거로 한 값이므로, 구매·용량 계획 전에 Apple 공식 tech specs에서 구성별로 확정한다.
+
 ### 11.3 런타임 선택
 
 | 목적 | 첫 선택 | 이유 |
@@ -1305,6 +1309,8 @@ Intel 환경은 CPU, Arc·Data Center GPU, Core Ultra NPU를 하나의 vendor �
 | Data Center GPU | native PyTorch XPU·vLLM/SGLang XPU | OpenVINO·oneAPI |
 | Core Ultra NPU | OpenVINO NPU | 앱별 WinML·vendor 경로 |
 | 혼합 CPU+iGPU+NPU | OpenVINO AUTO·HETERO | 개별 device benchmark |
+
+**2026-08-13 기준 제품 현황:** Panther Lake 기반 Core Ultra 3 시리즈가 2026-01-27부터 판매되며 Xe3 기반 Arc B390 iGPU와 5세대 NPU를 포함한다(NPU TOPS 수치는 공식 자료에서 확인한다). 소비자용 Arc B770은 출시되지 않았고, 해당 다이는 32GB ECC GDDR6급 워크스테이션 카드인 Arc Pro B70·B65 계열로 전환되었다는 보도가 우세하다. 소비자 dGPU는 B580 12GB가 유지된다. 제품 라인 변화와 무관하게 Intel 로컬 AI 경로는 OpenVINO와 native PyTorch XPU 중심을 유지한다.
 
 ### 12.2 IPEX 상태
 
@@ -1525,6 +1531,8 @@ model artifact download
 - 입력 데이터가 서버로 전송되지 않는지 명시
 - 모델 URL·service worker supply-chain 검증
 
+ONNX Runtime web은 1.29(2026-08)에서 WebGL·JSEP 백엔드를 폐기하고 WebGPU를 권장 경로로 정리했다. 기존 WebGL 기반 웹 배포는 WebGPU 지원 범위와 WASM fallback 정책을 다시 설계한다.
+
 ### 13.5 portability backend 비교법
 
 ```text
@@ -1651,6 +1659,8 @@ SGLang·vLLM·vendor runtime은 특정 release에서 다음 플랫폼을 지원�
 
 실제 option 이름은 현재 [공식 빌드 문서](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md)를 기준으로 확인한다.
 
+GGUF 텐서 타입도 K-quant·IQ 계열에서 멈춰 있지 않다. 2026-08 기준 `ggml`에는 `MXFP4`·`NVFP4`·`Q1_0`·`Q2_0`이 정의되어 있고 `llama-quantize` 타깃 목록에 `MXFP4_MOE` 등이 포함된다. 새 타입은 backend별 kernel 구현 시점이 다르므로 CUDA에서 동작한다고 Vulkan·SYCL·Metal·CPU에서 같은 지원·성능을 기대하지 않는다. 형식별 세부는 [양자화 가이드](./quantization.md)를 함께 본다.
+
 ### 15.3 Hugging Face에서 직접 실행
 
 ```bash
@@ -1689,6 +1699,15 @@ repository의 quant tag와 shard 구조를 실제 tree에서 확인한다.
 | mlock | `--mlock` | page eviction 방지, RAM 여유 필요 |
 
 옵션은 빠르게 변하므로 `llama-cli --help`, `llama-server --help`를 manifest와 함께 보존한다.
+
+2026-08 기준 `llama-server`의 기본 동작에서 다음이 바뀌었다.
+
+- `--fit` 자동 메모리 피팅이 기본 활성이다. `-ngl`·context 등을 지정하지 않으면 가상 할당 테스트로 장치별 여유(`--fit-target` 기본 1024MiB)를 남기고 자동 조정하며, 해당 인자를 명시하면 그 항목은 자동 조정에서 제외된다. `-ngl`을 명시하는 sweep 예제(9.6·10.4절)는 그대로 유효하지만, 자동값과 비교할 때는 실제 적용된 layer 수·context를 log에서 확인한다.
+- `-np`(`--parallel`) 기본값이 -1(슬롯 자동 산정)이다. 슬롯이 자동일 때 `--kv-unified`도 기본 활성이므로 "기본 1 슬롯" 전제로 KV 예산을 계산하지 않는다.
+- `--cont-batching`은 계속 기본 활성이고 `--ctx-checkpoints`(기본 32/slot)가 추가되었다.
+- 모델 인자 없이 기동하면 **라우터 모드**로 동작해 `--models-dir`·`--models-preset`에 있는 여러 모델을 load·전환하며 서빙한다.
+
+자동값에 의존하는 배포는 재현성을 위해 최종 적용된 값을 manifest에 기록한다.
 
 ### 15.5 벤치마크
 
@@ -1761,11 +1780,13 @@ curl http://127.0.0.1:11434/api/generate \
 | --- | --- |
 | NVIDIA | CUDA |
 | AMD | 지원되는 ROCm 또는 Vulkan 실험 경로 |
-| Apple Silicon | Metal |
+| Apple Silicon | MLX 엔진(v0.30, 2026-05-13부터 기본, 이전 경로는 GGML/Metal) |
 | CPU | CPU GGML 계열 |
 | Windows·Linux 범용 GPU | Vulkan 지원 상태 확인 |
 
 [Ollama hardware support](https://docs.ollama.com/gpu)에서 현재 GPU 목록과 환경변수를 확인한다.
+
+Apple Silicon 경로는 GGML/Metal에서 **MLX 기반 엔진으로 교체**되었다. v0.19(2026-03-30) 프리뷰를 거쳐 v0.30(2026-05-13)에서 Apple Silicon 기본 엔진이 되었고, 이후 NVFP4 지원과 Metal kernel 최적화가 추가되었다. 같은 모델이라도 GGML 시절과 메모리 사용·동시 요청 특성이 다를 수 있으므로 Apple 경로의 벤치마크는 재측정한다.
 
 ### 16.3 메모리와 동시성
 
@@ -1857,6 +1878,8 @@ python -m pip freeze > requirements-mlx.txt
 ```
 
 macOS·Python·MLX·MLX-LM·MLX-VLM 버전을 함께 기록한다.
+
+MLX 코어와 MLX-LM의 릴리스 주기는 같지 않다. 2026-08-13 기준 MLX 코어는 v0.32.0(2026-07-07, CUDA 백엔드 강화와 Windows CUDA 빌드 추가)인 반면 MLX-LM은 v0.31.3(2026-04-22) 이후 신규 릴리스가 없다. 코어 버전만 보고 MLX-LM의 기능·모델 지원 범위를 추정하지 않는다.
 
 ### 17.3 변환 전 dry-run
 
@@ -1959,7 +1982,7 @@ Windows native는 기본 지원 경로가 아니며 WSL2 또는 커뮤니티 bui
 
 ### 18.2 버전 조합
 
-2026-07-21의 개발 문서 스냅샷에서는 기본 NVIDIA binary가 CUDA 12.9 계열이며 다른 CUDA build도 제공된다. 그러나 production은 설치 시점의 **stable release 문서**에 맞춰 다음을 고정한다.
+설치 문서 기준 기본 NVIDIA binary는 CUDA 12.9 계열이며 다른 CUDA build도 제공된다. 다만 v0.27 wheel에서도 이 기본값이 유지되는지는 확인되지 않았으므로 설치 시점에 직접 확인한다. production은 설치 시점의 **stable release 문서**에 맞춰 다음을 고정한다.
 
 ```text
 vLLM version
@@ -1970,7 +1993,7 @@ flash-attention·triton kernel
 container digest
 ```
 
-Blackwell·새 GPU는 최소 CUDA 요구사항을 별도로 확인한다.
+2026-08-13 기준 최신 릴리스는 v0.27.1(2026-08-11)이다. v0.27.0에서 PyTorch 2.13으로 이행했으므로 기존 PyTorch 2.12 기반 환경 위에 그대로 얹지 않는다. Blackwell·새 GPU는 최소 CUDA 요구사항을 별도로 확인한다.
 
 ### 18.3 독립 환경
 
@@ -2061,6 +2084,9 @@ TP 전에 다음을 확인한다.
 - OOM 후 worker recovery
 - max model length와 admission control
 - model revision·remote code 통제
+- KV cache 계층형 offload와 prefill·decode 분리 사용 시 실제 지연 변화
+
+v0.26~v0.27에서 KV cache의 계층형 offload(P2P 보조 스토리지·플러그블 eviction)와 NIXL 기반 prefill·decode 분리가 확대되었고, Model Runner V2가 embedding·분류 등 비생성 워크로드까지 담당한다. 이 기능들은 GPU KV 부족을 감춘 채 tail latency를 늘릴 수 있으므로 켜기 전후를 같은 조건으로 측정한다.
 
 자세한 계산은 [서빙·동시성 가이드](./serving-concurrency.md)를 참고한다.
 
@@ -2074,9 +2100,11 @@ SGLang은 RadixAttention·prefix caching, structured generation, agent·multimod
 
 공식 설치 문서는 NVIDIA CUDA, AMD ROCm, Apple Metal·MLX, Intel CPU·XPU, Jetson, Ascend 등 다양한 경로를 제공한다. 모든 backend에서 동일한 quant·attention·distributed 기능이 구현되었다고 가정하지 않는다.
 
+2026-08-13 기준 최신 릴리스는 v0.5.17(2026-08-08)이다. 네트워크·토크나이즈 계층이 Rust로 전환되어 고동시성 오버헤드가 줄었고, Unified Radix Cache가 세션·참조 인지형으로 바뀌어 멀티턴 에이전트·RL rollout의 prefix 재사용이 강화되었다. 가중치 캐시 기반 엔진 복구로 재시작 시간도 크게 짧아졌다. 이 기능들이 모든 backend에서 동일하게 제공되는 것은 아니므로 사용 중인 플랫폼의 지원 범위를 확인한다.
+
 ### 19.2 CUDA image 선택
 
-2026-07-21의 최신 문서 스냅샷에서는 기본 image가 CUDA 13 계열을 사용할 수 있으며, CUDA 12·12.9 변형 tag도 안내한다. production에서는 host driver와 호환되는 **고정 release tag·digest**를 사용한다.
+2026-07-21에 확인한 문서 스냅샷에서는 기본 image가 CUDA 13 계열을 사용할 수 있으며, CUDA 12·12.9 변형 tag도 안내한다. 이 tag 구성은 이후 재확인하지 않았으므로, production에서는 host driver와 호환되는 **고정 release tag·digest**를 사용한다.
 
 ```bash
 docker pull <sglang-image>:<pinned-tag>
@@ -2170,7 +2198,7 @@ TensorRT-LLM은 NVIDIA 지원 GPU에서 model graph와 kernel을 최적화해 �
 
 ### 20.1 공식 지원 하드웨어 확인
 
-2026-07-14 문서 스냅샷의 주요 지원 계열에는 다음이 포함된다.
+아래 지원 계열은 2026-07-14에 확인한 support matrix 문서 기준이며, 2026-08-13 스냅샷에서는 재확인하지 않았다. 당시 주요 지원 계열에는 다음이 포함된다.
 
 - Blackwell: B200·GB200·B300·GB300·DGX Spark 계열
 - Hopper: H100·H200·GH200
@@ -2211,6 +2239,8 @@ Triton Server
 ```
 
 이 여섯 계층을 container digest와 함께 pin한다.
+
+릴리스 채널도 함께 고정한다. 2026-08-13 기준 안정판은 v1.2.1(2026-04-20)이고 v1.3.0은 rc 채널만 존재한다. rc에서만 제공되는 기능을 근거로 production 계획을 세우지 않는다.
 
 ### 20.5 engine build 흐름
 
@@ -2275,6 +2305,8 @@ OpenVINO는 Intel CPU·GPU·NPU를 중심으로, 일부 범용 CPU 환경에서 
 - Windows·Linux에서 동일한 IR 배포
 - OpenVINO Model Server로 REST·gRPC serving
 - 소형 edge·enterprise 환경에서 device fallback이 필요한 경우
+
+2026-08-13 기준 최신 릴리스는 2026.3.0(2026-08-04)이다. EAGLE-3 speculative decoding이 LLM과 VLM으로 확장되었고, MoE 가중치의 디스크 offload와 lazy weight loading이 추가되어 대형 MoE의 메모리 요구가 완화되었다. NPU 지원 모델 범위도 계속 넓어지므로 설치 버전과 device 지원표를 함께 확인한다.
 
 ### 21.2 설치
 
@@ -2630,6 +2662,8 @@ ONNX Runtime은 여러 Execution Provider를 통해 Windows·Linux·macOS·모�
 | QNN EP | Qualcomm | 지원 SoC·SDK 확인 |
 | NNAPI EP | Android | Android API·op 지원 |
 | Web EP | 브라우저 | WebGPU·WASM 경로 |
+
+1.29(2026-08-12)부터 `onnxruntime-web`의 WebGL·JSEP 경로가 폐기되고 WebGPU가 권장 경로로 확정되었다. 같은 릴리스에서 PagedAttention(양자화 KV 포함)과 NVFP4 QMoE가 도입되었으므로, 생성형 모델 배포는 사용하는 ORT 버전의 EP 지원 범위를 다시 확인한다.
 
 ### 23.2 provider 우선순위
 
@@ -4930,7 +4964,9 @@ migration 경로
 - [`llama.cpp`](https://github.com/ggml-org/llama.cpp)
 - [`llama.cpp` 빌드 문서](https://github.com/ggml-org/llama.cpp/blob/master/docs/build.md)
 - [`llama.cpp` backend feature matrix](https://github.com/ggml-org/llama.cpp/wiki/Feature-matrix)
+- [`llama.cpp` server 문서](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md)
 - [Ollama 하드웨어 지원](https://docs.ollama.com/gpu)
+- [Ollama MLX 엔진 발표](https://ollama.com/blog/mlx)
 - [MLX](https://github.com/ml-explore/mlx)
 - [MLX-LM](https://github.com/ml-explore/mlx-lm)
 - [MLX-VLM](https://github.com/Blaizzy/mlx-vlm)
@@ -4955,12 +4991,14 @@ migration 경로
 - [NVIDIA CUDA compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/)
 - [TensorRT-LLM support matrix](https://nvidia.github.io/TensorRT-LLM/reference/support-matrix.html)
 - [ROCm compatibility matrix](https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html)
+- [ROCm 7.14 릴리스 노트](https://rocm.blogs.amd.com/ecosystems-and-partners/rocm-7.14-blog/README.html)
 - [AMD SMI](https://rocm.docs.amd.com/projects/amdsmi/en/latest/)
 - [PyTorch Intel GPU support](https://docs.pytorch.org/docs/stable/notes/get_start_xpu.html)
 - [Intel Extension for PyTorch archive](https://github.com/intel/intel-extension-for-pytorch)
 - [OpenVINO supported devices](https://docs.openvino.ai/2026/documentation/compatibility-and-support/supported-devices.html)
 - [Apple Activity Monitor 메모리 해석](https://support.apple.com/guide/activity-monitor/view-memory-usage-actmntr1004/mac)
 - [Apple MLX 문서](https://ml-explore.github.io/mlx/build/html/index.html)
+- [Apple M5 Pro·M5 Max MacBook Pro 발표](https://www.apple.com/newsroom/2026/03/apple-introduces-macbook-pro-with-all-new-m5-pro-and-m5-max/)
 - [Linux NUMA 문서](https://docs.kernel.org/admin-guide/mm/numa_memory_policy.html)
 - [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/)
 
@@ -4971,6 +5009,7 @@ migration 경로
 - [ONNX Runtime DirectML EP](https://onnxruntime.ai/docs/execution-providers/DirectML-ExecutionProvider.html)
 - [ONNX Runtime OpenVINO EP](https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html)
 - [ONNX Runtime CoreML EP](https://onnxruntime.ai/docs/execution-providers/CoreML-ExecutionProvider.html)
+- [ONNX Runtime 릴리스 노트](https://github.com/microsoft/onnxruntime/releases)
 
 현재 신규 AMD ONNX deployment는 제거된 ROCm EP 대신 MIGraphX를 검토하고, Windows 신규 앱은 DirectML의 sustained-engineering 상태와 WinML 방향을 함께 확인한다.
 

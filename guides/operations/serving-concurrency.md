@@ -3,10 +3,10 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-07-21 (KST)
+> **최종 검증일:** 2026-08-13 (KST)
 > **주요 런타임:** `llama.cpp`, Ollama, vLLM, SGLang, TensorRT-LLM, Hugging Face TGI, MLX-LM, Ray Serve, KServe·llm-d
 > **범위:** 생성형 LLM·MoE·VLM·OCR·임베딩·reranker·ASR·TTS의 온라인 추론 메모리, 동시성, 스케줄링, 분산 서빙, 관측성, 보안과 부하 시험
-> **관련 문서:** [양자화](./quantization.md) · [파인튜닝 메모리](./fine-tuning-memory.md) · [런타임·하드웨어](./runtime-hardware.md) (예정)
+> **관련 문서:** [양자화](./quantization.md) · [파인튜닝 메모리](./fine-tuning-memory.md) · [런타임·하드웨어](./runtime-hardware.md)
 
 이 문서는 “모델 Q4 파일이 VRAM에 들어가므로 사용자 10명을 동시에 받을 수 있는가?”, “컨텍스트 128K 모델이면 128K 요청 여러 개도 처리할 수 있는가?”, “GPU 두 장이면 처리량이 정확히 두 배가 되는가?” 같은 오해를 피하기 위한 운영 가이드다.
 
@@ -1323,6 +1323,8 @@ Q8·FP8은 FP16 대비 순수 KV 데이터를 대략 절반으로 줄이는 첫 
 - prefix cache·offload와 호환성
 - throughput이 실제로 개선되는지
 
+2026-08 기준 vLLM은 SM100(Blackwell)의 FlashAttention 4 경로에 FP8 KV cache 지원을 추가했다. GPU 세대·attention backend 조합별 지원 여부는 설치 release에서 확인한다.
+
 ### 14.3 Q4·Q5
 
 낮은 비트의 KV는 메모리를 더 줄일 수 있지만, 장문 retrieval·수학·코드·정확한 복사에서 오류가 누적될 수 있다.
@@ -1335,6 +1337,8 @@ Q8·FP8은 FP16 대비 순수 KV 데이터를 대략 절반으로 줄이는 첫 
 - JSON·tool call 정확도
 - code repository context 참조
 - audio/VLM long context
+
+SGLang은 2026-07 릴리스에서 FP4 KV cache 경로(SM120 대상)를 실험적으로 추가했다. 주요 런타임 중 이른 FP4 KV 시도이므로, 장문 품질 회귀 검증 없이 기본값으로 두지 않는다.
 
 ### 14.4 K와 V를 다르게 양자화
 
@@ -1391,6 +1395,8 @@ remote KV hit가 local recompute보다 빠른 길이 구간을 benchmark로 찾�
 - KV connector·LMCache integration
 
 `--kv-cache-memory-bytes`를 명시하면 자동 GPU memory utilization 계산보다 직접적인 KV pool 제어가 가능하며, 현재 문서상 이 값이 설정되면 `gpu_memory_utilization`을 무시한다.
+
+2026년 중반 릴리스부터 KV offload는 계층형 보조 스토리지(P2P 보조 계층, 플러그블 eviction)로 확장되고 있다. offload backend별 지원 조합과 기본값은 설치 release 문서에서 확인한다.
 
 ### 14.8 `llama.cpp` 제어점
 
@@ -1617,7 +1623,7 @@ memory_budget:
   → replica 2개와 단일 큰 batch를 비교
 ```
 
-집·사무실 LAN에서도 API key, bind address와 firewall을 설정한다.
+집·사무실 LAN에서도 API key, bind address와 firewall을 설정한다. GUI 중심이던 LM Studio도 0.4.0부터 병렬 추론 요청과 헤드리스 데몬(llmster)을 지원해 이 규모의 서빙 후보에 포함할 수 있다.
 
 ### 17.3 Display GPU
 
@@ -1672,7 +1678,7 @@ inference server는 `127.0.0.1` 또는 private network에 bind하는 것을 기�
 
 ## 18. `llama.cpp` 서버
 
-[`llama.cpp` server README](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md)는 OpenAI-compatible API, parallel slots, continuous batching, prompt cache와 Prometheus endpoint를 제공한다. GGUF와 광범위한 CPU·GPU backend를 사용하는 로컬·혼합 offload 환경에 적합하다.
+[`llama.cpp` server README](https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md)는 OpenAI-compatible API, parallel slots, continuous batching, prompt cache와 Prometheus endpoint를 제공한다. GGUF와 광범위한 CPU·GPU backend를 사용하는 로컬·혼합 offload 환경에 적합하다. 2026-08 기준 모델 인자 없이 기동하면 여러 모델을 로드·전환하는 라우터 모드(`--models-dir`, `--models-preset`)로 동작한다.
 
 ### 18.1 기본 구성 예제
 
@@ -1692,14 +1698,14 @@ llama-server \
   --port 8080
 ```
 
-> 현재 flag와 model별 지원은 사용 중인 build의 `llama-server --help`로 확인한다. `-c`와 slot별 실제 `n_ctx` 관계는 version·unified KV 설정에 따라 달라질 수 있으므로 startup log와 `/slots`를 기준으로 검증한다.
+> 현재 flag와 model별 지원은 사용 중인 build의 `llama-server --help`로 확인한다. 2026-08 기준 `-np` 기본값은 -1(자동 슬롯 산정)이고 자동 슬롯에서는 `--kv-unified`가 기본 활성이므로, “기본 1 슬롯” 전제의 오래된 설명을 그대로 믿지 않는다. `-c`와 slot별 실제 `n_ctx` 관계는 version·unified KV 설정에 따라 달라질 수 있으므로 startup log와 `/slots`를 기준으로 검증한다.
 
 ### 18.2 핵심 옵션
 
 | 옵션 | 의미 | 튜닝 방향 |
 | --- | --- | --- |
 | `-c`, `--ctx-size` | prompt context 크기 | 필요 이상 크게 두지 않음 |
-| `-np`, `--parallel` | server slot 수 | 동시성 증가, KV 증가 |
+| `-np`, `--parallel` | server slot 수, 현재 기본 -1(자동 산정) | slot 증가 시 KV 증가, capacity 계획 시 명시 고정 권장 |
 | `-b`, `--batch-size` | logical max batch | prefill throughput·RAM |
 | `-ub`, `--ubatch-size` | physical micro-batch | peak memory·kernel |
 | `-cb` | continuous batching | 현재 기본 활성화 |
@@ -1707,10 +1713,12 @@ llama-server \
 | `--cache-prompt` | prompt cache | 반복 prefix에 유리 |
 | `--cache-reuse` | KV shifting 재사용 최소 chunk | workload별 실험 |
 | `--cache-ram` | RAM-side prompt/context cache 상한 | 개인정보·RAM 고려 |
-| `--kv-unified` | sequence가 unified KV buffer 공유 | build 기본·slot 동작 확인 |
+| `--kv-unified` | sequence가 unified KV buffer 공유 | 자동 슬롯(-np -1)일 때 기본 활성화 |
+| `--ctx-checkpoints` | slot당 context checkpoint 수 | 현재 기본 32/slot |
+| `--models-dir`, `--models-preset` | 라우터 모드의 다중 모델 서빙 | 모델 미지정 기동 시 라우터 모드 |
 | `--metrics` | Prometheus endpoint | production 필수 |
 | `--slots` | slot 상태 endpoint | 현재 기본 활성화 |
-| `--fit` | memory에 맞춰 자동 조정 | 결과 context·offload를 반드시 확인 |
+| `--fit` | memory에 맞춰 context·offload 자동 조정 | 현재 기본 활성화, 결과 context·ngl을 반드시 확인 |
 
 ### 18.3 Slot 확인
 
@@ -1747,7 +1755,7 @@ curl -s http://127.0.0.1:8080/metrics
 
 ### 18.5 Context checkpoint와 RAM cache
 
-현재 server에는 slot context checkpoint와 `--cache-ram` 기능이 있다. multi-agent·multi-turn에서 유용할 수 있으나 다음을 측정한다.
+현재 server에는 slot context checkpoint(`--ctx-checkpoints`, 기본 32/slot)와 `--cache-ram` 기능이 있다. multi-agent·multi-turn에서 유용할 수 있으나 다음을 측정한다.
 
 - cache RAM 실제 사용량
 - idle slot 저장 빈도
@@ -1770,7 +1778,7 @@ curl -s http://127.0.0.1:8080/metrics
 ### 18.7 권장 튜닝 순서
 
 ```text
-1. -np 1, 실제 p95 context, FP16 KV 기준선
+1. -np 1 명시(기본 -1 자동 슬롯), 실제 p95 context, FP16 KV 기준선
 2. -np 2로 throughput·TPOT 측정
 3. Q8 KV 품질·메모리 비교
 4. batch/ubatch 조정
@@ -1794,6 +1802,8 @@ curl -s http://127.0.0.1:8080/metrics
 | `OLLAMA_CONTEXT_LENGTH` | context 길이 | parallel과 함께 메모리 증가 |
 | `OLLAMA_KV_CACHE_TYPE` | KV dtype | FP16·Q8·Q4 계열 |
 | `OLLAMA_FLASH_ATTENTION` | Flash Attention | 지원 시 메모리·성능에 영향 |
+
+> Apple Silicon에서는 기본 추론 엔진이 MLX 기반으로 교체되었다(v0.30부터 기본화). 동시 요청 시 성능·메모리 특성이 이전 GGML 엔진 시절과 다를 수 있으므로 Apple 경로의 parallel·context 설정은 벤치마크를 재측정한다.
 
 ### 19.2 예제
 
@@ -1993,6 +2003,8 @@ prefix cache: off, on
 
 vLLM의 현재 문서는 disaggregated prefilling을 experimental 기능으로 설명한다. 주 목적은 prefill과 decode를 분리해 tail ITL을 제어하는 것이며, 공식 문서상 **처리량을 자동으로 개선하는 기능은 아니다**. KV transfer 비용과 P/D sizing을 포함해 검증한다.
 
+2026년 중반 릴리스에서는 NIXL 기반 커넥터가 하이브리드 MLA+SSM 모델·이기종 구성으로 확대되는 등 P/D 분리 지원 범위가 빠르게 넓어지고 있으므로, 지원 모델·커넥터 조합은 release note에서 확인한다.
+
 ### 20.11 Production 체크리스트
 
 ```text
@@ -2067,6 +2079,8 @@ RadixAttention은 공통 token prefix를 radix tree로 관리해 multi-turn·few
 - tool schema 순서가 request마다 다름
 - tenant별 policy가 섞임
 - adapter·model revision 차이
+
+2026년 중반 릴리스 기준, radix cache는 세션·참조 인지형으로 확장되어 멀티턴 agent·RL rollout의 prefix 재사용이 강화되었고, 네트워크·토크나이즈 계층의 Rust 전환으로 고동시성 오버헤드가 줄었다. 정확한 동작과 기본값은 설치 version의 release note를 확인한다.
 
 ### 21.4 Scheduler
 
@@ -2395,7 +2409,7 @@ available unified memory
 | --- | --- | --- |
 | MLX-LM | Apple Silicon 최적화, quantized model, batch generation | custom app·worker에 적합, production gateway는 별도 설계 |
 | `llama.cpp` Metal | GGUF·HTTP server·slots·metrics | 범용 local API에 적합 |
-| Ollama | 설치·model lifecycle | 간단한 desktop/team API |
+| Ollama | 설치·model lifecycle, Apple Silicon은 MLX 엔진 기본(v0.30+) | 간단한 desktop/team API |
 
 MLX-LM은 batch generation과 distributed inference 기능을 제공하지만, multi-tenant queue·rate limit·metrics를 포함한 완성형 production control plane으로 가정하지 않는다.
 
@@ -3428,7 +3442,7 @@ curl -s http://127.0.0.1:8080/metrics > after.prom
 
 ```yaml
 benchmark:
-  timestamp_kst: "2026-07-21T00:00:00+09:00"
+  timestamp_kst: "2026-08-13T00:00:00+09:00"
   git_commit: null
   runtime:
     name: vllm
@@ -4281,7 +4295,7 @@ audio preprocessing worker와 model worker를 분리한다.
 - [NVIDIA DCGM Exporter](https://github.com/NVIDIA/dcgm-exporter)
 - [Prometheus](https://prometheus.io/docs/)
 - [OpenTelemetry](https://opentelemetry.io/docs/)
-- [NVIDIA GenAI-Perf](https://github.com/NVIDIA/GenAI-Perf)
+- [AIPerf (구 GenAI-Perf, deprecated 후 이관)](https://github.com/ai-dynamo/aiperf)
 - [GuideLLM](https://github.com/vllm-project/guidellm)
 
 ### 35.8 기반 논문·개념
@@ -4301,7 +4315,7 @@ audio preprocessing worker와 model worker를 분리한다.
 - [오디오·음성](../modalities/audio-speech.md)
 - [양자화](./quantization.md)
 - [파인튜닝 메모리](./fine-tuning-memory.md)
-- [런타임·하드웨어](./runtime-hardware.md) (예정)
+- [런타임·하드웨어](./runtime-hardware.md)
 
 ---
 
@@ -4412,7 +4426,7 @@ MoE
 
 ### 36.10 갱신 주의
 
-이 문서는 2026-07-21 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. serving runtime은 빠르게 변하므로 배포 직전에 다음을 다시 검증한다.
+이 문서는 2026-08-13 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. serving runtime은 빠르게 변하므로 배포 직전에 다음을 다시 검증한다.
 
 - CLI flag·기본값
 - model architecture·KV layout

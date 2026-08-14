@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG 가이드](./productivity-rag.md)
 
-> **최종 검증일:** 2026-07-21 (KST)  
+> **최종 검증일:** 2026-08-13 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`; PyTorch/Transformers·Sentence Transformers·scikit-learn 호환 런타임 병행  
 > **범위:** CSV·Parquet·Arrow·데이터베이스 분석, Text-to-SQL, Python/R 코드 생성과 실행, 탐색적 데이터 분석(EDA), 통계·머신러닝, 표형 파운데이션 모델, 시계열 예측, 차트·보고서 생성 및 제한된 분석 에이전트
 
@@ -19,7 +19,7 @@
 - Q2·Q3·Q4 양자화가 컬럼명, JOIN, 날짜·단위, JSON·tool call 안정성에 어떤 영향을 주는가?
 - 표형 파운데이션 모델과 시계열 파운데이션 모델은 일반 LLM과 어떻게 분리해 배치할 것인가?
 
-모델 저장소와 양자화 파일은 계속 수정된다. 아래 크기는 2026-07-21에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, shard 수, 총크기, 라이선스, revision, 런타임 호환성**을 다시 확인한다.
+모델 저장소와 양자화 파일은 계속 수정된다. 아래 크기는 2026-08-13에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, shard 수, 총크기, 라이선스, revision, 런타임 호환성**을 다시 확인한다.
 
 > **핵심 원칙:** 데이터 분석에서는 메모리를 거의 전부 차지하는 대형 Q2 모델보다, 여유 있게 실행되는 Q4 모델과 DuckDB/Python/R의 실제 실행 결과, 스키마·단위·통계 검증을 결합한 구성이 대체로 더 신뢰할 수 있다.
 
@@ -64,8 +64,8 @@
 | **8 GB** | [Qwen3.5-4B](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) | Q4_K_M 약 2.74 GB | [XiYanSQL 7B](https://huggingface.co/mradermacher/XiYanSQL-QwenCoder-7B-2504-GGUF) Q3_K_M 약 3.81 GB를 순차 실행; 표형 예측은 고전 ML 기준선 우선 | DuckDB가 원본을 스캔하고 결과만 pandas로 이동 | 저사양 노트북의 실용적 분석 기준선. 수백 MB급 Parquet, 제한된 BI 질의. |
 | **12 GB** | [Qwen3.5-9B](https://huggingface.co/unsloth/Qwen3.5-9B-GGUF) 또는 [Granite 4.1 8B](https://huggingface.co/ibm-granite/granite-4.1-8b-GGUF) | Q4_K_M 약 5.68 / 5.35 GB | [Arctic-Text2SQL-R1-7B](https://huggingface.co/mradermacher/Arctic-Text2SQL-R1-7B-GGUF) Q4_K_M 약 4.68 GB를 순차 실행; [Chronos-2](https://huggingface.co/autogluon/chronos-2) | 3–5 GB 데이터 working set, 조인·정렬은 spill 허용 | 다중 테이블 SQL, Python 통계 코드, 중형 EDA, 기본 시계열 예측. |
 | **16 GB** | [Ministral 3 14B Reasoning](https://huggingface.co/mistralai/Ministral-3-14B-Reasoning-2512-GGUF) 또는 Qwen3.5-9B 고정밀 | Q4 약 8.24 GB / Q5·Q6 저장소 확인 | XiYanSQL/Arctic 7B Q4를 순차 실행; [TabPFN-3](https://huggingface.co/Prior-Labs/tabpfn_3); [TimesFM 2.5](https://huggingface.co/google/timesfm-2.5-200m-transformers) | LLM과 대형 분석 작업을 동시에 최대치로 실행하지 않음 | 안정적인 로컬 BI·노트북 조수, 회귀·검정·예측 코드, 수 GB급 데이터의 out-of-core 분석. |
-| **24 GB** | [Qwen3.6-27B](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF) Q3 또는 [Devstral Small 2 24B](https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF) Q3/Q4 | 약 13.6 GB / 11.5–14.3 GB | [XiYanSQL 32B](https://huggingface.co/mradermacher/XiYanSQL-QwenCoder-32B-2504-GGUF) Q2 약 12.4 GB는 SQL 전용 순차 실행; TabPFN-3·Chronos-2 | LLM 11–14 GB, 분석 working set 6–9 GB 목표 | 복합 SQL, 다단계 Python/R 분석, 저장소 기반 데이터 앱 수정, 정교한 보고서. |
-| **32 GB** | Qwen3.6-27B Q4 또는 [Qwen3.6-35B-A3B](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) Q3 | 약 17.6 `UD-Q4_K_XL` / 16.8 `UD-Q3_K_XL` GB | XiYanSQL 32B Q3/Q4를 순차 실행; TabPFN-3·Chronos-2·TimesFM 2.5 비교 | 8–14 GB 데이터/엔진 예산, 모델 서비스와 notebook 분리 권장 | 고품질 분석 에이전트, 복잡한 SQL과 데이터 파이프라인, 표형·시계열 모델 비교. |
+| **24 GB** | [Qwen3.6-27B](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF) Q3, [Devstral Small 2 24B](https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF) Q3/Q4 또는 [Muse-Glimmer-30B](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) Q4 | 약 13.6 / 11.5–14.3 / 16.8 GB | [XiYanSQL 32B](https://huggingface.co/mradermacher/XiYanSQL-QwenCoder-32B-2504-GGUF) Q2 약 12.4 GB는 SQL 전용 순차 실행; TabPFN-3·Chronos-2 | LLM 11–17 GB, 분석 working set 6–9 GB 목표(16.8 GB Q4를 쓰면 working set을 하한에 맞추고 드래프터·mmproj를 별도 계산) | 복합 SQL, 다단계 Python/R 분석, 저장소 기반 데이터 앱 수정, 정교한 보고서. |
+| **32 GB** | Qwen3.6-27B Q4, [Qwen3.6-35B-A3B](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) Q3 또는 [Nemotron-3.5-Lightning-30B-A3B](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) Q4 | 약 17.6 `UD-Q4_K_XL` / 16.8 `UD-Q3_K_XL` / 25.4 `Q4_K_M` GB | XiYanSQL 32B Q3/Q4를 순차 실행; TabPFN-3·Chronos-2·TimesFM 2.5 비교 | 8–14 GB 데이터/엔진 예산(25.4 GB Q4를 쓰면 데이터 예산 축소 감수), 모델 서비스와 notebook 분리 권장 | 고품질 분석 에이전트, 복잡한 SQL과 데이터 파이프라인, 표형·시계열 모델 비교. |
 | **48 GB** | Qwen3.6-35B-A3B Q4 | UD-Q4_K_M 약 22.1 GB | TabPFN-3, Chronos-2, TimesFM 2.5, [TiRex-2](https://huggingface.co/NX-AI/TiRex-2)를 작업별 순차 실행; SQL 모델 병렬 또는 순차 | 16–24 GB 데이터/캐시·샌드박스 예산 | 팀 BI, 다수 파일·DB 분석, 대형 조인, 광범위한 모델·양자화 A/B 평가. |
 | **64 GB** | Qwen3.6-35B-A3B 고정밀; 코드 중심은 [Qwen3-Coder-Next](https://huggingface.co/Qwen/Qwen3-Coder-Next-GGUF) Q3 | 약 25–30 GB대 / Q3 33.3–38.3 GB | Text-to-SQL 7B 상주 가능; 표형·시계열 모델 별도 프로세스 | 생성기·SQL·notebook 서비스를 분리하고 총 peak 측정 | 대형 데이터 제품 개발, 다중 에이전트 저동시성, 수십 GB급 out-of-core 분석. |
 | **96 GB** | [Mistral Medium 3.5 128B](https://huggingface.co/bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF) Q3 또는 Qwen3-Coder-Next Q4 | 약 63.3 / 48.5 GB | 표형·시계열 서비스 독립 상주, 대형 캐시·병렬 평가 | 모델과 데이터 엔진에 별도 cgroup/프로세스 예산 | 복잡한 연구·기업 분석, 장기 에이전트, 대형 SQL 카탈로그와 다중 사용자 저동시성. |
@@ -322,13 +322,16 @@ Q2만 들어간다
 | **Qwen3.5-0.8B** | 초경량 schema 요약, 간단한 코드·SQL 초안 | 약 0.42 | 약 0.47 | **약 0.54** | 4 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.5-0.8B-GGUF) |
 | **Qwen3.5-2B** | 저사양 EDA·정리·tool routing | 약 0.97 | 약 1.11 | **약 1.29** | 4–6 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.5-2B-GGUF) |
 | **Granite 4.1 3B** | 기업형 추출·RAG·도구 호출·간단한 분석 | 1.37 | 1.73 | **2.10** | 6–8 GB | [공식 GGUF](https://huggingface.co/ibm-granite/granite-4.1-3b-GGUF) |
+| **Kanana 2 3B** | 한국어 특화 소형: 한국어 문서·데이터 라벨링, 분류·요약 보조 (32K ctx, Kanana Open License) | 저장소 확인 | 저장소 확인 | **약 2.0 (커뮤니티)** | 4–6 GB | [원본](https://huggingface.co/kakaocorp/kanana-2-3b-instruct) |
 | **Qwen3.5-4B** | 범용 SQL·Python·차트 코드·다국어 | 약 1.94 | 약 2.29 | **약 2.74** | 8 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) |
 | **Granite 4.1 8B** | 보고서·RAG·구조화 추출·function calling | 3.41 | 4.35 | **5.35** | 12–16 GB | [공식 GGUF](https://huggingface.co/ibm-granite/granite-4.1-8b-GGUF) |
 | **Qwen3.5-9B** | 실용적 Python/R·SQL·통계·멀티모달 분석 | 약 4.12 | 약 4.67 | **약 5.68** | 12–16 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.5-9B-GGUF) |
 | **Ministral 3 14B Reasoning** | 수학·통계 추론, 코드, 비전 입력 | 저장소 확인 | 저장소 확인 | **약 8.24** | 16–24 GB | [공식 GGUF](https://huggingface.co/mistralai/Ministral-3-14B-Reasoning-2512-GGUF) |
 | **Devstral Small 2 24B** | 데이터 파이프라인·notebook·분석 앱 저장소 수정 | 8.89–9.29 | 약 11.5 | **약 14.3** | 24–32 GB | [GGUF](https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF) |
 | **Qwen3.6-27B** | 고품질 범용·코딩·수학·도구 사용 | 11.8 | 13.6 | **16.8** | Q3 24 GB / Q4 32 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.6-27B) |
+| **Muse-Glimmer-30B** | 약 30B dense + 이미지 입력, 24GB급 에이전틱 분석·코드 (2026-08 공개, Apache-2.0). 공식 GGUF에는 DFlash 드래프터 1.6 GB와 mmproj 1.4 GB가 별도로 붙는다 | 저장소 확인 | 저장소 확인 | **16.8 (공식)** | Q4 24 GB 최소 / 32 GB 권장 | [공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) · [원본](https://huggingface.co/meta-models/Muse-Glimmer-30B) |
 | **Qwen3.6-35B-A3B** | 35B 총/3B 활성 MoE, 분석 에이전트·비전·도구 | 12.3 | 16.6 | **22.1** | Q3 24–32 GB / Q4 32–48 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) |
+| **Nemotron-3.5-Lightning-30B-A3B** | 30B 총/3B 활성 MoE, 최대 1M 컨텍스트, 장문 스키마·로그 분석 (2026-08 공개, OpenMDW-1.1) | 저장소 확인 | 저장소 확인 | **약 25.4** | Q4 32 GB 최소 / 48 GB 권장 | [GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) |
 
 ### 5.2 대형 모델
 
@@ -363,6 +366,8 @@ Q2만 들어간다
 ## 6. Text-to-SQL 전용 모델
 
 Text-to-SQL 모델은 데이터베이스 스키마와 자연어 질문을 받아 SQL 후보를 생성한다. 범용 모델보다 작으면서도 SQL 생성에 유리할 수 있지만, **실행 권한을 직접 부여하는 것은 금지**해야 한다. 모델이 생성한 SQL은 항상 별도 검증 계층과 읽기 전용 계정으로 실행한다.
+
+2026-08-13 기준으로 이 절의 전용 모델 구성을 재확인했다. XiYanSQL-QwenCoder는 2504가 여전히 최신 공개판이고(2505·2506 등 후속 버전 자체가 미출시), OmniSQL과 Arctic-Text2SQL-R1도 후속 릴리스 없이 유지되고 있어 아래 선택표는 그대로 유효하다.
 
 ### 6.1 빠른 선택표
 
@@ -518,9 +523,9 @@ No external file/network access
 | 모델 | 공개 시점·규모 | 작업 | 현실적인 시작 메모리 | 라이선스·주의 | Hugging Face |
 | --- | --- | --- | ---: | --- | --- |
 | **LimiX-2M** | 2026, 약 2M parameters | 분류·회귀·결측치 보정 | 4–8 GB CPU/GPU 실험 | 모델 카드의 최상 성능 주장은 자체 검증 필요. 카드 내 라이선스 설명과 HF metadata가 상이할 수 있어 weight license를 직접 확인 | [모델](https://huggingface.co/stable-ai/LimiX-2M) |
-| **TabPFN-3** | 2026-05, 수억 parameter급 checkpoint | 분류·회귀, 특수 time-series/OOD checkpoint | 12–24 GB부터 소규모 실측; 행·feature·ensemble에 따라 증가 | 모델 weights는 `tabpfn-3-license-v1.0`; 상업·프로덕션 사용 제한 확인 | [모델](https://huggingface.co/Prior-Labs/tabpfn_3) |
-| **TabFM 1.0.0** | 2026-06-30, Google Research | zero-shot 분류·회귀 | 단일 약 6.6 GB checkpoint는 16–24 GB부터; 큰 context·ensemble은 24–48 GB 이상 실측 | 최대 10 classes, 최대 약 500 features 권장 범위, non-commercial weight license | [PyTorch](https://huggingface.co/google/tabfm-1.0.0-pytorch) · [코드](https://github.com/google-research/tabfm) |
-| **TabICLv2 / TabICL** | 2026 연구 계열 | 대규모 classification·regression | 작은 표부터 GPU 실측; 수만~수십만 행·고차원·offload 설정은 메모리 요구가 크게 달라짐 | 공식 코드와 논문 조건을 기준으로 검증하며 v2 전용 HF checkpoint 유무를 별도 확인 | [코드](https://github.com/soda-inria/tabicl) · [문서](https://tabicl.readthedocs.io/en/latest/) · [논문](https://huggingface.co/papers/2602.11139) |
+| **TabPFN-3** | 2026-05, 수억 parameter급 checkpoint | 분류·회귀, 특수 time-series/OOD checkpoint | 12–24 GB부터 소규모 실측; 행·feature·ensemble에 따라 증가 | 모델 weights는 `tabpfn-3-license-v1.0` — **연구·평가 전용, 상업·프로덕션 사용 금지**(엔터프라이즈 라이선스 별도). 상업 용도는 구버전 TabPFN v2 계열(`tabpfn_2_5`/`2_6`)을 검토하되, 해당 저장소의 라이선스가 상업 사용을 허용하는지 직접 확인 | [모델](https://huggingface.co/Prior-Labs/tabpfn_3) |
+| **TabFM 1.0.0** | 2026-06-30, Google Research | zero-shot 분류·회귀 | 단일 약 6.6 GB checkpoint는 16–24 GB부터; 큰 context·ensemble은 24–48 GB 이상 실측 | 최대 10 classes, 최대 약 500 features 권장 범위. weight는 **비상업 라이선스**(tabfm-non-commercial-v1.0) — 상업·프로덕션 사용 금지 | [PyTorch](https://huggingface.co/google/tabfm-1.0.0-pytorch) · [코드](https://github.com/google-research/tabfm) |
+| **TabICLv2 / TabICL** | 2026 연구 계열 | 대규모 classification·regression | 작은 표부터 GPU 실측; 수만~수십만 행·고차원·offload 설정은 메모리 요구가 크게 달라짐 | 개인 계정에 올라온 [HF checkpoint](https://huggingface.co/jingang/TabICL)가 Apache-2.0으로 표기되어 상업 사용 대안 후보지만, 배포 주체와 라이선스를 직접 확인. 이 표기는 TabICL 기준이며 v2 전용 HF checkpoint 유무는 별도 확인 | [코드](https://github.com/soda-inria/tabicl) · [문서](https://tabicl.readthedocs.io/en/latest/) · [논문](https://huggingface.co/papers/2602.11139) |
 | **CatBoost/XGBoost/LightGBM** | 전통적 강력 baseline | 분류·회귀·ranking | 데이터 크기별 | foundation model이 항상 우월하지 않음 | [CatBoost](https://github.com/catboost/catboost) · [XGBoost](https://github.com/dmlc/xgboost) · [LightGBM](https://github.com/microsoft/LightGBM) |
 
 ### 7.2 TabFM 1.0.0
@@ -537,6 +542,8 @@ TabFM은 숫자형·범주형 열이 섞인 표에서 학습 행을 context로 �
 - context 행 수가 늘수록 메모리 사용 증가
 - model weights는 TabFM Non-Commercial License v1.0
 - 소스 코드는 Apache 2.0
+
+weight가 비상업 라이선스이므로 상업·프로덕션 파이프라인에는 투입할 수 없다. 상업 용도라면 CatBoost 계열 baseline이나 Apache-2.0으로 표기된 [TabICL](https://huggingface.co/jingang/TabICL) checkpoint를 먼저 검토한다. 후자는 개인 계정 저장소이므로 배포 주체와 라이선스를 직접 확인한다.
 
 TabFM 저장소는 classification과 regression subfolder를 함께 포함하므로 repo 전체 크기를 단일 실행 checkpoint 크기로 오해하지 않는다.
 
@@ -595,7 +602,7 @@ proba = clf.predict_proba(X_test)
 - checkpoint가 pickle 기반 형식을 사용한다면 임의 코드 실행 위험을 고려한다.
 - 정확한 Hugging Face repo와 revision을 고정한다.
 - 인터넷·secret이 없는 격리 환경에서 최초 로드한다.
-- 상업·프로덕션 사용은 `tabpfn-3-license-v1.0` 조건을 확인한다.
+- `tabpfn-3-license-v1.0`은 **연구·평가 전용**으로 상업·프로덕션 사용을 금지한다(엔터프라이즈 라이선스 별도). 상업 프로젝트는 구버전 TabPFN v2 계열(`tabpfn_2_5`/`2_6`)이나 Apache-2.0으로 표기된 [TabICL](https://huggingface.co/jingang/TabICL) checkpoint를 검토하되, 두 저장소 모두 현재 라이선스가 상업 사용을 허용하는지 직접 확인한다.
 
 ### 7.4 LimiX-2M
 
@@ -665,11 +672,11 @@ TabICLv2는 대규모 표형 데이터까지 확장하는 연구 방향의 모�
 | 모델 | 규모·형식 | 주요 기능 | 파일·메모리 관점 | 라이선스 | Hugging Face |
 | --- | --- | --- | --- | --- | --- |
 | **Granite TinyTimeMixer R3** | 약 1M parameters부터, 다수 특화 checkpoint | multivariate point forecasting, zero/few-shot·fine-tuning | 수 MB급 checkpoint가 있어 저메모리·CPU/노트북에 적합 | Apache 2.0 | [모델](https://huggingface.co/ibm-granite/granite-timeseries-ttm-r3) |
-| **Chronos-2** | 120M, encoder-only, F32 | univariate·multivariate·past/future covariate, quantile forecast | 가중치 약 수백 MB, context 8,192·horizon 1,024 범위. CPU/GPU 지원 | Apache 2.0 | [모델](https://huggingface.co/autogluon/chronos-2) |
-| **TiRex-2** | 38.4M active(단변량) + 44.1M 추가(다변량), xLSTM | 단변량·다변량, 과거·미래-known covariate, zero-shot | gated weights. 4–8 GB부터 작은 batch로 실측하며 context·series 수에 따라 증가 | Apache 2.0 | [모델](https://huggingface.co/NX-AI/TiRex-2) |
+| **Chronos-2** | 120M, encoder-only, F32; 소형 변형 chronos-2-small 27.9M | univariate·multivariate·past/future covariate, quantile forecast | 가중치 약 수백 MB, context 8,192·horizon 1,024 범위. CPU/GPU 지원 | Apache 2.0 | [모델](https://huggingface.co/autogluon/chronos-2) |
+| **TiRex-2** | 38.4M active(단변량) + 44.1M 추가(다변량), xLSTM | 단변량·다변량, 과거·미래-known covariate, zero-shot | 라이선스 완화 후에도 가중치 접근 게이트가 유지되는지는 저장소에서 직접 확인. 4–8 GB부터 작은 batch로 실측하며 context·series 수에 따라 증가 | Apache 2.0 (v1의 NXAI 커뮤니티 라이선스에서 완화) | [모델](https://huggingface.co/NX-AI/TiRex-2) |
 | **TimesFM 2.5 200M** | 200M decoder-only, Transformers port | point·quantile forecast | F32 checkpoint 약 1 GB 전후, batch/context별 추가 메모리 | Apache 2.0 | [모델](https://huggingface.co/google/timesfm-2.5-200m-transformers) |
-| **Moirai 2.0 R small** | universal time-series model | 다양한 frequency·변수의 probabilistic forecast | 소형 checkpoint지만 input/batch scaling 측정 | CC-BY-NC-4.0 등 현재 카드 확인 | [모델](https://huggingface.co/Salesforce/moirai-2.0-R-small) |
-| **TabPFN-TS-3 checkpoint** | TabPFN-3 특화 regressor | time-series regression/forecasting | TabPFN runtime·license 적용 | TabPFN-3 license | [TabPFN-3](https://huggingface.co/Prior-Labs/tabpfn_3) |
+| **Moirai 2.0 R small** | 11.4M, universal time-series model | 다양한 frequency·변수의 probabilistic forecast | 소형 checkpoint지만 input/batch scaling 측정 | **CC-BY-NC-4.0(비상업)** — 상업 시스템 사용 불가 | [모델](https://huggingface.co/Salesforce/moirai-2.0-R-small) |
+| **TabPFN-TS-3 checkpoint** | TabPFN-3 특화 regressor | time-series regression/forecasting | TabPFN runtime·license 적용 | TabPFN-3 license(연구·평가 전용, 상업 금지) | [TabPFN-3](https://huggingface.co/Prior-Labs/tabpfn_3) |
 
 ### 8.2 Granite TinyTimeMixer R3
 
@@ -699,6 +706,8 @@ Chronos-2는 120M parameter encoder-only 모델이며, 공식 모델 카드는 �
 - 알려진 미래 covariate
 - multi-step quantile forecast
 - 최대 context 8,192, 최대 prediction length 1,024
+
+소형 변형인 [chronos-2-small](https://huggingface.co/autogluon/chronos-2-small)(27.9M)도 같은 계열로 제공되므로 저사양 CPU 환경의 시작점으로 검토할 수 있다.
 
 ```python
 import pandas as pd
@@ -750,7 +759,7 @@ with torch.no_grad():
 
 ### 8.5 TiRex-2
 
-TiRex-2는 2026년 7월 공개된 xLSTM 기반 시계열 파운데이션 모델이다. 하나의 checkpoint로 단변량과 다변량 forecasting을 처리하며, 과거 covariate와 실제 예측 시점에 알려진 미래 covariate를 함께 사용할 수 있다.
+TiRex-2는 2026년 6월 공개된 xLSTM 기반 시계열 파운데이션 모델이다. 하나의 checkpoint로 단변량과 다변량 forecasting을 처리하며, 과거 covariate와 실제 예측 시점에 알려진 미래 covariate를 함께 사용할 수 있다. 가중치 라이선스는 v1의 NXAI 커뮤니티 라이선스와 달리 **Apache-2.0**으로 완화되었다.
 
 공식 조직 페이지가 제시하는 규모:
 
@@ -759,7 +768,7 @@ TiRex-2는 2026년 7월 공개된 xLSTM 기반 시계열 파운데이션 모델�
 다변량 모드: 위 모델에 약 44.1M parameters 추가 사용
 ```
 
-가중치는 Hugging Face에서 gated access이므로 라이선스 조건에 동의하고 토큰을 준비한다.
+가중치가 Hugging Face에서 gated access로 유지되는지 저장소에서 먼저 확인하고, 게이트가 걸려 있다면 라이선스 조건에 동의한 뒤 토큰을 준비한다.
 
 ```bash
 hf auth login
@@ -799,7 +808,7 @@ Moirai는 다양한 시계열 분포를 대상으로 하는 universal forecastin
 - probabilistic sample 수
 - 현재 `uni2ts` 또는 호환 패키지 버전
 
-비상업적 라이선스가 적용되는 배포는 상업 시스템에 사용하지 않는다.
+Moirai 2.0 R small의 가중치는 2026-08-13 기준 **CC-BY-NC-4.0(비상업)**이다. 비상업적 라이선스가 적용되는 배포는 상업 시스템에 사용하지 않는다.
 
 ### 8.7 forecasting 기본 평가
 
@@ -901,7 +910,7 @@ Data working set: 약 3–7 GB부터 시작
 ### 9.4 24 GB
 
 ```text
-LLM: Qwen3.6-27B Q3 또는 Devstral Small 2 Q3/Q4
+LLM: Qwen3.6-27B Q3, Devstral Small 2 Q3/Q4 또는 Muse-Glimmer-30B Q4(공식 Q4_K_M 16.8 GB, DFlash 드래프터 1.6 GB·mmproj 1.4 GB 별도)
 Text-to-SQL: XiYanSQL 32B Q2/Q3를 별도 순차 실행하거나 7B Q4 상주
 Engine: DuckDB/Polars, NVMe spill, 별도 Jupyter process
 Tabular: TabPFN-3 + CatBoost/XGBoost benchmark
@@ -916,6 +925,7 @@ Data working set: 6–9 GB 목표
 
 ```text
 LLM: Qwen3.6-27B Q4 또는 Qwen3.6-35B-A3B Q3
+     장문 스키마·로그 중심이면 Nemotron-3.5-Lightning-30B-A3B Q4(25.4 GB, 데이터 예산 축소 감수)
 Text-to-SQL: XiYanSQL 32B Q3/Q4 순차, 또는 7B Q4 상주
 Engine: DuckDB service + notebook worker 분리
 Tabular: TabPFN-3, TabFM 단일 task checkpoint를 16–24 GB부터 실측
@@ -2968,8 +2978,8 @@ hf cache verify <repo-id> --revision <commit-sha> --local-dir models/<name>
 | 유형 | 예 | 운영 시 확인할 것 |
 | --- | --- | --- |
 | Apache 2.0 계열 | 일부 Qwen·Granite·Chronos·Text-to-SQL 모델 | 원본·변환 repo별 실제 LICENSE, notice |
-| 모델별 custom license | TabPFN-3 등 | 상업 이용, 배포, derivative, 서비스 허용 범위 |
-| non-commercial weights | TabFM 등 | 연구와 내부 평가의 범위, 제품 사용 금지 여부 |
+| 모델별 custom license | TabPFN-3(연구·평가 전용) 등 | 상업 이용, 배포, derivative, 서비스 허용 범위 |
+| non-commercial weights | TabFM·Moirai 2.0(CC-BY-NC-4.0) 등 | 연구와 내부 평가의 범위, 제품 사용 금지 여부 |
 | community conversion | 여러 GGUF | 원본 라이선스가 그대로 적용되는지, 추가 조건 |
 | gated model | 접근 승인 필요 모델 | 사용자별 자격, 재배포와 자동화 다운로드 |
 
@@ -3882,6 +3892,10 @@ report generation
 - [Mistral Small 4 GGUF](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF)
 - [Mistral Medium 3.5 공식](https://huggingface.co/mistralai/Mistral-Medium-3.5-128B)
 - [Mistral Medium 3.5 GGUF](https://huggingface.co/bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF)
+- [Muse-Glimmer-30B 공식](https://huggingface.co/meta-models/Muse-Glimmer-30B)
+- [Muse-Glimmer-30B 공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF)
+- [NVIDIA Nemotron-3.5-Lightning-30B-A3B GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF)
+- [Kanana 2 3B Instruct](https://huggingface.co/kakaocorp/kanana-2-3b-instruct)
 
 ### 21.2 Text-to-SQL
 
@@ -3910,6 +3924,7 @@ report generation
 - [TabICL·TabICLv2 공식 코드](https://github.com/soda-inria/tabicl)
 - [TabICL 문서](https://tabicl.readthedocs.io/en/latest/)
 - [TabICLv2 논문](https://huggingface.co/papers/2602.11139)
+- [TabICL HF checkpoint (개인 계정, Apache-2.0 표기)](https://huggingface.co/jingang/TabICL)
 - [CatBoost](https://github.com/catboost/catboost)
 - [XGBoost](https://github.com/dmlc/xgboost)
 - [LightGBM](https://github.com/microsoft/LightGBM)
@@ -3919,6 +3934,7 @@ report generation
 
 - [IBM Granite TinyTimeMixer R3](https://huggingface.co/ibm-granite/granite-timeseries-ttm-r3)
 - [AutoGluon/Amazon Science Chronos-2](https://huggingface.co/autogluon/chronos-2)
+- [Chronos-2 Small 27.9M](https://huggingface.co/autogluon/chronos-2-small)
 - [Chronos Forecasting 코드](https://github.com/amazon-science/chronos-forecasting)
 - [Google TimesFM 2.5 200M Transformers](https://huggingface.co/google/timesfm-2.5-200m-transformers)
 - [TimesFM 코드](https://github.com/google-research/timesfm)

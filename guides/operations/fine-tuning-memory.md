@@ -3,10 +3,10 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-07-21 (KST)
-> **주요 도구:** Transformers·PEFT·TRL, bitsandbytes, torchtune, Accelerate·FSDP2, DeepSpeed ZeRO, TorchTitan, Axolotl, LLaMA-Factory, Unsloth, MLX-LM, Diffusers
+> **최종 검증일:** 2026-08-13 (KST)
+> **주요 도구:** Transformers·PEFT·TRL, bitsandbytes, torchtune (공식 README 기준 유지보수 중단), Accelerate·FSDP2, DeepSpeed ZeRO, TorchTitan, Axolotl, LLaMA-Factory, Unsloth, MLX-LM, Diffusers
 > **범위:** 언어·코드·수학 모델, VLM·OCR, 이미지 생성, 음성·오디오, 임베딩·reranker의 full fine-tuning·PEFT·선호학습·분산학습 메모리 계산과 검증
-> **관련 문서:** [양자화](./quantization.md) · [서빙·동시성](./serving-concurrency.md) (예정) · [런타임·하드웨어](./runtime-hardware.md) (예정)
+> **관련 문서:** [양자화](./quantization.md) · [서빙·동시성](./serving-concurrency.md) · [런타임·하드웨어](./runtime-hardware.md)
 
 이 문서는 “모델 파일이 VRAM에 들어가면 학습할 수 있는가?”, “7B Q4가 4GB이므로 8GB GPU에서 QLoRA가 항상 가능한가?”, “GPU 두 장이면 메모리가 정확히 두 배가 되는가?” 같은 오해를 피하면서, 보유한 **GPU VRAM**, **시스템 RAM**, **Apple Silicon 통합 메모리**에 맞는 파인튜닝 방식을 선택하기 위한 실전 가이드다.
 
@@ -720,6 +720,8 @@ for name, module in model.named_modules():
         print(name)
 ```
 
+PEFT v0.20.0부터는 condition number 기반으로 target module 후보를 자동 선택하는 `find_kappa_target_modules`(KappaTune)도 제공된다. 자동 선택 결과 역시 수동 구성과 같은 기준으로 A/B 평가한다.
+
 ### 8.4 rank를 선택하는 방법
 
 무조건 높은 rank를 쓰지 않는다.
@@ -911,6 +913,15 @@ vs 작은 모델 BF16 LoRA
 - math verifier pass
 - latency와 peak memory
 
+### 9.8 NF4를 넘어서: 4-bit 학습 경로 확대
+
+QLoRA의 frozen 4-bit base는 오랫동안 bitsandbytes NF4가 사실상 표준이었지만, 4-bit 학습 선택지는 넓어지고 있다.
+
+- **native FP4 base 위 LoRA**: Axolotl v0.18.0(2026-07-17)은 MoE expert를 NVFP4(Marlin/DeepGEMM)·MXFP4·bnb-4bit로 저장한 채 학습하는 4-bit expert MoE-LoRA/QLoRA를 지원한다. FP4 activation까지 사용하는 W4A4(SonicMoE) 경로는 데이터센터 GPU뿐 아니라 RTX 50xx(sm120) 같은 소비자 Blackwell GPU에서도 동작하고, `nvfp4_merge_aware` 모드는 NVFP4 base에 비트 일치 merge를 제공한다. NVFP4로 배포된 공식 체크포인트에서 재양자화 없이 직접 파인튜닝하는 경로가 실전화된 것이다.
+- **bitsandbytes 플랫폼 확대**: bitsandbytes 0.50.0(2026-07-25)은 fused 4-bit GEMM으로 batch 2–64 구간의 4-bit 추론을 최대 4배 가속하고, ROCm 지원을 안정 단계로 승격했으며, Apple Silicon MPS 지원 범위도 넓혔다(전제 조건은 17.8 참고).
+
+이 경로들은 지원 model·kernel·GPU 조합이 빠르게 변하므로, NF4 QLoRA 기준선과 같은 데이터·평가로 품질을 비교한 뒤 채택한다.
+
 ---
 
 ## 10. DoRA·rsLoRA·초기화 기법
@@ -929,6 +940,11 @@ LoRA 생태계에는 rank scaling, magnitude decomposition과 data-aware initial
 | OLoRA | orthogonal initialization 계열 | 구현별 차이 | 연구·A/B 목적 |
 | CorDA | context-oriented decomposition | preprocessing 필요 | 지식 보존·domain adaptation 연구 |
 | AdaLoRA | layer별 rank를 동적으로 할당 | scheduler·추가 상태 | fixed rank가 비효율적일 때 |
+| HiRA | Hadamard 곱으로 high-rank update를 근사 | trainable state는 LoRA와 유사 | 저랭크 표현력 한계가 평가로 확인될 때 |
+| VeLoRA | activation 메모리 절감형 계열 | activation 메모리 절감 | activation이 병목인 환경 실험 |
+| BEFT | bias 미세조정 | trainable state 매우 작음 | 초경량 적응·빠른 탐색 |
+
+위 표의 HiRA·VeLoRA·BEFT는 PEFT v0.20.0(2026-07-28)에서 추가된 신규 기법 9종(GLoRA·MonteCLoRA·Uni-LoRA 등 포함)의 일부다. 같은 릴리스는 LoRA target module 자동 선택 기능인 `find_kappa_target_modules`(KappaTune)도 도입했다(8.3 참고). 신규 기법은 지원 layer·양자화 백엔드 조합이 제각각이므로, 기본 LoRA 기준선과 같은 데이터·설정에서 A/B 검증 후 채택한다.
 
 ### 10.2 DoRA 메모리
 
@@ -1039,6 +1055,8 @@ FP8은 가중치 저장만 8-bit로 만드는 단순 PTQ가 아니다. training 
 - checkpoint portability
 
 FP8을 켰다는 이유만으로 model state가 정확히 절반이 되지 않는다. optimizer와 master weight가 BF16·FP32로 남을 수 있다.
+
+FP8보다 낮은 정밀도로는, torchao v0.18.0(2026-08-03)이 Blackwell(SM100 이상) dense linear를 대상으로 한 NVFP4 학습을 프로토타입으로 추가했다. 아직 실험 단계이므로 production 학습 기준선으로 삼지 않는다.
 
 ### 11.5 gradient clipping
 
@@ -1579,7 +1597,7 @@ micro-batch: 1–2
 accumulation: 8–32
 ```
 
-Torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공한다. 해당 결과는 좋은 sanity check지만, 다른 model·dataset에 그대로 보장되지 않는다.
+torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 다만 근거였던 stable tutorial 페이지는 2026-08-13 링크 검사에서 모두 404로 확인되어 현재 원문을 확인할 수 없다. 해당 결과는 좋은 sanity check지만 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 유지보수 중단 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
 
 ### 16.4 24GB
 
@@ -1793,6 +1811,10 @@ fuse에는 base와 adapter를 동시에 적재하고 새 weight를 저장할 메
 - quantized base를 fuse한 뒤 원본·adapter provenance 삭제
 - fanless 또는 제한된 cooling 장비에서 짧은 benchmark만 보고 장시간 throughput 추정
 
+### 17.8 MLX 외 경로: bitsandbytes MPS
+
+bitsandbytes 0.50.0(2026-07-25)부터 Apple Silicon MPS에서 모든 4-bit·LLM.int8() 구성이 동작한다. 전제 조건은 torch 2.9 이상이며, Metal 커널은 macOS 26 이상에서 `kernels` 패키지를 통해 제공된다. 8-bit optimizer는 아직 미지원이다. Transformers·PEFT 기반 QLoRA 스크립트를 Mac에서 그대로 검증하는 선택지가 생긴 것이다. 다만 MLX 경로 대비 성숙도와 속도는 별도로 측정한다.
+
 ---
 
 ## 18. CPU RAM·NVMe offload
@@ -1911,6 +1933,8 @@ peak per rank
 ```
 
 단순히 전체 state를 GPU 수로 나눈 값보다 peak가 크다.
+
+PyTorch v2.13.0(2026-07-08)은 FSDP2에 `set_separate_reduce_scatter_group`을 추가했다. reduce-scatter에 전용 communicator를 배정해 all-gather와 오버랩하는 옵트인 기능으로, 통신이 병목인 구성에서 처리량을 높일 수 있다. 또한 Inductor의 `decomp_comms` 패스는 FSDP 하에서 Muon·Shampoo류 optimizer의 all-gather를 제거해 학습을 가속한다(게이트 플래그 필요).
 
 ### 19.3 ZeRO 단계
 
@@ -2390,6 +2414,8 @@ num_generations ↓
 → reward model 분리
 → reference log-prob 최적화
 ```
+
+TRL v1.9부터는 GRPO·RLOO에 iterable/streaming dataset을 사용할 수 있고(이 경우 `max_steps` 지정 필수), `environment_factory`를 제공하면 환경이 prompt를 소유하므로 `train_dataset` 없이 구성할 수 있다. AsyncGRPO는 메시지 레벨 롤아웃(`rollout_protocol="message"`)으로 멀티턴 대화의 재작성 흐름을 지원한다. 이 기능들은 데이터 공급 방식의 변화이며, rollout·KV cache 메모리 예산 설계는 그대로 필요하다.
 
 ### 23.6 online method와 ZeRO-3
 
@@ -2896,7 +2922,7 @@ Reranker:
 | 프레임워크 | 강점 | 메모리 기능 | 적합한 사용자 |
 | --- | --- | --- | --- |
 | Transformers + PEFT + TRL | 가장 넓은 model·trainer 생태계 | LoRA·QLoRA·checkpointing·packing·DPO·GRPO | 직접 Python 제어 |
-| torchtune | PyTorch-native recipe·교육성 | LoRA·QLoRA·full FT·activation 최적화 | 단일·다중 GPU 연구 |
+| torchtune (README 기준 유지보수 중단) | PyTorch-native recipe·교육성 | LoRA·QLoRA·full FT·activation 최적화 | 기존 recipe 유지·참고용, 신규 프로젝트 비권장 |
 | Accelerate | launch·FSDP·DeepSpeed abstraction | FSDP2·ZeRO·FP8·checkpoint | custom script 분산화 |
 | DeepSpeed | ZeRO·offload·pipeline | CPU/NVMe offload·ZeRO-1/2/3 | 대형 model·cluster |
 | TorchTitan | 최신 PyTorch 대규모 학습 stack | FSDP2·TP·PP·CP·DCP·low precision | server-scale 연구 |
@@ -2908,6 +2934,8 @@ Reranker:
 | Diffusers | 이미지 생성 공식 training scripts | LoRA·DreamBooth·checkpointing | diffusion·DiT |
 
 vendor·project가 제시하는 속도·VRAM 절감 수치는 해당 benchmark 조건의 결과다. 공통 baseline으로 간주하지 않는다.
+
+Unsloth는 파이썬 패키지가 날짜 기반 버전(예: 2026.8.15)을 사용하고, GitHub release 태그(v0.1.x-beta)는 2026-08에 공개된 Desktop 앱(macOS·Windows 설치형, 베타)용이므로 두 버전 체계를 혼동하지 않는다. 최근에는 이미지 diffusion 파인튜닝 예비 지원 등 언어 모델 밖으로도 범위를 넓히고 있다.
 
 ### 28.2 환경 고정
 
@@ -3051,6 +3079,8 @@ llamafactory-cli train configs/train.yaml
 Web UI는 편리하지만 최종 run의 전체 config를 version control에 저장한다. UI screenshot만으로 재현성을 남기지 않는다.
 
 ### 28.9 torchtune
+
+> **주의:** torchtune은 공식 README 기준으로 더 이상 활발히 유지보수되지 않는다(2025년 개발 중단). 다만 저장소는 meta-pytorch org로 이전된 뒤 2026-08-12까지 push가 이어지고 있어 README 표기와 실제 활동이 엇갈리므로, 채택 전 저장소 상태를 직접 확인한다. 기존 recipe와 설치본은 계속 동작하지만 신규 프로젝트에는 권장하지 않는다. PyTorch-native 대규모 학습이 필요하면 TorchTitan을, 범용 파인튜닝이면 Transformers·PEFT·TRL 계열을 먼저 검토한다.
 
 ```bash
 tune ls
@@ -3567,6 +3597,7 @@ manifest·hash
 ### 31.4 torchtune·torchao
 
 - [torchtune documentation](https://docs.pytorch.org/torchtune/)
+- [torchtune repository](https://github.com/meta-pytorch/torchtune) — 공식 README 기준 유지보수 중단(2025년 개발 중단), 신규 프로젝트 비권장
 - [torchtune memory optimization overview](https://docs.pytorch.org/torchtune/stable/tutorials/memory_optimizations.html)
 - [torchtune LoRA tutorial](https://docs.pytorch.org/torchtune/stable/tutorials/lora_finetune.html)
 - [torchtune QLoRA tutorial](https://docs.pytorch.org/torchtune/stable/tutorials/qlora_finetune.html)
@@ -3616,7 +3647,7 @@ manifest·hash
 - [MLX](https://github.com/ml-explore/mlx)
 - [MLX-LM](https://github.com/ml-explore/mlx-lm)
 - [MLX-LM LoRA·QLoRA guide](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/LORA.md)
-- [MLX-LM examples](https://github.com/ml-explore/mlx-lm/tree/main/examples)
+- [MLX-LM examples](https://github.com/ml-explore/mlx-lm/tree/main/mlx_lm/examples)
 
 ### 31.9 NVIDIA 대규모 학습
 
@@ -3659,8 +3690,8 @@ manifest·hash
 - [이미지 생성](../modalities/image-generation.md)
 - [오디오·음성](../modalities/audio-speech.md)
 - [양자화](./quantization.md)
-- [서빙·동시성](./serving-concurrency.md) (예정)
-- [런타임·하드웨어](./runtime-hardware.md) (예정)
+- [서빙·동시성](./serving-concurrency.md)
+- [런타임·하드웨어](./runtime-hardware.md)
 
 ---
 
@@ -3784,7 +3815,7 @@ MoE expert가 안 들어감
 
 ### 32.10 갱신 주의
 
-이 문서는 2026-07-21 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
+이 문서는 2026-08-13 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
 
 - model architecture와 remote code
 - PEFT·TRL·Transformers·PyTorch API

@@ -1,13 +1,13 @@
 # 로컬 AI 모델 선택 가이드
 ## 범용 프로그래밍·수학·과학·연구용 — RAM/VRAM/Apple 통합 메모리별
 
-> **최종 검증일:** 2026-07-20 (KST)  
+> **최종 검증일:** 2026-08-13 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`; Apple Silicon에서는 MLX도 병행 가능  
 > **범위:** 범용 프로그래밍, 저장소 수준 코딩 에이전트, 수학·과학 추론, 논문·기술문서 분석, RAG, 데이터 분석, Lean 4 형식증명 및 연구 자동화
 
 이 문서는 보유한 **시스템 RAM**, **GPU VRAM**, 또는 **Apple Silicon 통합 메모리**만 알아도 적절한 로컬 모델과 양자화를 고르고, Hugging Face에서 바로 내려받아 실행할 수 있도록 구성한 실전 가이드다.
 
-모델 파일과 양자화 저장소는 계속 수정된다. 아래 크기는 2026-07-20에 확인한 대표값이며, 다운로드 직전 반드시 모델 카드의 **파일명, 전체 shard 수, 총 크기, 라이선스, 수정일, 지원 백엔드**를 다시 확인해야 한다.
+모델 파일과 양자화 저장소는 계속 수정된다. 아래 크기는 2026-08-13에 확인한 대표값이며, 다운로드 직전 반드시 모델 카드의 **파일명, 전체 shard 수, 총 크기, 라이선스, 수정일, 지원 백엔드**를 다시 확인해야 한다.
 
 > **핵심 원칙:** 코딩·수학·과학에서는 메모리에 겨우 들어가는 큰 Q2 모델보다, 충분한 여유를 남긴 한 단계 작은 **Q4/Q5 모델**이 더 안정적인 경우가 많다.
 
@@ -42,8 +42,8 @@
 | **8 GB** | [Qwen3.5-4B](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) | Q4 계열 | 약 2.78 GB | 8K | 저사양 노트북의 범용 기본값. 형식증명은 7B prover Q3/Q4 후보. |
 | **12 GB** | [Qwen3.5-9B](https://huggingface.co/unsloth/Qwen3.5-9B-GGUF) | Q4 계열 | 약 5.84 GB | 8K | 코딩·수학·과학 질의·도구 호출의 균형형. |
 | **16 GB** | [Ministral 3 14B Reasoning](https://huggingface.co/mistralai/Ministral-3-14B-Reasoning-2512-GGUF) | Q4_K_M | 약 8.24 GB | 8K–16K | STEM 추론과 코딩에 유리. gpt-oss-20b는 16 GB에서 매우 빠듯하다. |
-| **24 GB** | [Qwen3.6-27B](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF) | Q3_K_M | 약 13.6 GB | 8K–16K | 범용 연구 조수. 저장소 작업은 Devstral Small 2 Q4가 강한 대안. |
-| **32 GB** | [Qwen3.6-35B-A3B](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) | UD-Q4_K_M | 약 22.1 GB | 8K부터 | 코딩·수학·도구 사용·멀티모달 연구의 강력한 단일 모델. 긴 컨텍스트는 실측 후 확대. |
+| **24 GB** | [Qwen3.6-27B](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF) | Q3_K_M | 약 13.6 GB | 8K–16K | 범용 연구 조수. 저장소 작업은 Devstral Small 2 Q4, 에이전트 용도는 Muse-Glimmer-30B Q4가 강한 대안. |
+| **32 GB** | [Qwen3.6-35B-A3B](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) | UD-Q4_K_M | 약 22.1 GB | 8K부터 | 코딩·수학·도구 사용·멀티모달 연구의 강력한 단일 모델. 긴 컨텍스트는 실측 후 확대. 장문 작업은 Nemotron-3.5-Lightning Q4도 후보지만 가중치 25.4 GB라 32 GB는 최소선이고 여유는 48 GB급부터다. |
 | **48 GB** | [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | UD-Q3_K_S | 약 33.3 GB | 8K–16K | 대형 코드베이스와 장기 코딩 에이전트. 일반 연구에는 Qwen3.6 고정밀도도 합리적. |
 | **64 GB** | [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | Q4_K_M | 약 48.5 GB | 8K–16K | 프로그래밍 우선. 범용·비전은 Mistral Small 4의 IQ2/저 Q3 대안. |
 | **80 GB** | [Mistral Small 4 119B-A6.5B](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF) | UD-Q3_K_M | 약 54.4 GB | 8K–16K | 대형 MoE 범용·코딩·비전. gpt-oss-120b는 이 구간의 최소선. |
@@ -57,10 +57,10 @@
 - **8 GB 이하:** Qwen3.5-4B Q4가 저사양 범용 기준선이다.
 - **12–16 GB:** Qwen3.5-9B Q4 또는 Ministral 3 14B Reasoning Q4가 실용적이다.
 - **24–32 GB 범용 연구:** Qwen3.6-27B/35B-A3B Q3/Q4가 중심 선택이다.
-- **24–32 GB 저장소 에이전트:** Devstral Small 2 24B Q4가 명확한 전용 후보다.
+- **24–32 GB 저장소 에이전트:** Devstral Small 2 24B Q4가 명확한 전용 후보이고, 24 GB급 범용 에이전트는 Muse-Glimmer-30B Q4가 유력하다.
 - **48–64 GB 대형 프로그래밍:** Qwen3-Coder-Next Q3/Q4가 유력하다.
 - **24–32 GB 자연어 수학·과학:** SU-01 Q3/Q4와 Python·SymPy 검산을 함께 쓴다.
-- **Lean 4 형식증명:** 8–12 GB는 DeepSeek/Goedel 7–8B, 32 GB는 Goedel 32B, 96 GB는 Leanstral 1.5 Q4다.
+- **Lean 4 형식증명:** 8–12 GB는 DeepSeek/Goedel 7–8B, 32 GB는 Pythagoras-Prover-32B 또는 Goedel 32B, 96 GB는 Leanstral 1.5 Q4다.
 - **96 GB급 단일 범용 모델:** Mistral Medium 3.5 Q4 또는 Mistral Small 4 Q4가 현실적인 상한선이다.
 - **논문·최신 지식:** 모델 크기보다 RAG, 출처 메타데이터, 재순위기와 인용 검증이 중요하다.
 
@@ -255,7 +255,9 @@ Q2로 내려도 일반 모델처럼 큰 절감이 없으므로, 대화 템플릿
 | **gpt-oss-20b** | 약 21B 총/3.6B 활성 MoE; 추론·에이전트 | 약 11.5 | 약 11.5 | **약 11.6** | 16 GB 최소 / 24 GB 권장 | [GGUF](https://huggingface.co/unsloth/gpt-oss-20b-GGUF) · [공식](https://huggingface.co/openai/gpt-oss-20b) |
 | **Devstral Small 2 24B** | 저장소 수준 소프트웨어 엔지니어링·비전 | 8.89–9.29 | 약 11.5 | **14.3** | 24–32 GB | [GGUF](https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF) |
 | **Qwen3.6-27B** | 27B dense; 범용·코딩·수학·비전·도구 사용 | 11.8 | 13.6 | **16.8** | Q3 24 GB / Q4 32 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.6-27B) |
+| **Muse-Glimmer-30B** | 약 30B dense + 비전 인코더; 24 GB급 에이전트·도구 사용 | 배포별 확인 | 배포별 확인 | **16.8 (공식)**; 비전 입력 시 mmproj 1.4 별도 | 24–32 GB | [공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) · [공식](https://huggingface.co/meta-models/Muse-Glimmer-30B) |
 | **Qwen3.6-35B-A3B** | 35B 총/3B 활성 MoE; 범용 에이전트·코딩·비전 | 12.3 | 16.6 | **22.1** | Q3 24–32 GB / Q4 32 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) |
+| **Nemotron-3.5-Lightning-30B-A3B** | 30B 총/3B 활성 하이브리드 MoE(Mamba-2+어텐션); 최대 1M 컨텍스트 | 배포별 확인 | 배포별 확인 | **25.4** | 32 GB 최소 / 48 GB 권장 | [GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) · [공식](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16) |
 | **SU-01** | 약 31B-A3B; 자연어 수학·과학 올림피아드형 장기 추론 | 10.3–11.8 | 12.9–14.7 | **16.4–18.6** | Q3 24 GB / Q4 32 GB | [GGUF](https://huggingface.co/axi0mX/SU-01-GGUF) |
 | **Goedel-Prover-V2-32B** | Lean 4 형식증명 전용 | 12.4 | 16.1 | **19.9** | Q3 24 GB / Q4 32 GB | [GGUF](https://huggingface.co/mradermacher/Goedel-Prover-V2-32B-GGUF) |
 
@@ -263,9 +265,11 @@ Q2로 내려도 일반 모델처럼 큰 절감이 없으므로, 대화 템플릿
 
 - **Devstral Small 2:** 저장소 탐색, 여러 파일 수정, 테스트 실행과 패치 작성에 초점을 둔다.
 - **Qwen3.6-27B:** 24–32 GB에서 범용성과 정밀도의 균형이 좋다.
+- **Muse-Glimmer-30B:** Meta의 Apache-2.0 오픈웨이트 복귀작(2026-08-10)으로, 24 GB VRAM급 에이전트·도구 사용을 겨냥한다. 공식 GGUF Q4_K_M이 16.8 GB이며, 배포 조직이 meta-llama가 아니라 meta-models라는 점에 주의한다.
 - **Qwen3.6-35B-A3B:** 코딩·비전·도구 사용을 하나의 모델로 처리하려는 32 GB급 장비의 중심 후보다.
+- **Nemotron-3.5-Lightning-30B-A3B:** NVIDIA의 Mamba-2 하이브리드 MoE(2026-08-11, OpenMDW-1.1)로 최대 1M 컨텍스트를 지원한다. Q4_K_M 25.4 GB는 32 GB에서 여유가 크지 않으므로 컨텍스트를 실측 후 확대한다.
 - **SU-01:** 자연어 수학·과학 올림피아드형 추론에 특화되어 있으며, 일반 소프트웨어 에이전트 또는 Lean 증명기와 동일한 모델로 보지 않는다.
-- **Goedel 32B:** 자연어 풀이보다 컴파일 가능한 Lean 4 증명 생성에 배치한다.
+- **Goedel 32B:** 자연어 풀이보다 컴파일 가능한 Lean 4 증명 생성에 배치한다. miniF2F-Test 기준으로는 신형 Pythagoras-Prover-32B(4.4절)가 우위다.
 
 ## 4.3 대형 범용·코딩·연구·형식증명 모델
 
@@ -295,8 +299,11 @@ Q2로 내려도 일반 모델처럼 큰 절감이 없으므로, 대화 템플릿
 | **DeepSeek-Prover-V2-7B** | 7B | Lean 4 정리 증명·증명 완성 | Q2 약 2.2–2.9 / Q3_K_M 약 3.46 / Q4_K_M 약 4.22 GB | 8–12 GB | [GGUF](https://huggingface.co/unsloth/DeepSeek-Prover-V2-7B-GGUF) |
 | **Goedel-Prover-V2-8B** | 8B | Lean 4 자동 증명·작은 프로젝트 | Q2_K 3.28 / Q3_K_M 4.12 / Q4_K_M 5.03 GB | 8–12 GB | [GGUF](https://huggingface.co/mradermacher/Goedel-Prover-V2-8B-GGUF) |
 | **Goedel-Prover-V2-32B** | 32B | 고난도 Lean 4 증명·긴 증명 탐색 | Q2_K 12.4 / Q3_K_M 16.1 / Q4_K_M 19.9 GB | 24–32 GB | [GGUF](https://huggingface.co/mradermacher/Goedel-Prover-V2-32B-GGUF) |
+| **Pythagoras-Prover-32B** | 32B | 고난도 Lean 4 증명·miniF2F-Test에서 Goedel 32B 상회 | Q4_K_M 약 20 GB(추정); 다운로드 전 파일 목록 확인 | 24–32 GB | [공식](https://huggingface.co/Pythagoras-LM/Pythagoras-Prover-32B) · [GGUF](https://huggingface.co/mradermacher/Pythagoras-Prover-32B-GGUF) |
 | **OProver-8B/32B post-trained** | 8B / 32B | 검색·컴파일러 피드백을 쓰는 agentic Lean prover | 현재 신뢰할 수 있는 통합 GGUF 표는 저장소별 확인 | 모델별 상이 | [컬렉션](https://huggingface.co/collections/m-a-p/oprover) · [8B Round2](https://huggingface.co/m-a-p/OProver-8B-Round2) · [32B Round1](https://huggingface.co/m-a-p/OProver-32B-Round1) |
 | **Leanstral 1.5** | 119B 총 / 6.5B 활성 | 장기 Lean 4 증명공학·자동형식화·코드 검증 | 커뮤니티 Q4_K_M 약 72.2 GB; Q2/Q3는 배포·품질을 개별 검증 | 96 GB | [공식](https://huggingface.co/mistralai/Leanstral-1.5-119B-A6B) · [Q4 GGUF](https://huggingface.co/Abiray/Leanstral-1.5-119B-A6B-Q4KM-GGUF) · [MLX 4bit](https://huggingface.co/mvid/Leanstral-1.5-119B-A6B-MLX-4bit) |
+
+> **2026-08-13 갱신:** 2026-07-23 공개된 **Pythagoras-Prover-32B**(Qwen3-32B 베이스, Apache-2.0)는 miniF2F-Test에서 pass@32 89.75%, pass@1024 92.62%를 보고해 Goedel-Prover-V2-32B(pass@32 88.1%)를 추월했다. 32 GB급 형식증명 작업은 두 모델을 같은 평가셋으로 비교할 가치가 있다. 한편 **Leanstral 1.5**는 Mistral API판이 2026-09-30 은퇴 예정이나, 공개 가중치는 계속 사용 가능하므로 로컬 실행에는 영향이 없다.
 
 ### 형식증명 모델 운용 원칙
 
@@ -331,8 +338,8 @@ Q2로 내려도 일반 모델처럼 큰 절감이 없으므로, 대화 템플릿
 |---:|---|---|
 | 8 GB | Qwen3.5-4B Q4 | 짧은 함수, 테스트 케이스, 타입 오류 설명 |
 | 12–16 GB | Qwen3.5-9B Q4/Q5 또는 Ministral 14B Q4 | 단일 파일·작은 모듈, 테스트 초안과 리뷰 |
-| 24 GB | Devstral Small 2 Q4 또는 Qwen3.6-27B Q3 | 중형 저장소, 도구 호출과 테스트 실행 |
-| 32 GB | Qwen3.6-27B/35B Q4 | 복수 파일 수정, 프런트엔드·백엔드·데이터 작업 |
+| 24 GB | Devstral Small 2 Q4, Muse-Glimmer-30B Q4 또는 Qwen3.6-27B Q3 | 중형 저장소, 도구 호출과 테스트 실행 |
+| 32 GB | Qwen3.6-27B/35B Q4 또는 Nemotron-3.5-Lightning Q4 | 복수 파일 수정, 프런트엔드·백엔드·데이터 작업 |
 | 48–64 GB | Qwen3-Coder-Next Q3/Q4 | 대형 코드베이스, 장기 에이전트, 복잡한 리팩터링 |
 | 96 GB+ | Mistral Medium 3.5 Q4+ 또는 Devstral 2 | 대형 저장소와 광범위한 설계·리뷰 |
 
@@ -353,7 +360,7 @@ Q2로 내려도 일반 모델처럼 큰 절감이 없으므로, 대화 템플릿
 | 올림피아드형 자연어 추론 | SU-01 Q3/Q4 | SymPy, 수치 반례 탐색, 사람 검토 |
 | 과학 문헌 기반 질의 | Qwen3.6-27B/35B + RAG | 원문 chunk, DOI/서지 메타데이터 |
 | 통계·데이터 분석 | Qwen3.6 또는 Mistral Medium + Python/R | 재현 가능한 notebook, 고정 seed |
-| 형식 수학 | DeepSeek/Goedel/Leanstral | Lean 4 compiler, mathlib revision |
+| 형식 수학 | DeepSeek/Goedel/Pythagoras/Leanstral | Lean 4 compiler, mathlib revision |
 | 수치해석·시뮬레이션 | 모델은 계획·코드 담당 | NumPy/SciPy/JAX, 오차·수렴성 검사 |
 
 수학·과학 응답에는 다음 질문을 자동으로 붙이는 것이 좋다.
@@ -867,7 +874,7 @@ model,quant,context,peak_ram_gb,peak_vram_gb,prompt_tps,gen_tps,pass_rate,citati
 
 ```yaml
 experiment_id: local-llm-research-001
-date_utc: 2026-07-20T00:00:00Z
+date_utc: 2026-08-13T00:00:00Z
 hardware:
   cpu: <model>
   gpu: <model-and-count>
@@ -979,8 +986,15 @@ llama-server \
 | 모델 | 개요 | 로컬 판단 | 메모리 구간 | Hugging Face |
 | --- | --- | --- | --- | --- |
 | **MiniMax-M2.5** | 약 229B, 코딩·도구 사용·검색 에이전트 | Q2/Q3/Q4 community GGUF 존재. shard 수와 총합은 배포별로 다르므로 `hf download --dry-run`으로 확인 | 192–256 GB+ 실험 권장 | [공식](https://huggingface.co/MiniMaxAI/MiniMax-M2.5) · [Unsloth GGUF](https://huggingface.co/unsloth/MiniMax-M2.5-GGUF) · [LM Studio GGUF](https://huggingface.co/lmstudio-community/MiniMax-M2.5-GGUF) |
-| **MiniMax-M3** | 약 428B 총/23B 활성, 네이티브 멀티모달, 최대 1M 컨텍스트 | 최신 백엔드의 MSA 지원과 quant 호환성을 우선 확인. 광고 컨텍스트를 로컬 기본값으로 사용하지 말 것 | 256 GB 이상 서버급부터 검토 | [공식](https://huggingface.co/MiniMaxAI/MiniMax-M3) |
+| **MiniMax-M3** | 약 428B 총/23B 활성, 네이티브 멀티모달, 최대 1M 컨텍스트 | 최신 백엔드의 MSA 지원과 quant 호환성을 우선 확인. 광고 컨텍스트를 로컬 기본값으로 사용하지 말 것 | 256 GB 이상 서버급부터 검토 | [공식](https://huggingface.co/MiniMaxAI/MiniMax-M3) · [Unsloth GGUF](https://huggingface.co/unsloth/MiniMax-M3-GGUF) · [Bartowski GGUF](https://huggingface.co/bartowski/MiniMax-M3-GGUF) |
 | **Qwen3.5 122B/397B 계열** | 대형 네이티브 멀티모달·에이전트 | 공식 가중치와 현재 GGUF/MLX 배포의 파일 목록을 직접 확인 | 저비트도 서버급 | [Qwen 조직](https://huggingface.co/Qwen) · [Qwen3.5 소개](https://qwen.ai/blog?id=qwen3.5) |
+| **Inkling-Small** | 276B 총/12B 활성 MoE; 텍스트·이미지·오디오 입력, Apache-2.0 (2026-07-27) | unsloth GGUF UD-IQ4_XS 약 127.4 GB, UD-Q4_K_M 약 162.5 GB. 128 GB급에는 들어가지 않으므로 상위 구간에서 실측 | 192 GB급부터 검토 | [공식](https://huggingface.co/thinkingmachines/Inkling-Small) · [Unsloth GGUF](https://huggingface.co/unsloth/Inkling-Small-GGUF) |
+| **Kimi K3** | 2.8T 총/104B 활성 MoE; 텍스트·이미지 입력, 1M 컨텍스트, MXFP4/MXFP8 QAT(가중치 공개 2026-07-27) | 2026-08-07 LLM-stats 종합·Artificial Analysis Intelligence Index 기준 오픈웨이트 1위이며, lmarena 메인 텍스트보드 ELO는 정착 중이다. unsloth UD-Q4_K_XL이 약 1,508.7 GB로 로컬은 초고사양 서버 전용. MIT가 아닌 Kimi K3 License 조건 확인 필요 | 512 GB–2 TB급 | [공식](https://huggingface.co/moonshotai/Kimi-K3) · [Unsloth GGUF](https://huggingface.co/unsloth/Kimi-K3-GGUF) |
+| **Qwen3.8-2.4T-A95B** | 2.4T 총/95B 활성 MoE; Qwen-Max급 최초 오픈 공개(2026-08-08), 텍스트 전용 추론 | 2026-08-13 기준 Q4 GGUF 미업로드(Q8_0 약 2,600 GB). 로컬 실행은 사실상 비현실적이므로 존재 확인 수준으로만 다룬다. 라이선스는 MIT 변형인 Qwen3.8-Max License | 로컬 비권장 | [공식](https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B) |
+
+## 한국어 초대형 오픈웨이트
+
+2026년 7월 말–8월 초 한국어 특화 초대형 오픈웨이트가 연이어 공개됐다. [Solar-Open2-250B](https://huggingface.co/upstage/Solar-Open2-250B)(2026-07-22, Upstage Solar License)는 250B 총/15B 활성 MoE에 1M 컨텍스트를 제공하며, 커뮤니티 GGUF 중심이고 Q4 총량은 약 140 GB로 추정된다. [A.X-K2](https://huggingface.co/skt/A.X-K2)(2026-07-28, Apache-2.0)는 688B 총/33B 활성 MoE로 [공식 GGUF](https://huggingface.co/skt/A.X-K2-GGUF)(IQ4_XS 345 GiB)가 있으나 llama.cpp 포크가 필요하다. 이 문서에서는 존재 확인 수준으로만 다루며, 사용 전 각 모델 카드와 라이선스를 직접 확인한다.
 
 ## 초대형 모델 체크리스트
 
@@ -1017,6 +1031,16 @@ llama-server \
 - [gpt-oss-20b 공식 모델](https://huggingface.co/openai/gpt-oss-20b)
 - [gpt-oss-120b 공식 모델](https://huggingface.co/openai/gpt-oss-120b)
 - [SU-01 GGUF](https://huggingface.co/axi0mX/SU-01-GGUF)
+- [Muse-Glimmer-30B 공식 모델](https://huggingface.co/meta-models/Muse-Glimmer-30B)
+- [Muse-Glimmer-30B 공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF)
+- [Nemotron-3.5-Lightning-30B-A3B 공식 모델](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16)
+- [Nemotron-3.5-Lightning-30B-A3B GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF)
+- [Kimi K3 공식 모델](https://huggingface.co/moonshotai/Kimi-K3)
+- [Kimi K3 Unsloth GGUF](https://huggingface.co/unsloth/Kimi-K3-GGUF)
+- [Qwen3.8-2.4T-A95B 공식 모델](https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B)
+- [Inkling-Small 공식 모델](https://huggingface.co/thinkingmachines/Inkling-Small)
+- [Solar-Open2-250B 공식 모델](https://huggingface.co/upstage/Solar-Open2-250B)
+- [A.X-K2 공식 GGUF](https://huggingface.co/skt/A.X-K2-GGUF)
 
 ## 형식증명
 
@@ -1025,6 +1049,8 @@ llama-server \
 - [DeepSeek-Prover-V2-7B GGUF](https://huggingface.co/unsloth/DeepSeek-Prover-V2-7B-GGUF)
 - [Goedel-Prover-V2-8B GGUF](https://huggingface.co/mradermacher/Goedel-Prover-V2-8B-GGUF)
 - [Goedel-Prover-V2-32B GGUF](https://huggingface.co/mradermacher/Goedel-Prover-V2-32B-GGUF)
+- [Pythagoras-Prover-32B 공식 모델](https://huggingface.co/Pythagoras-LM/Pythagoras-Prover-32B)
+- [Pythagoras-Prover-32B GGUF](https://huggingface.co/mradermacher/Pythagoras-Prover-32B-GGUF)
 - [OProver 컬렉션](https://huggingface.co/collections/m-a-p/oprover)
 
 ## 검색·실행 도구

@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md)
 
-> **최종 검증일:** 2026-07-21 (KST)  
+> **최종 검증일:** 2026-08-13 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`; 임베딩·재순위는 Sentence Transformers/TEI/ONNX 등도 병행  
 > **범위:** 문서 요약·질의응답, 이메일·보고서 초안, 개인·팀 지식베이스, 다국어 번역·로컬라이제이션, 구조화 추출, 검색 증강 생성(RAG) 및 제한된 도구 호출
 
@@ -11,7 +11,7 @@
 
 일반 대화형 LLM 가이드와 달리 RAG는 생성 모델 하나만 실행하지 않는다. 실제 배치에서는 **생성 모델, 임베딩 모델, reranker, 벡터 인덱스, 원문·메타데이터 캐시, 파서/OCR 프로세스**가 같은 메모리를 경쟁한다. 따라서 아래 표는 단순 GGUF 파일 크기가 아니라 가능한 한 **전체 스택의 peak memory**를 고려해 보수적으로 해석해야 한다.
 
-모델 저장소와 양자화 파일은 계속 수정된다. 아래 크기는 2026-07-21에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, shard 수, 총크기, 라이선스, revision, 런타임 호환성**을 다시 확인한다.
+모델 저장소와 양자화 파일은 계속 수정된다. 아래 크기는 2026-08-13에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, shard 수, 총크기, 라이선스, revision, 런타임 호환성**을 다시 확인한다.
 
 > **핵심 원칙:** 문서 RAG에서는 메모리에 간신히 들어가는 대형 Q2 생성 모델보다, 여유 있게 실행되는 Q4 생성 모델과 검증된 임베딩·reranker·인용 파이프라인의 조합이 더 안정적인 경우가 많다.
 
@@ -255,11 +255,11 @@ Q2는 모델이 들어가는지 확인하는 저메모리 선택지다. 숫자·
 | [Qwen3.5-4B](https://huggingface.co/unsloth/Qwen3.5-4B-GGUF) | `UD-Q2_K_XL` 약 **1.94 GB** | `Q3_K_M` 약 **2.29 GB** | `Q4_K_M` 약 **2.74 GB** | 8 GB | 개인 RAG 최소 실용선. 짧은 근거 묶음과 명시적 출력 형식에 적합하다. |
 | [Qwen3.5-9B](https://huggingface.co/unsloth/Qwen3.5-9B-GGUF) | `UD-Q2_K_XL` 약 **4.12 GB** | `Q3_K_M` 약 **4.67 GB** | `Q4_K_M` 약 **5.68 GB** | 12 GB | 문서 QA·요약·번역의 균형형. 12–16 GB에서 가장 무난한 후보 중 하나다. |
 
-Qwen3.5 GGUF 저장소에는 멀티모달 projector도 포함될 수 있다. 텍스트 RAG만 쓸 때는 projector를 내려받거나 로드할 필요가 없다. 이미지·PDF 화면 분석은 향후 [비전·OCR 가이드(예정)](../modalities/vision-ocr.md)에서 별도로 다룬다.
+Qwen3.5 GGUF 저장소에는 멀티모달 projector도 포함될 수 있다. 텍스트 RAG만 쓸 때는 projector를 내려받거나 로드할 필요가 없다. 이미지·PDF 화면 분석은 [비전·OCR 가이드](../modalities/vision-ocr.md)에서 별도로 다룬다.
 
 #### Gemma 4 소형 계열
 
-2026년 7월 공개된 Gemma 4는 텍스트·이미지를 처리하며 E2B/E4B는 오디오도 지원한다. E2B/E4B의 공식 컨텍스트 상한은 128K이지만, 저메모리 로컬 배치에서는 4K–8K부터 시작한다.
+2026년 3월 공개된 Gemma 4는 텍스트·이미지를 처리하며 E2B/E4B는 오디오도 지원한다. E2B/E4B의 공식 컨텍스트 상한은 128K이지만, 저메모리 로컬 배치에서는 4K–8K부터 시작한다.
 
 | 모델 | Q2 대표 파일 | Q3 대표 파일 | Q4 대표 파일 | 추가 projector | 권장 장착 메모리 | 특징 |
 |---|---:|---:|---:|---:|---:|---|
@@ -275,6 +275,17 @@ Gemma 4 E2B/E4B는 임베딩 테이블을 포함한 총 저장 파라미터가 �
 | [Ministral 3 14B Instruct](https://huggingface.co/mistralai/Ministral-3-14B-Instruct-2512-GGUF) | Mistral 공식 | 공식 저장소에 대표 Q2/Q3 없음 | `Q4_K_M` 약 **8.24 GB** | Q5_K_M 약 9.62 GB, Q8_0 약 14.4 GB | 16 GB(Q4) | 256K 공식 컨텍스트, 한국어 포함 다국어, native function calling·JSON 출력. 문서 자동화에 적합하다. |
 
 공식 모델 카드는 일상·프로덕션 작업에서 낮은 temperature를 권장한다. 다만 긴 컨텍스트 상한과 실제 로컬 메모리·품질은 별개이므로 8K–16K에서 시작한다.
+
+#### Kanana 2 소형 계열 — 한국어 특화
+
+카카오가 2026년 7월 27일 공개한(저장소 생성 07-24) Kanana 2 1.3B·3B는 저사양 장비의 한국어 문서 작업에서 검토할 가치가 있는 소형 계열이다. 32K 컨텍스트에서 sliding window attention으로 KV 캐시를 약 72.7% 줄였고, 한국어 토크나이저 효율이 약 30% 개선되어 같은 한국어 문서를 더 적은 토큰으로 처리한다.
+
+| 모델 | 컨텍스트 | 대표 Q4 | 권장 장착 메모리 | 생산성·RAG 관점 |
+|---|---:|---:|---:|---|
+| [Kanana 2 1.3B Instruct](https://huggingface.co/kakaocorp/kanana-2-1.3b-instruct) | 32K | 커뮤니티 GGUF·MLX는 계열 단위로만 확인, 1.3B 전용 변환·크기는 저장소 확인 | 4 GB | 한국어 분류·태깅·짧은 요약·라우팅. |
+| [Kanana 2 3B Instruct](https://huggingface.co/kakaocorp/kanana-2-3b-instruct) | 32K | 커뮤니티 GGUF 약 **2 GB**; MLX 변환 존재 | 6 GB | 한국어 이메일·메모 정리와 짧은 문서 QA. Qwen3.5·Granite와 같은 한국어 평가셋으로 비교한다. |
+
+라이선스는 Kanana Open License이므로 Apache 2.0·MIT와 동일하게 취급하지 말고 사용 조건을 공식 카드에서 확인한다. 공식 GGUF는 없으므로 커뮤니티 변환(mradermacher 등)의 원본 모델·revision을 함께 기록한다.
 
 ### 5.3 24–64 GB: 고품질 워크스테이션 모델
 
@@ -296,12 +307,23 @@ Gemma 4 26B-A4B와 31B는 공식 256K 컨텍스트, 이미지 이해, function c
 | [Gemma 4 26B-A4B IT](https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF) | MoE 25.2B, 3.8B 활성 | `UD-Q2_K_XL` 약 **10.5 GB** | `UD-Q3_K_M` 약 **12.7 GB** | `UD-Q4_K_M` 약 **16.9 GB** | F16 약 **1.19 GB** | 24 GB Q3 / 32 GB Q4 | 빠른 MoE와 비전 문서 이해의 균형. |
 | [Gemma 4 31B IT](https://huggingface.co/unsloth/gemma-4-31B-it-GGUF) | Dense 30.7B | `UD-Q2_K_XL` 약 **11.8 GB** | `Q3_K_M` 약 **14.7 GB** | `Q4_K_M` 약 **18.3 GB** | F16 약 **1.2 GB** | 32 GB Q4 | 더 높은 dense 품질을 원하는 문서·비전 워크스테이션. |
 
+#### 2026년 8월 신규 워크스테이션 후보
+
+2026-08-13 검증 시점에 새로 확인된 모델이다. 공개 직후이므로 기본값을 바로 교체하기보다 기존 모델과 같은 평가셋으로 비교한 뒤 결정한다.
+
+| 모델 | 구조 | 대표 Q4 | 컨텍스트 | 권장 장착 메모리 | 생산성·RAG 관점 |
+|---|---|---:|---:|---:|---|
+| [Muse Glimmer 30B](https://huggingface.co/meta-models/Muse-Glimmer-30B) | Dense 약 29.6B + 비전 인코더 | [공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) `Q4_K_M` 약 **16.8 GB**(mmproj 약 **1.4 GB** 별도) | 131K | 32 GB Q4 | 2026-08-09~10 가중치 공개(뉴스 08-10)된 Meta의 Apache 2.0 오픈웨이트 복귀작. 에이전트·도구 사용 지향에 이미지 입력을 지원한다. org가 meta-llama가 아닌 meta-models임에 주의. |
+| [Nemotron 3.5 Lightning 30B-A3B](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16) | MoE 30B, 약 3B 활성(Mamba-2 하이브리드) | [ggml-org GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) `Q4_K_M` 약 **25.4 GB** | 공식 최대 1M | 48 GB Q4 권장(32 GB는 생성 단독도 빠듯) | 2026-08-01 가중치 공개(공식 발표 08-11), OpenMDW-1.1 라이선스. 활성 3B로 빠르며 초장문 컨텍스트 RAG 실험 가치가 있다. Q4가 25.4 GB이므로 32 GB에서는 OS·KV 캐시 여유가 6 GB 미만이다. 1M 상한을 그대로 쓰지 말고 KV 캐시를 실측한다. |
+
 ### 5.4 96 GB 이상: 서버급 생성 모델
 
 | 모델 | 구조 | 대표 저비트 | 대표 Q3 | 대표 Q4 | 권장 장착 메모리 | 판단 |
 |---|---|---:|---:|---:|---:|---|
 | [Mistral Small 4 119B-A6.5B](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF) | MoE 119B, 약 6.5B 활성 | Q2 계열 약 **35–40 GB** | UD-Q3 계열 약 **54 GB** | UD-Q4 계열 약 **74 GB** | 80–128 GB | 대형 범용·비전·에이전트. Q2보다 96 GB급 Q3부터 검토하는 편이 안전하다. |
 | [Mistral Medium 3.5 128B](https://huggingface.co/bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF) | Dense 128B | Q2 계열 약 **50 GB** | Q3_K_M 약 **63 GB** | Q4_K_M 약 **78 GB** | 96–128 GB | 정확도 우선 문서 합성·분석. CPU/통합 메모리에서는 대역폭이 병목이 될 수 있다. |
+
+한국어 비중이 큰 대용량 구간에서는 업스테이지가 2026년 7월 22일 공개한 [Solar-Open2-250B](https://huggingface.co/upstage/Solar-Open2-250B)도 참고할 만하다. 총 250B 중 활성 15B의 하이브리드 어텐션 MoE로 영어·한국어·일본어를 지원하고 공식 컨텍스트는 1M이다. 다만 2026-08-13 기준 확인된 것은 커뮤니티 GGUF·MLX 변환(Q4 약 140 GB 추정)이라 이 절의 96–128 GB 구간에서는 실행할 수 없고 192 GB 이상 구간의 후보이며, Upstage Solar License 조건을 공식 카드에서 확인한다.
 
 서버급 모델에서도 검색 품질이 낮으면 답변 품질은 제한된다. 대형 생성 모델로 업그레이드하기 전에 청킹, 메타데이터, 하이브리드 검색, reranking과 인용 검증을 먼저 개선한다.
 
@@ -311,9 +333,12 @@ Gemma 4 26B-A4B와 31B는 공식 256K 컨텍스트, 이미지 이해, function c
 |---|---|
 | 공식 Apache 2.0·기업 RAG·추출 | Granite 4.1 |
 | 최소 메모리·텍스트 요약 | Qwen3.5 소형 |
+| 저사양 한국어 중심 문서 작업 | Kanana 2 1.3B/3B |
 | 이미지·OCR·문서 화면까지 단일 모델 | Gemma 4 |
 | 16 GB의 안정적 다국어·JSON·도구 호출 | Ministral 3 14B |
 | 24–48 GB의 강한 텍스트·도구 사용 | Qwen3.6 |
+| 에이전트·도구 사용 지향 신규(2026-08, 컨텍스트 131K) | Muse Glimmer 30B |
+| 초장문 컨텍스트 RAG 실험 신규(2026-08, 공식 최대 1M) | Nemotron 3.5 Lightning |
 | 96 GB 이상의 고품질 조직형 서비스 | Mistral Small 4 / Medium 3.5 |
 
 ---
@@ -396,10 +421,11 @@ reranker는 초기 검색 후보를 질의와 함께 다시 읽고 순서를 조
 
 | 모델 | 파라미터 | 최대 길이 | Q2 / Q3 / Q4 대표 GGUF | 권장 환경 | 특징·라이선스 |
 |---|---:|---:|---:|---:|---|
-| [Qwen3-Reranker-0.6B](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B) · [GGUF](https://huggingface.co/mradermacher/Qwen3-Reranker-0.6B-GGUF) | 0.6B | 32K | **0.30 / 0.35 / 0.40 GB** | 8–16 GB 순차 또는 12 GB+ | Apache 2.0, 100+ 언어, instruction-aware 기본값. |
+| [Qwen3-Reranker-0.6B](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B) · [커뮤니티 GGUF](https://huggingface.co/mradermacher/Qwen3-Reranker-0.6B-GGUF) | 0.6B | 32K | **0.30 / 0.35 / 0.40 GB** | 8–16 GB 순차 또는 12 GB+ | Apache 2.0, 100+ 언어, instruction-aware 기본값. |
 | [Jina Reranker v3](https://huggingface.co/jinaai/jina-reranker-v3) · [공식 GGUF](https://huggingface.co/jinaai/jina-reranker-v3-GGUF) | 0.6B | 131K | **0.30 / 0.35 / 0.40 GB** | 8–16 GB 순차 | 다국어 listwise 대안. **CC BY-NC 4.0**이므로 상업·사내 사용은 별도 허가 조건을 확인한다. |
-| [Qwen3-Reranker-4B](https://huggingface.co/Qwen/Qwen3-Reranker-4B) · [GGUF](https://huggingface.co/mradermacher/Qwen3-Reranker-4B-GGUF) | 4B | 32K | **1.67 / 2.08 / 2.50 GB** | 32–64 GB 순차, 48 GB+ 상주 검토 | 복합 질의·긴 후보의 정밀 재순위. |
-| [Qwen3-Reranker-8B](https://huggingface.co/Qwen/Qwen3-Reranker-8B) · [GGUF](https://huggingface.co/mradermacher/Qwen3-Reranker-8B-GGUF) | 8B | 32K | **3.28 / 4.12 / 5.03 GB** | 64–128 GB | 품질 우선 서버. 후보 수·배치·동시성을 제한한다. |
+| [Jina Reranker v3.5](https://huggingface.co/jinaai/jina-reranker-v3.5) | 0.6B | 모델 카드 확인 | 공식 GGUF·MLX 제공(2026-07-24 공개), 크기는 저장소 확인 | 8–16 GB 순차 | 2026-07-14 공개된 v3 후속 다국어 listwise reranker. 하이브리드 어텐션으로 v3 대비 약 1.2–1.6배 고속, v3 API 호환. 역시 **CC BY-NC 4.0(비상업)**이므로 상업·사내 사용은 별도 허가 조건을 확인한다. |
+| [Qwen3-Reranker-4B](https://huggingface.co/Qwen/Qwen3-Reranker-4B) · [커뮤니티 GGUF](https://huggingface.co/mradermacher/Qwen3-Reranker-4B-GGUF) | 4B | 32K | **1.67 / 2.08 / 2.50 GB** | 32–64 GB 순차, 48 GB+ 상주 검토 | 복합 질의·긴 후보의 정밀 재순위. |
+| [Qwen3-Reranker-8B](https://huggingface.co/Qwen/Qwen3-Reranker-8B) · [커뮤니티 GGUF](https://huggingface.co/mradermacher/Qwen3-Reranker-8B-GGUF) | 8B | 32K | **3.28 / 4.12 / 5.03 GB** | 64–128 GB | 품질 우선 서버. 후보 수·배치·동시성을 제한한다. |
 | [BGE-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) | 약 0.6B | 모델 카드 확인 | 배포 형식별 상이 | 12 GB 이상 또는 CPU 순차 | Apache 2.0, 가벼운 다국어 cross-encoder 대안. |
 
 GGUF 크기는 가중치 파일 기준이다. reranker는 후보 문서들을 함께 읽으므로 activation과 배치 메모리가 추가된다. 커뮤니티 변환을 사용할 때는 원본 모델, 변환 저장소, revision과 SHA-256을 모두 기록한다.
@@ -520,7 +546,8 @@ Context: 8K–16K
 
 ```text
 Generator: Qwen3.6-27B Q4_K_M
-Alternative: Granite 4.1 30B Q4_K_M, Gemma 4 31B Q4_K_M 또는 26B-A4B UD-Q4_K_M
+Alternative: Granite 4.1 30B Q4_K_M, Gemma 4 31B Q4_K_M, 26B-A4B UD-Q4_K_M
+             또는 Muse Glimmer 30B Q4_K_M(에이전트·이미지 입력, mmproj 약 1.4 GB 별도)
 Embedding: Granite Embedding 311M R2 또는 Qwen3-Embedding-0.6B 상주
 High-quality indexing: Qwen3-Embedding-4B Q4를 배치 작업으로 순차 실행
 Reranker: 0.6B 상주 또는 4B 순차
@@ -533,6 +560,7 @@ Context: 16K부터
 
 ```text
 Generator: Qwen3.6-35B-A3B UD-Q4_K_M
+Alternative: Nemotron 3.5 Lightning 30B-A3B Q4_K_M — 활성 3B, 초장문 컨텍스트 실험
 Embedding: Qwen3-Embedding-4B Q4_K_M
 Reranker: 0.6B 상주 또는 4B 순차
 Index: 1024–2560차원, 수십만~수백만 청크
@@ -813,7 +841,7 @@ STT → 화자 분리 → 시간 구간 → 주제 청킹 → 결정/액션 추�
     → 임베딩·인덱싱 → 회의 간 검색 → 보고서 생성
 ```
 
-음성 모델의 RAM/VRAM과 실시간성은 향후 [오디오·음성 가이드(예정)](../modalities/audio-speech.md)에서 별도로 다룬다.
+음성 모델의 RAM/VRAM과 실시간성은 [오디오·음성 가이드](../modalities/audio-speech.md)에서 별도로 다룬다.
 
 ### 10.8 PDF·스캔·표·차트
 
@@ -822,8 +850,9 @@ STT → 화자 분리 → 시간 구간 → 주제 청킹 → 결정/액션 추�
 - 표는 Markdown 변환만 믿지 말고 셀 좌표·헤더와 원본 이미지를 연결한다.
 - OCR confidence가 낮은 숫자·코드는 원본 이미지 검토 대상으로 표시한다.
 - Gemma 4·Ministral 3 같은 멀티모달 모델은 보조 검증에 사용할 수 있지만, 대량 OCR 전용 파이프라인을 완전히 대체한다고 가정하지 않는다.
+- 텍스트 변환을 거치지 않는 이미지·표 중심의 멀티모달 검색이 필요하면 [Qwen3-VL-Embedding](https://huggingface.co/Qwen/Qwen3-VL-Embedding-2B)·Qwen3-VL-Reranker 2B/8B(Apache 2.0)를 검토할 수 있다. 다만 시각 임베딩은 인덱스·메모리 비용이 커서 텍스트 추출 파이프라인의 보완으로 시작한다.
 
-상세 내용은 예정 문서인 [비전·OCR 가이드(예정)](../modalities/vision-ocr.md)를 참조한다.
+상세 내용은 [비전·OCR 가이드](../modalities/vision-ocr.md)를 참조한다.
 
 ### 10.9 표·CSV·BI 질의
 
@@ -834,7 +863,7 @@ STT → 화자 분리 → 시간 구간 → 주제 청킹 → 결정/액션 추�
 → 실행 → 결과 테이블 → LLM 설명 + 쿼리·출처 표시
 ```
 
-이 영역은 예정 문서인 [데이터 분석 가이드(예정)](./data-analysis.md)에서 별도로 다룬다.
+이 영역은 [데이터 분석 가이드](./data-analysis.md)에서 별도로 다룬다.
 
 ---
 
@@ -1215,6 +1244,7 @@ Disk_total ≈ source_documents
 - Gemma 4 12B/26B-A4B/31B: 공식 256K
 - Ministral 3 14B: 공식 256K
 - Qwen3.6-27B: 공식 262,144
+- Nemotron 3.5 Lightning 30B-A3B: 공식 최대 1M
 
 그러나 공식 상한은 특정 정밀도·백엔드·하드웨어의 최대 기능이다. 로컬 GGUF RAG에서는 다음 이유로 8K–16K부터 시작한다.
 
@@ -1291,6 +1321,8 @@ KV 양자화는 모델 가중치 Q4와 별개의 설정이다. 품질과 속도�
 - 한국어 질문으로 영어 문서 검색
 - 영어 질문으로 한국어 문서 검색
 - 동음이의어와 회사 내부 용어
+
+생성 단계도 같은 원칙을 적용한다. 저사양 장비에서 한국어 문서 요약·정리가 주 용도라면 [Kanana 2 1.3B/3B](https://huggingface.co/kakaocorp/kanana-2-3b-instruct) 같은 한국어 특화 소형 모델(5.2절)을 Qwen3.5·Granite와 같은 한국어 평가셋으로 직접 비교한다.
 
 ### 14.2 교차언어 검색
 
@@ -1555,7 +1587,7 @@ hardware와 offload 설정
 ### 17.4 재현성 manifest
 
 ```yaml
-run_id: rag-eval-2026-07-21-001
+run_id: rag-eval-2026-08-13-001
 hardware:
   os: macOS 16
   chip: Apple M-series
@@ -1741,6 +1773,13 @@ Q4에서 바로 Q2로 내리기보다 스택 동시 상주, 컨텍스트와 인�
 - [Mistral Small 4 119B GGUF](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF)
 - [Mistral Medium 3.5 128B 공식 모델](https://huggingface.co/mistralai/Mistral-Medium-3.5-128B)
 - [Mistral Medium 3.5 128B GGUF](https://huggingface.co/bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF)
+- [Kakao Kanana 2 3B Instruct](https://huggingface.co/kakaocorp/kanana-2-3b-instruct)
+- [Kakao Kanana 2 1.3B Instruct](https://huggingface.co/kakaocorp/kanana-2-1.3b-instruct)
+- [Upstage Solar-Open2-250B](https://huggingface.co/upstage/Solar-Open2-250B)
+- [Meta Muse Glimmer 30B](https://huggingface.co/meta-models/Muse-Glimmer-30B)
+- [Muse Glimmer 30B 공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF)
+- [NVIDIA Nemotron 3.5 Lightning 30B-A3B](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16)
+- [Nemotron 3.5 Lightning 30B-A3B GGUF (ggml-org)](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF)
 
 ### 임베딩·reranker
 
@@ -1754,6 +1793,9 @@ Q4에서 바로 Q2로 내리기보다 스택 동시 상주, 컨텍스트와 인�
 - [Qwen3 Reranker 8B 커뮤니티 GGUF](https://huggingface.co/mradermacher/Qwen3-Reranker-8B-GGUF)
 - [Jina Reranker v3](https://huggingface.co/jinaai/jina-reranker-v3) — CC BY-NC 4.0
 - [Jina Reranker v3 공식 GGUF](https://huggingface.co/jinaai/jina-reranker-v3-GGUF) — CC BY-NC 4.0
+- [Jina Reranker v3.5](https://huggingface.co/jinaai/jina-reranker-v3.5) — CC BY-NC 4.0, 공식 GGUF·MLX 제공(2026-07-24)
+- [Qwen3-VL-Embedding-2B](https://huggingface.co/Qwen/Qwen3-VL-Embedding-2B) — 멀티모달 임베딩, Apache 2.0
+- [Qwen3-VL-Reranker-2B](https://huggingface.co/Qwen/Qwen3-VL-Reranker-2B) — 멀티모달 reranker, Apache 2.0
 - [EmbeddingGemma 300M](https://huggingface.co/google/embeddinggemma-300m)
 - [Qwen3-Embedding-0.6B GGUF](https://huggingface.co/Qwen/Qwen3-Embedding-0.6B-GGUF)
 - [Qwen3-Embedding-4B GGUF](https://huggingface.co/Qwen/Qwen3-Embedding-4B-GGUF)
@@ -1772,7 +1814,7 @@ Q4에서 바로 Q2로 내리기보다 스택 동시 상주, 컨텍스트와 인�
 | Qwen3 Embedding / Reranker | Apache 2.0 | 커뮤니티 GGUF는 원본 라이선스를 계승하며 변환 revision을 별도 기록한다. |
 | BGE-M3 | MIT | reranker-v2-m3는 Apache 2.0. |
 | EmbeddingGemma | Google 모델 사용 조건 | gated 접근·배포 조건을 공식 카드에서 확인한다. |
-| Jina Reranker v3 | CC BY-NC 4.0 | 상업·사내 on-prem 사용은 별도 허가 여부를 확인한다. |
+| Jina Reranker v3 / v3.5 | CC BY-NC 4.0 | 둘 다 비상업 라이선스다. 상업·사내 on-prem 사용은 별도 허가 여부를 확인한다. |
 
 ### 런타임·다운로드
 
