@@ -25,11 +25,11 @@
 | 분야별 가이드 | 사이버보안, 프로그래밍·수학·과학, 생산성·RAG, 데이터 분석 |
 | 모달리티별 가이드 | 비전·OCR, 이미지 생성·편집, 오디오·음성 |
 | 운영 가이드 | 양자화, 파인튜닝 메모리, 서빙·동시성, 런타임·하드웨어 |
-| 계산기 | 7개 분야, 24개 세부 작업, 72개 모델 프리셋 |
+| 계산기 | 7개 분야, 24개 세부 작업, 73개 모델 프리셋 |
 | 운용 형태 | 단일 사용자 추론, RAG, API 서빙, 파인튜닝 |
 | 실행 방식 | 서버 API·빌드 과정·텔레메트리가 없는 정적 HTML·CSS·JavaScript |
 
-> **콘텐츠 기준일:** 각 문서는 2026-08-13 KST에 공개된 모델·런타임·하드웨어 정보를 기준으로 검증했다. 모델 파일, 양자화 저장소, 라이선스, 런타임 API와 하드웨어 지원 상태는 변경될 수 있으므로 실제 다운로드와 배포 직전에 공식 저장소를 다시 확인해야 한다.
+> **콘텐츠 기준일:** 각 문서는 2026-08-22 KST에 공개된 모델·런타임·하드웨어 정보를 기준으로 검증했다. 모델 파일, 양자화 저장소, 라이선스, 런타임 API와 하드웨어 지원 상태는 변경될 수 있으므로 실제 다운로드와 배포 직전에 공식 저장소를 다시 확인해야 한다.
 
 ### 이 레포지토리가 제공하는 것과 제공하지 않는 것
 
@@ -146,27 +146,27 @@ GGUF, MLX, AWQ, GPTQ, `compressed-tensors`, safetensors는 같은 비트 수로 
 
 | 분야 | 주요 범위 | 문서 | 검증일 |
 |---|---|---|---:|
-| 버그바운티·사이버보안 | 승인된 버그바운티, CTF·교육, CVE·위협 인텔리전스, 코드 감사, 보안 자동화 | [cybersecurity.md](./guides/domains/cybersecurity.md) | 2026-08-13 |
-| 프로그래밍·수학·과학 | 범용 코딩, 저장소 에이전트, 수학·과학 추론, 논문 분석, Lean 4 형식증명 | [programming-stem.md](./guides/domains/programming-stem.md) | 2026-08-13 |
-| 생산성·문서·RAG | 문서 요약·질의응답, 번역, 임베딩, reranker, 개인·조직 지식베이스 | [productivity-rag.md](./guides/domains/productivity-rag.md) | 2026-08-13 |
-| 데이터 분석·BI·SQL | Text-to-SQL, EDA, Python·R, 표형 모델, 시계열, 통계·ML 파이프라인 | [data-analysis.md](./guides/domains/data-analysis.md) | 2026-08-13 |
+| 버그바운티·사이버보안 | 승인된 버그바운티, CTF·교육, CVE·위협 인텔리전스, 코드 감사, 보안 자동화 | [cybersecurity.md](./guides/domains/cybersecurity.md) | 2026-08-22 |
+| 프로그래밍·수학·과학 | 범용 코딩, 저장소 에이전트, 수학·과학 추론, 논문 분석, Lean 4 형식증명 | [programming-stem.md](./guides/domains/programming-stem.md) | 2026-08-22 |
+| 생산성·문서·RAG | 문서 요약·질의응답, 번역, 임베딩, reranker, 개인·조직 지식베이스 | [productivity-rag.md](./guides/domains/productivity-rag.md) | 2026-08-22 |
+| 데이터 분석·BI·SQL | Text-to-SQL, EDA, Python·R, 표형 모델, 시계열, 통계·ML 파이프라인 | [data-analysis.md](./guides/domains/data-analysis.md) | 2026-08-22 |
 
 ### 모달리티별 가이드
 
 | 모달리티 | 주요 범위 | 문서 | 검증일 |
 |---|---|---|---:|
-| 비전·OCR·문서 이해 | PDF·문서 OCR, 표·수식·차트, screenshot·UI 분석, VLM projector | [vision-ocr.md](./guides/modalities/vision-ocr.md) | 2026-08-13 |
-| 이미지 생성·편집 | Diffusion·DiT, SD·FLUX 계열, ControlNet, LoRA, VAE, upscaler, ComfyUI | [image-generation.md](./guides/modalities/image-generation.md) | 2026-08-13 |
-| 오디오·음성 | ASR, streaming transcription, diarization, TTS, voice cloning, 오디오 이해 | [audio-speech.md](./guides/modalities/audio-speech.md) | 2026-08-13 |
+| 비전·OCR·문서 이해 | PDF·문서 OCR, 표·수식·차트, screenshot·UI 분석, VLM projector | [vision-ocr.md](./guides/modalities/vision-ocr.md) | 2026-08-22 |
+| 이미지 생성·편집 | Diffusion·DiT, SD·FLUX 계열, ControlNet, LoRA, VAE, upscaler, ComfyUI | [image-generation.md](./guides/modalities/image-generation.md) | 2026-08-22 |
+| 오디오·음성 | ASR, streaming transcription, diarization, TTS, voice cloning, 오디오 이해 | [audio-speech.md](./guides/modalities/audio-speech.md) | 2026-08-22 |
 
 ### 공통 운영 가이드
 
 | 운영 주제 | 주요 범위 | 문서 | 검증일 |
 |---|---|---|---:|
-| 양자화 | GGUF Q2~Q8, IQ, AWQ, GPTQ, NF4, FP8·FP4, MLX, KV cache quantization | [quantization.md](./guides/operations/quantization.md) | 2026-08-13 |
-| 파인튜닝 메모리 | Full FT, LoRA, QLoRA, DoRA, SFT·DPO·GRPO, FSDP2·ZeRO | [fine-tuning-memory.md](./guides/operations/fine-tuning-memory.md) | 2026-08-13 |
-| 서빙·동시성 | KV pool, continuous batching, queue, SLO, prefix cache, 다중 GPU·tenant | [serving-concurrency.md](./guides/operations/serving-concurrency.md) | 2026-08-13 |
-| 런타임·하드웨어 | CPU, NVIDIA CUDA, AMD ROCm, Apple MLX·Metal, Intel, Vulkan·WebGPU | [runtime-hardware.md](./guides/operations/runtime-hardware.md) | 2026-08-13 |
+| 양자화 | GGUF Q2~Q8, IQ, AWQ, GPTQ, NF4, FP8·FP4, MLX, KV cache quantization | [quantization.md](./guides/operations/quantization.md) | 2026-08-22 |
+| 파인튜닝 메모리 | Full FT, LoRA, QLoRA, DoRA, SFT·DPO·GRPO, FSDP2·ZeRO | [fine-tuning-memory.md](./guides/operations/fine-tuning-memory.md) | 2026-08-22 |
+| 서빙·동시성 | KV pool, continuous batching, queue, SLO, prefix cache, 다중 GPU·tenant | [serving-concurrency.md](./guides/operations/serving-concurrency.md) | 2026-08-22 |
+| 런타임·하드웨어 | CPU, NVIDIA CUDA, AMD ROCm, Apple MLX·Metal, Intel, Vulkan·WebGPU | [runtime-hardware.md](./guides/operations/runtime-hardware.md) | 2026-08-22 |
 
 각 문서의 검증일은 위 표를 따르며, 문서 상단의 `최종 검증일` 표기와 일치한다.
 
@@ -387,6 +387,6 @@ https://<GitHub-ID>.github.io/RAM-for-Local-AI/tools/memory-calculator/
 | 모달리티별 가이드 | 3 | 작성 완료 |
 | 공통 운영 가이드 | 4 | 작성 완료 |
 | 정적 웹 계산기 | 1 | 운영 중 |
-| 계산기 모델 프리셋 | 72 | 2026-08-13 카탈로그 기준 |
+| 계산기 모델 프리셋 | 73 | 2026-08-22 카탈로그 기준 |
 
 모델 생태계와 런타임은 빠르게 변한다. 이 레포지토리의 표와 계산 결과는 영구적인 사양이 아니라 **검증일 당시 공개된 모델·파일·문서를 기준으로 한 용량 계획용 스냅샷**이다.

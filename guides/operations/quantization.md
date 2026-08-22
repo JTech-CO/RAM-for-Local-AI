@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-08-13 (KST)
+> **최종 검증일:** 2026-08-22 (KST)
 > **주요 형식·도구:** GGUF·`llama.cpp`, AWQ, GPTQModel, `compressed-tensors`·LLM Compressor, AutoRound, bitsandbytes NF4/INT8, torchao, FP8·MXFP4·NVFP4, EXL3, MLX, ONNX Runtime, OpenVINO·NNCF, Core ML
 > **범위:** 추론용 PTQ·QAT·native low-bit, 가중치·활성화·KV 캐시 양자화, 멀티모달 구성요소, 변환·캘리브레이션·벤치마크·재현성·보안
 > **관련 문서:** [파인튜닝 메모리](./fine-tuning-memory.md) · [서빙·동시성](./serving-concurrency.md) · [런타임·하드웨어](./runtime-hardware.md)
@@ -41,7 +41,7 @@
 
 > **핵심 원칙:** 런타임과 하드웨어를 먼저 정하고, 그 런타임이 빠르게 실행하는 형식 중에서 가장 높은 정밀도를 선택한다. 특별한 이유가 없다면 범용 GGUF는 `Q4_K_M`, CUDA W4A16은 검증된 AWQ·GPTQ·compressed-tensors, QLoRA는 NF4, Apple Silicon은 MLX 4-bit 또는 GGUF Q4를 시작점으로 삼는다. Q2·Q3는 “더 큰 모델을 넣기 위한 비용”이므로 실제 작업셋에서 반드시 검증한다.
 
-모델·런타임·kernel 지원은 빠르게 변한다. 이 문서의 지원표는 2026-08-13 기준이며, 배포 직전 공식 문서에서 **현재 버전, 지원 GPU 세대, 모델 아키텍처, quantization config, 파일 revision과 라이선스**를 다시 확인한다.
+모델·런타임·kernel 지원은 빠르게 변한다. 이 문서의 지원표는 2026-08-22 기준이며, 배포 직전 공식 문서에서 **현재 버전, 지원 GPU 세대, 모델 아키텍처, quantization config, 파일 revision과 라이선스**를 다시 확인한다.
 
 ---
 
@@ -1384,7 +1384,7 @@ MLX-LM의 rotating KV cache·prompt cache는 긴 context의 메모리를 줄이�
 
 ### 17.2 `llama.cpp`
 
-현재 `llama.cpp`는 K·V cache type을 별도로 지정하는 옵션을 제공한다. 2026-08-13 기준 지원 type 목록은 `f32`·`f16`·`bf16`·`q8_0`·`q4_0`·`q4_1`·`iq4_nl`·`q5_0`·`q5_1`로 변화가 없으며, FP8·FP4 KV type은 아직 없다. 정확한 지원 type은 빌드와 model에 따라 다르므로 `llama-cli --help` 또는 `llama-server --help`를 확인한다.
+현재 `llama.cpp`는 K·V cache type을 별도로 지정하는 옵션을 제공한다. 2026-08-22 기준 지원 type 목록은 `f32`·`f16`·`bf16`·`q8_0`·`q4_0`·`q4_1`·`iq4_nl`·`q5_0`·`q5_1`로 변화가 없으며, FP8·FP4 KV type은 아직 없다. 정확한 지원 type은 빌드와 model에 따라 다르므로 `llama-cli --help` 또는 `llama-server --help`를 확인한다.
 
 개념 예시:
 
@@ -1713,7 +1713,7 @@ Apple 개발·로컬 LLM
 
 ## 21. 런타임·하드웨어 지원 매트릭스
 
-아래 표는 2026-08-13의 일반적인 선택 방향이다. 세부 지원은 release마다 바뀌므로 최종 근거는 각 runtime의 현재 compatibility table이다.
+아래 표는 2026-08-22의 일반적인 선택 방향이다. 세부 지원은 release마다 바뀌므로 최종 근거는 각 runtime의 현재 compatibility table이다.
 
 | 형식·도구 | CPU | NVIDIA | AMD | Intel GPU/NPU | Apple Silicon | 대표 강점 | 주요 제한 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -2630,7 +2630,7 @@ embedding: INT8/Q8부터, 4-bit는 retrieval metric 통과 후
 
 ## 30. 갱신 및 사용상 주의
 
-양자화 생태계는 모델 architecture, GPU generation, runtime kernel과 함께 빠르게 변한다. 이 문서는 2026-08-13 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했지만, 다음 항목은 다운로드·배포 직전에 다시 검증해야 한다.
+양자화 생태계는 모델 architecture, GPU generation, runtime kernel과 함께 빠르게 변한다. 이 문서는 2026-08-22 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했지만, 다음 항목은 다운로드·배포 직전에 다시 검증해야 한다.
 
 - runtime의 최신 지원 architecture
 - GPU compute capability와 kernel

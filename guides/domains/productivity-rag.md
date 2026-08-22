@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md)
 
-> **최종 검증일:** 2026-08-13 (KST)  
+> **최종 검증일:** 2026-08-22 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`; 임베딩·재순위는 Sentence Transformers/TEI/ONNX 등도 병행  
 > **범위:** 문서 요약·질의응답, 이메일·보고서 초안, 개인·팀 지식베이스, 다국어 번역·로컬라이제이션, 구조화 추출, 검색 증강 생성(RAG) 및 제한된 도구 호출
 
@@ -11,7 +11,7 @@
 
 일반 대화형 LLM 가이드와 달리 RAG는 생성 모델 하나만 실행하지 않는다. 실제 배치에서는 **생성 모델, 임베딩 모델, reranker, 벡터 인덱스, 원문·메타데이터 캐시, 파서/OCR 프로세스**가 같은 메모리를 경쟁한다. 따라서 아래 표는 단순 GGUF 파일 크기가 아니라 가능한 한 **전체 스택의 peak memory**를 고려해 보수적으로 해석해야 한다.
 
-모델 저장소와 양자화 파일은 계속 수정된다. 아래 크기는 2026-08-13에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, shard 수, 총크기, 라이선스, revision, 런타임 호환성**을 다시 확인한다.
+모델 저장소와 양자화 파일은 계속 수정된다. 아래 크기는 2026-08-22에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, shard 수, 총크기, 라이선스, revision, 런타임 호환성**을 다시 확인한다.
 
 > **핵심 원칙:** 문서 RAG에서는 메모리에 간신히 들어가는 대형 Q2 생성 모델보다, 여유 있게 실행되는 Q4 생성 모델과 검증된 임베딩·reranker·인용 파이프라인의 조합이 더 안정적인 경우가 많다.
 
@@ -309,12 +309,12 @@ Gemma 4 26B-A4B와 31B는 공식 256K 컨텍스트, 이미지 이해, function c
 
 #### 2026년 8월 신규 워크스테이션 후보
 
-2026-08-13 검증 시점에 새로 확인된 모델이다. 공개 직후이므로 기본값을 바로 교체하기보다 기존 모델과 같은 평가셋으로 비교한 뒤 결정한다.
+2026-08-22 검증 시점에 새로 확인된 모델이다. 공개 직후이므로 기본값을 바로 교체하기보다 기존 모델과 같은 평가셋으로 비교한 뒤 결정한다.
 
 | 모델 | 구조 | 대표 Q4 | 컨텍스트 | 권장 장착 메모리 | 생산성·RAG 관점 |
 |---|---|---:|---:|---:|---|
 | [Muse Glimmer 30B](https://huggingface.co/meta-models/Muse-Glimmer-30B) | Dense 약 29.6B + 비전 인코더 | [공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) `Q4_K_M` 약 **16.8 GB**(mmproj 약 **1.4 GB** 별도) | 131K | 32 GB Q4 | 2026-08-09~10 가중치 공개(뉴스 08-10)된 Meta의 Apache 2.0 오픈웨이트 복귀작. 에이전트·도구 사용 지향에 이미지 입력을 지원한다. org가 meta-llama가 아닌 meta-models임에 주의. |
-| [Nemotron 3.5 Lightning 30B-A3B](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16) | MoE 30B, 약 3B 활성(Mamba-2 하이브리드) | [ggml-org GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) `Q4_K_M` 약 **25.4 GB** | 공식 최대 1M | 48 GB Q4 권장(32 GB는 생성 단독도 빠듯) | 2026-08-01 가중치 공개(공식 발표 08-11), OpenMDW-1.1 라이선스. 활성 3B로 빠르며 초장문 컨텍스트 RAG 실험 가치가 있다. Q4가 25.4 GB이므로 32 GB에서는 OS·KV 캐시 여유가 6 GB 미만이다. 1M 상한을 그대로 쓰지 말고 KV 캐시를 실측한다. |
+| [Nemotron 3.5 Lightning 30B-A3B](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16) | MoE 30B, 약 3B 활성(Mamba-2 하이브리드) | [ggml-org GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) `Q4_0` **18.90 GB** / [unsloth](https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) `UD-Q4_K_M` **25.27 GB** | 공식 최대 1M | Q4_0 32 GB / UD-Q4_K_M 48 GB | 2026-08-01 가중치 공개(공식 발표 08-11), OpenMDW-1.1 라이선스. 활성 3B로 빠르며 초장문 컨텍스트 RAG 실험 가치가 있다. ggml-org는 Q4_0만 제공하므로 32 GB에서는 이쪽을 쓰고, 25.27 GB인 unsloth UD-Q4_K_M을 32 GB에 올리면 OS·KV 캐시 여유가 6 GB 미만이 된다. 1M 상한을 그대로 쓰지 말고 KV 캐시를 실측한다. |
 
 ### 5.4 96 GB 이상: 서버급 생성 모델
 
@@ -323,7 +323,7 @@ Gemma 4 26B-A4B와 31B는 공식 256K 컨텍스트, 이미지 이해, function c
 | [Mistral Small 4 119B-A6.5B](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF) | MoE 119B, 약 6.5B 활성 | Q2 계열 약 **35–40 GB** | UD-Q3 계열 약 **54 GB** | UD-Q4 계열 약 **74 GB** | 80–128 GB | 대형 범용·비전·에이전트. Q2보다 96 GB급 Q3부터 검토하는 편이 안전하다. |
 | [Mistral Medium 3.5 128B](https://huggingface.co/bartowski/mistralai_Mistral-Medium-3.5-128B-GGUF) | Dense 128B | Q2 계열 약 **50 GB** | Q3_K_M 약 **63 GB** | Q4_K_M 약 **78 GB** | 96–128 GB | 정확도 우선 문서 합성·분석. CPU/통합 메모리에서는 대역폭이 병목이 될 수 있다. |
 
-한국어 비중이 큰 대용량 구간에서는 업스테이지가 2026년 7월 22일 공개한 [Solar-Open2-250B](https://huggingface.co/upstage/Solar-Open2-250B)도 참고할 만하다. 총 250B 중 활성 15B의 하이브리드 어텐션 MoE로 영어·한국어·일본어를 지원하고 공식 컨텍스트는 1M이다. 다만 2026-08-13 기준 확인된 것은 커뮤니티 GGUF·MLX 변환(Q4 약 140 GB 추정)이라 이 절의 96–128 GB 구간에서는 실행할 수 없고 192 GB 이상 구간의 후보이며, Upstage Solar License 조건을 공식 카드에서 확인한다.
+한국어 비중이 큰 대용량 구간에서는 업스테이지가 2026년 7월 22일 공개한 [Solar-Open2-250B](https://huggingface.co/upstage/Solar-Open2-250B)도 참고할 만하다. 총 250B 중 활성 15B의 하이브리드 어텐션 MoE로 영어·한국어·일본어를 지원하고 공식 컨텍스트는 1M이다. 다만 2026-08-22 기준 확인된 것은 커뮤니티 GGUF·MLX 변환(Q4 약 140 GB 추정)이라 이 절의 96–128 GB 구간에서는 실행할 수 없고 192 GB 이상 구간의 후보이며, Upstage Solar License 조건을 공식 카드에서 확인한다.
 
 서버급 모델에서도 검색 품질이 낮으면 답변 품질은 제한된다. 대형 생성 모델로 업그레이드하기 전에 청킹, 메타데이터, 하이브리드 검색, reranking과 인용 검증을 먼저 개선한다.
 

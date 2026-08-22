@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [비전·OCR](./vision-ocr.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md)
 
-> **최종 검증일:** 2026-08-13 (KST)  
+> **최종 검증일:** 2026-08-22 (KST)  
 > **주요 실행 형식:** Diffusers, ComfyUI, 단일 `safetensors`, FP16/BF16, FP8, INT8, NF4, GGUF + ComfyUI-GGUF  
 > **범위:** 텍스트→이미지, 이미지→이미지, 인페인팅·아웃페인팅, 지시 기반 편집, 다중 참조, ControlNet·IP-Adapter, LoRA, 업스케일·복원, 로컬 서비스 운영  
 > **관련 문서:** [양자화](../operations/quantization.md) · [파인튜닝 메모리](../operations/fine-tuning-memory.md) · [런타임·하드웨어](../operations/runtime-hardware.md) · [오디오·음성](./audio-speech.md)
@@ -25,7 +25,7 @@
 
 특히 **GGUF Q2·Q3·Q4는 이미지 모델 전체가 아니라 DiT/UNet만 양자화한 파일인 경우가 많다.** 예를 들어 Qwen-Image GGUF를 실행하려면 별도의 Qwen2.5-VL 텍스트 인코더, projector와 VAE가 필요하다. FLUX 계열도 T5/CLIP 또는 해당 세대의 텍스트 인코더와 VAE를 추가로 로드한다.
 
-모델 카드·가중치·라이선스·런타임 지원은 계속 바뀐다. 아래 값은 2026-08-13에 확인한 대표값이며, 다운로드 직전 Hugging Face의 **정확한 파일명, 총 다운로드 크기, gated access, 라이선스, base model revision, 권장 runtime**을 다시 확인한다.
+모델 카드·가중치·라이선스·런타임 지원은 계속 바뀐다. 아래 값은 2026-08-22에 확인한 대표값이며, 다운로드 직전 Hugging Face의 **정확한 파일명, 총 다운로드 크기, gated access, 라이선스, base model revision, 권장 runtime**을 다시 확인한다.
 
 > **핵심 원칙:** 낮은 메모리에서는 해상도·batch·동시성을 먼저 줄이고, 그다음 VAE tiling·CPU offload를 적용하며, 마지막 수단으로 Q2/Q3를 사용한다. 이미지 내 글자, 손·얼굴, 미세 질감, 동일 인물 편집은 저비트 양자화의 영향을 크게 받으므로 Q4와 Q5/Q6 또는 FP8을 반드시 같은 seed로 비교한다.
 
@@ -431,7 +431,7 @@ VAE는 최종 색상·미세 detail·decode 안정성에 직접 관여한다. VA
 
 ComfyUI·`stable-diffusion.cpp`·GGUF 등 로컬 이미지 런타임은 이전부터 Wan2.1/2.2·LTX-2.3·HunyuanVideo 같은 오픈 비디오 모델을 같은 경로로 실행해 왔고, 2026-07 하순 이후에는 MiniMax-H3(`stable-diffusion.cpp` 2026-08-04 추가)가 여기에 더해졌다. 비디오는 이 문서 범위 밖이므로 링크만 남긴다.
 
-- [MiniMax-H3](https://huggingface.co/MiniMaxAI/MiniMax-H3) (2026-07-28): 공식 카드 기준 33B(leejet GGUF 카드는 20B로 표기해 수치가 상이하다 — 반영 전 공식 카드 원문 재확인), T2V·I2V(첫/끝 프레임)·참조 기반 생성에 스테레오 오디오 동기 출력까지 지원. **MiniMax H3 Community License**로 상업 이용 조건 검토가 필요하다. ComfyUI v0.30.0 Day-0, `stable-diffusion.cpp` 지원, [leejet GGUF](https://huggingface.co/leejet/MiniMax-H3-GGUF)는 Q2 약 6.7 GB부터.
+- [MiniMax-H3](https://huggingface.co/MiniMaxAI/MiniMax-H3) (2026-07-28): **총 33B이며 추론 로드는 약 20B다.** 공식 카드에 따르면 33B 중 약 13B가 AdaLN 브랜치로 사전계산·캐시되어 추론 전용 배포에서는 로드되지 않으므로, 33B(전체)와 20B(추론 로드) 표기가 층위만 다를 뿐 모두 맞다. T2V·I2V(첫/끝 프레임)·참조 기반 생성에 스테레오 오디오 동기 출력까지 지원. **MiniMax H3 Community License**로 상업 이용 조건 검토가 필요하다. ComfyUI v0.30.0 Day-0, `stable-diffusion.cpp` 지원, [leejet GGUF](https://huggingface.co/leejet/MiniMax-H3-GGUF)는 Q2 약 6.7 GB부터.
 - [LTX-2.5](https://huggingface.co/Lightricks/LTX-2.5) (2026-07-23): Lightricks의 오픈 비디오 모델로, 본체 파라미터 수는 미확인이다(별도로 공개된 22B IC-LoRA Pixel-Spatial-Upscaler는 부속 업스케일러다). ComfyUI v0.32.0 Day-0, QuantStack GGUF 존재.
 - [Wan2.2-Animate-2-14B](https://huggingface.co/Wan-AI/Wan2.2-Animate-2-14B): 캐릭터 애니메이션 v2, ComfyUI 지원(2026-08).
 
@@ -481,7 +481,7 @@ FLUX.2 사용 시에는 다음을 고정한다.
 - guidance·steps·scheduler
 - 결과 이미지의 metadata·C2PA·watermark 처리 여부
 
-> **FLUX 3는 아직 오픈웨이트가 아니다.** BFL이 2026-07-23 발표한 FLUX 3(이미지+비디오+오디오 통합 멀티모달, 08-05 API GA)는 API·파트너 노드 전용이다. "FLUX 3 Dev" 오픈웨이트는 2026년 후반 공개가 예고만 된 상태라, 2026-08-13 기준 로컬 실행 가능한 최신 오픈웨이트는 여전히 FLUX.2 계열이다.
+> **FLUX 3는 아직 오픈웨이트가 아니다.** BFL이 2026-07-23 발표한 FLUX 3(이미지+비디오+오디오 통합 멀티모달, 08-05 API GA)는 API·파트너 노드 전용이다. "FLUX 3 Dev" 오픈웨이트는 2026년 후반 공개가 예고만 된 상태라, 2026-08-22 기준 로컬 실행 가능한 최신 오픈웨이트는 여전히 FLUX.2 계열이다.
 
 ### 6.3 Krea 2 Raw와 Turbo
 
@@ -537,10 +537,10 @@ Prompt Agent가 별도 대형 언어 모델을 사용하면 총메모리가 크�
 | --- | ---: | --- | --- | --- |
 | Turbo | 8 NFE | 모델 카드 설정 우선 | 빠른 일반 생성, 사진, 영·중문 텍스트 | GGUF Q3/Q4 |
 | Base | 약 50-step 계열 | 지원 | 다양성·fine-tuning·스타일 | GGUF Q4/Q5 |
-| Omni-Base | 2026-08-13 기준 가중치 미공개 | 생성+편집 foundation | community fine-tuning | 공개 시 확인 |
-| Edit | 2026-08-13 기준 가중치 미공개 | 입력 이미지 필요 | 지시 편집 | 공개 시 확인 |
+| Omni-Base | 2026-08-22 기준 가중치 미공개 | 생성+편집 foundation | community fine-tuning | 공개 시 확인 |
+| Edit | 2026-08-22 기준 가중치 미공개 | 입력 이미지 필요 | 지시 편집 | 공개 시 확인 |
 
-Z-Image-Edit와 Z-Image-Omni-Base는 논문·공식 블로그에 소개되어 있으나 2026-08-13 기준 Tongyi-MAI org에 가중치가 공개되지 않았다. 공개 여부는 org 페이지에서 재확인한다.
+Z-Image-Edit와 Z-Image-Omni-Base는 논문·공식 블로그에 소개되어 있으나 2026-08-22 기준 Tongyi-MAI org에 가중치가 공개되지 않았다. 공개 여부는 org 페이지에서 재확인한다.
 
 Z-Image GGUF는 denoiser만 포함하는 경우가 일반적이다. 별도 **Qwen3 4B text encoder와 VAE**를 함께 다운로드해야 한다. 4 GB VRAM 이하 실행 사례는 CPU offload·quantized encoder·낮은 해상도를 포함할 수 있으므로, “Q4 파일 3.86 GB가 4 GB GPU에 완전히 상주한다”는 의미로 해석하지 않는다.
 
@@ -560,7 +560,7 @@ Qwen-Image 계열은 text encoder가 커서 denoiser Q4만 선택해도 16 GB GP
 
 같은 계열의 [Qwen-Image-Layered](https://huggingface.co/Qwen/Qwen-Image-Layered)(2025-12, Apache 2.0, 약 20.4B)는 레이어를 분리해 생성하는 변형으로, unsloth GGUF 변환이 있다. 포스터·합성 작업에서 레이어별 후편집이 필요하면 별도로 평가한다.
 
-> **Qwen-Image-3.0은 아직 오픈웨이트가 아니다.** 2026-08-05 발표된 Qwen-Image-3.0은 API 전용으로, 2026-08-13 기준 가중치·모델 카드·벤치마크가 공개되지 않았다. 로컬 실행 가능한 최신 오픈웨이트는 여전히 Qwen-Image-2512와 Qwen-Image-Edit-2511이다.
+> **Qwen-Image-3.0은 아직 오픈웨이트가 아니다.** 2026-08-05 발표된 Qwen-Image-3.0은 API 전용으로, 2026-08-22 기준 가중치·모델 카드·벤치마크가 공개되지 않았다. 로컬 실행 가능한 최신 오픈웨이트는 여전히 Qwen-Image-2512와 Qwen-Image-Edit-2511이다.
 
 ### 6.7 Ovis-Image 7B
 
@@ -1499,7 +1499,7 @@ Hugging Face revision SHA, local SHA-256, 원본·quant 저장소 URL, 라이선
 
 ## 16. ComfyUI 구성
 
-> **버전 참고(2026-08-13):** ComfyUI 코어는 v0.29.0(2026-07-29)부터 v0.32.0(08-11)까지 약 2주간 5회 릴리스되며 JoyAI-Image-Edit·Mage-Flow(v0.29), MiniMax-H3(v0.30), Wan-Animate2·int8_convrot VAE 디코드 가속(v0.31), LTX-2.5(v0.32)를 네이티브 지원에 추가했다. FLUX 3·Seedance 2.5·Grok Imagine·Qwen-Image 3.0 Pro는 **파트너(API) 노드**로 추가된 것이며 로컬 오픈웨이트가 아니다.
+> **버전 참고(2026-08-22):** ComfyUI 코어는 v0.29.0(2026-07-29)부터 v0.33.1(08-13)까지 약 2주 반 동안 6회 릴리스되며 JoyAI-Image-Edit·Mage-Flow(v0.29), MiniMax-H3(v0.30), Wan-Animate2·int8_convrot VAE 디코드 가속(v0.31), LTX-2.5(v0.32)를 네이티브 지원에 추가했다. FLUX 3·Seedance 2.5·Grok Imagine·Qwen-Image 3.0 Pro는 **파트너(API) 노드**로 추가된 것이며 로컬 오픈웨이트가 아니다.
 
 ### 16.1 기본 디렉터리
 
@@ -1934,7 +1934,7 @@ OOM 후 같은 process를 계속 사용하면 fragmentation·부분 로드 상�
 - mmap·CPU/GPU placement를 세밀하게 조절하는 경우
 - FLUX.1/.2·Qwen-Image·Z-Image·Ideogram 4·Mage-Flow-Edit 등 최신 지원을 단일 CLI로 실험하는 경우
 
-2026-08-13 기준 README의 지원 목록은 SD 1.x–3.5·SDXL·FLUX.1·FLUX.2-dev/klein·Ideogram 4·Z-Image·Qwen-Image 계열·Chroma 등 T2I와 FLUX.1-Kontext·Qwen-Image-Edit 계열·Mage-Flow-Edit 등 편집 모델에 더해 **비디오**(Wan2.1/2.2, LTX-2.3, HunyuanVideo, MiniMax-H3)까지 확대되어, 이미지 전용 런타임에서 비디오 겸용 런타임으로 확장 중이다. 백엔드는 CPU/CUDA/Vulkan/Metal/OpenCL/SYCL에 ROCm 빌드 배포가 더해졌다. [leejet/ideogram-4-GGUF](https://huggingface.co/leejet/ideogram-4-GGUF)처럼 sd.cpp용 GGUF 변환이 함께 배포되는 모델도 늘고 있다.
+2026-08-22 기준 README의 지원 목록은 SD 1.x–3.5·SDXL·FLUX.1·FLUX.2-dev/klein·Ideogram 4·Z-Image·Qwen-Image 계열·Chroma 등 T2I와 FLUX.1-Kontext·Qwen-Image-Edit 계열·Mage-Flow-Edit 등 편집 모델에 더해 **비디오**(Wan2.1/2.2, LTX-2.3, HunyuanVideo, MiniMax-H3)까지 확대되어, 이미지 전용 런타임에서 비디오 겸용 런타임으로 확장 중이다. 백엔드는 CPU/CUDA/Vulkan/Metal/OpenCL/SYCL에 ROCm 빌드 배포가 더해졌다. [leejet/ideogram-4-GGUF](https://huggingface.co/leejet/ideogram-4-GGUF)처럼 sd.cpp용 GGUF 변환이 함께 배포되는 모델도 늘고 있다.
 
 프로젝트는 활발히 개발되며 CLI가 바뀔 수 있다. **release 또는 commit SHA를 고정**한다.
 
@@ -2107,7 +2107,7 @@ Z-Image·Qwen·FLUX처럼 companion 파일이 필요한 모델은 wrapper에 필
 
 프로젝트가 공개한 FLUX.1-dev 결과에서는 BF16 대비 3.6× memory reduction과 지원 장치에서 큰 속도 향상을 제시한다. 이 수치는 특정 모델·GPU·software revision의 결과이므로 사용자의 GPU에서 직접 benchmark한다.
 
-단, 2026-08-13 기준 Nunchaku 공식 릴리스는 2026-03의 v1.3.0dev가 마지막으로 갱신이 정체되어 있다. FLUX.2·Qwen-Image 최신 revision·Z-Image 등 신모델 지원 여부는 저장소에서 직접 재확인한다.
+단, 2026-08-22 기준 Nunchaku 공식 릴리스는 2026-03의 v1.3.0dev가 마지막으로 갱신이 정체되어 있다. FLUX.2·Qwen-Image 최신 revision·Z-Image 등 신모델 지원 여부는 저장소에서 직접 재확인한다.
 
 ### 19.3 선택 기준
 
@@ -2345,7 +2345,7 @@ temporary tiles·latents 별도 scratch
 
 상세 계산은 [파인튜닝 메모리 가이드](../operations/fine-tuning-memory.md)에서 다룬다. 아래 값은 **batch 1, gradient checkpointing, memory-efficient optimizer, 낮은 rank, 512–1024px, 단일 GPU LoRA**를 가정한 보수적 시작 범위다. 실제 요구량은 optimizer, trainable layer, text encoder 학습, resolution, aspect bucket과 cache 전략에 따라 달라진다.
 
-도구 측면에서는 LLM 중심이던 [Unsloth](https://github.com/unslothai/unsloth)도 디퓨전 모델 실행·파인튜닝(LoRA/QLoRA/full FT)을 지원한다(2026-08-13 기준 공식 문서 확인, 지원 개시 시점은 미확인). Qwen-Image(-2512/-Edit)·Z-Image·FLUX·SDXL 등을 지원하며 "2× 속도·VRAM 70% 절감"을 주장한다 — 수치는 자체 워크로드로 검증하고, [공식 문서](https://unsloth.ai/docs/basics/diffusion-image)의 지원 모델 목록을 확인한다.
+도구 측면에서는 LLM 중심이던 [Unsloth](https://github.com/unslothai/unsloth)도 디퓨전 모델 실행·파인튜닝(LoRA/QLoRA/full FT)을 지원한다(2026-08-22 기준 공식 문서 확인, 지원 개시 시점은 미확인). Qwen-Image(-2512/-Edit)·Z-Image·FLUX·SDXL 등을 지원하며 "2× 속도·VRAM 70% 절감"을 주장한다 — 수치는 자체 워크로드로 검증하고, [공식 문서](https://unsloth.ai/docs/basics/diffusion-image)의 지원 모델 목록을 확인한다.
 
 ### 21.1 추론 메모리로 학습 가능 여부를 판단하지 않는다
 
@@ -2499,7 +2499,7 @@ product-style_flux2-klein4b_r16-a16_step2400_base-<shortsha>.safetensors
 - model volume은 read-only로 mount한다.
 - 다운로드 host와 production host를 분리할 수 있다.
 
-런타임 자체의 보안 공지도 추적한다. 예를 들어 InvokeAI는 v6.13.7(2026-07)에서 `invokeai.yaml`·`api_keys.yaml` 설정·API 키 파일이 유출될 수 있는 취약점을 수정했다 — 이전 버전 사용 시 즉시 갱신한다(후속 6.14.0-rc1은 Krea 2·Ideogram 4·ERNIE Turbo·멀티 GPU 렌더링 지원을 추가했다).
+런타임 자체의 보안 공지도 추적한다. 예를 들어 InvokeAI는 v6.13.7(2026-07)에서 `invokeai.yaml`·`api_keys.yaml` 설정·API 키 파일이 유출될 수 있는 취약점을 수정했고, 이어서 **v6.13.8(2026-08-13)이 custom nodes 디렉터리를 통한 임의 파일 덮어쓰기와 SSRF 등 치명적 취약점 2건을 추가로 패치**했다 — 2026-08-22 기준 최신 안정판이 v6.13.8이므로 이전 버전 사용 시 즉시 갱신한다. 후속 6.14.0은 Krea 2·Ideogram 4·ERNIE Turbo·멀티 GPU 렌더링 지원을 추가했으나 아직 rc2(08-16) 단계로 정식 릴리스가 아니다.
 
 ### 22.3 입력 이미지 검증
 
@@ -3071,7 +3071,7 @@ hf download owner/repo --revision <sha> --dry-run
 
 ## 25. 주요 출처와 저장소
 
-아래 링크는 2026-08-13에 확인한 공식 모델 카드·공식 저장소·주요 runtime 문서다. 커뮤니티 GGUF는 파일 크기와 실제 다운로드 편의를 위해 포함했으며, 원본 모델의 라이선스와 revision을 함께 확인한다.
+아래 링크는 2026-08-22에 확인한 공식 모델 카드·공식 저장소·주요 runtime 문서다. 커뮤니티 GGUF는 파일 크기와 실제 다운로드 편의를 위해 포함했으며, 원본 모델의 라이선스와 revision을 함께 확인한다.
 
 ### 25.1 최신 범용·편집 모델
 
@@ -3192,7 +3192,7 @@ hf download owner/repo --revision <sha> --dry-run
 
 ## 갱신 및 사용상 주의
 
-- 이 문서는 **2026-08-13 KST** 기준 공개 모델 카드·저장소·runtime 문서를 바탕으로 작성했다.
+- 이 문서는 **2026-08-22 KST** 기준 공개 모델 카드·저장소·runtime 문서를 바탕으로 작성했다.
 - Hugging Face 파일명, quant tag, 모델 revision, gated access, API와 라이선스는 변경될 수 있다.
 - 다운로드 직전 `hf download --dry-run`으로 실제 파일과 총용량을 확인한다.
 - 공식 최소 VRAM은 특정 설정의 실행 가능 사례일 수 있으므로 이 문서의 보수적 장착 메모리와 다를 수 있다.

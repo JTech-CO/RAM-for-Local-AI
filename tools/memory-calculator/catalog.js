@@ -1,7 +1,7 @@
 /* Generated from the RAM-for-Local-AI guide set. No network request is made. */
 window.RAMAI_CATALOG = {
   "schemaVersion": 1,
-  "verified": "2026-08-13",
+  "verified": "2026-08-22",
   "project": "RAM-for-Local-AI",
   "repository": {
     "url": "https://github.com/jtech-co/RAM-for-Local-AI",
@@ -1461,6 +1461,59 @@ window.RAMAI_CATALOG = {
       "systemRamRecommendedGiB": null
     },
     {
+      "id": "qwen38-27b",
+      "name": "Qwen3.8 27B",
+      "kind": "vlm",
+      "domains": [
+        "cybersecurity",
+        "programming-stem",
+        "productivity-rag",
+        "data-analysis",
+        "vision-ocr"
+      ],
+      "tasks": [
+        "security-triage",
+        "secure-code",
+        "general-coding",
+        "repo-agent",
+        "math-science",
+        "document-work",
+        "personal-rag",
+        "team-rag",
+        "eda-code",
+        "ui-vision",
+        "chart-math"
+      ],
+      "paramsB": 27.8,
+      "architecture": "dense",
+      "activeParamsB": null,
+      "hf": "https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF",
+      "guide": "programming-stem",
+      "formats": [
+        "q3",
+        "q4",
+        "q5",
+        "q6",
+        "q8",
+        "bf16"
+      ],
+      "exactSizes": {
+        "q4": 18.97
+      },
+      "kvMiBPerTokenFp16": 0.24,
+      "runtimes": [],
+      "quality": 84,
+      "notes": [
+        "27.78B dense 멀티모달(이미지 입력), 약 262K 컨텍스트, Apache-2.0 (2026-08-05)",
+        "이미지 입력 시 mmproj 메모리 별도 — Qwen3.8-2.4T-A95B와는 다른 모델"
+      ],
+      "minDeviceGiB": {},
+      "basePeakGiB": {},
+      "sizeMode": "weights",
+      "projectorIncluded": false,
+      "systemRamRecommendedGiB": null
+    },
+    {
       "id": "qwen36-27b",
       "name": "Qwen3.6 27B",
       "kind": "llm",
@@ -1641,7 +1694,7 @@ window.RAMAI_CATALOG = {
         "q8"
       ],
       "exactSizes": {
-        "q4": 25.4,
+        "q4": 18.9,
         "q8": 35.0
       },
       "kvMiBPerTokenFp16": 0.12,
@@ -1649,6 +1702,7 @@ window.RAMAI_CATALOG = {
       "quality": 83,
       "notes": [
         "Mamba-2+MoE+어텐션 하이브리드, 최대 1M 컨텍스트 (OpenMDW-1.1, 2026-08-11)",
+        "ggml-org 배포는 Q4_0 18.90GB만 제공 — Q4_K_M이 필요하면 unsloth UD-Q4_K_M 25.27GB",
         "SSM 계층이 다수라 KV 계수를 동급 attention 모델의 약 절반으로 잡은 근사값 — 긴 컨텍스트는 실측 필요"
       ],
       "minDeviceGiB": {},

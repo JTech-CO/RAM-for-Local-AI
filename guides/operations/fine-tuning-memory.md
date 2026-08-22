@@ -3,8 +3,8 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-08-13 (KST)
-> **주요 도구:** Transformers·PEFT·TRL, bitsandbytes, torchtune (공식 README 기준 유지보수 중단), Accelerate·FSDP2, DeepSpeed ZeRO, TorchTitan, Axolotl, LLaMA-Factory, Unsloth, MLX-LM, Diffusers
+> **최종 검증일:** 2026-08-22 (KST)
+> **주요 도구:** Transformers·PEFT·TRL, bitsandbytes, torchtune (개발 종료), Accelerate·FSDP2, DeepSpeed ZeRO, TorchTitan, Axolotl, LLaMA-Factory, Unsloth, MLX-LM, Diffusers
 > **범위:** 언어·코드·수학 모델, VLM·OCR, 이미지 생성, 음성·오디오, 임베딩·reranker의 full fine-tuning·PEFT·선호학습·분산학습 메모리 계산과 검증
 > **관련 문서:** [양자화](./quantization.md) · [서빙·동시성](./serving-concurrency.md) · [런타임·하드웨어](./runtime-hardware.md)
 
@@ -918,7 +918,7 @@ vs 작은 모델 BF16 LoRA
 QLoRA의 frozen 4-bit base는 오랫동안 bitsandbytes NF4가 사실상 표준이었지만, 4-bit 학습 선택지는 넓어지고 있다.
 
 - **native FP4 base 위 LoRA**: Axolotl v0.18.0(2026-07-17)은 MoE expert를 NVFP4(Marlin/DeepGEMM)·MXFP4·bnb-4bit로 저장한 채 학습하는 4-bit expert MoE-LoRA/QLoRA를 지원한다. FP4 activation까지 사용하는 W4A4(SonicMoE) 경로는 데이터센터 GPU뿐 아니라 RTX 50xx(sm120) 같은 소비자 Blackwell GPU에서도 동작하고, `nvfp4_merge_aware` 모드는 NVFP4 base에 비트 일치 merge를 제공한다. NVFP4로 배포된 공식 체크포인트에서 재양자화 없이 직접 파인튜닝하는 경로가 실전화된 것이다.
-- **bitsandbytes 플랫폼 확대**: bitsandbytes 0.50.0(2026-07-25)은 fused 4-bit GEMM으로 batch 2–64 구간의 4-bit 추론을 최대 4배 가속하고, ROCm 지원을 안정 단계로 승격했으며, Apple Silicon MPS 지원 범위도 넓혔다(전제 조건은 17.8 참고).
+- **bitsandbytes 플랫폼 확대**: bitsandbytes 0.50.1(2026-08-13)은 RTX·DGX Spark 성능 개선과 Windows ARM64·AMD CDNA5 지원을 추가했다. 직전 0.50.0(2026-07-25)은 fused 4-bit GEMM으로 batch 2–64 구간의 4-bit 추론을 최대 4배 가속하고, ROCm 지원을 안정 단계로 승격했으며, Apple Silicon MPS 지원 범위도 넓혔다(전제 조건은 17.8 참고).
 
 이 경로들은 지원 model·kernel·GPU 조합이 빠르게 변하므로, NF4 QLoRA 기준선과 같은 데이터·평가로 품질을 비교한 뒤 채택한다.
 
@@ -1597,7 +1597,7 @@ micro-batch: 1–2
 accumulation: 8–32
 ```
 
-torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 다만 근거였던 stable tutorial 페이지는 2026-08-13 링크 검사에서 모두 404로 확인되어 현재 원문을 확인할 수 없다. 해당 결과는 좋은 sanity check지만 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 유지보수 중단 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
+torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 해당 tutorial 페이지는 2026-08-22 재확인에서 정상 접근된다(31.4의 링크 참조). 다만 이 결과는 좋은 sanity check일 뿐 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 개발 종료 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
 
 ### 16.4 24GB
 
@@ -2415,7 +2415,7 @@ num_generations ↓
 → reference log-prob 최적화
 ```
 
-TRL v1.9부터는 GRPO·RLOO에 iterable/streaming dataset을 사용할 수 있고(이 경우 `max_steps` 지정 필수), `environment_factory`를 제공하면 환경이 prompt를 소유하므로 `train_dataset` 없이 구성할 수 있다. AsyncGRPO는 메시지 레벨 롤아웃(`rollout_protocol="message"`)으로 멀티턴 대화의 재작성 흐름을 지원한다. 이 기능들은 데이터 공급 방식의 변화이며, rollout·KV cache 메모리 예산 설계는 그대로 필요하다.
+TRL v1.10.0(2026-08-13)은 DistillationTrainer를 정식 승격하고(VLM 지원 포함) AsyncGRPO가 loop-owning agent 학습을 다루도록 확장했다. TRL v1.9부터는 GRPO·RLOO에 iterable/streaming dataset을 사용할 수 있고(이 경우 `max_steps` 지정 필수), `environment_factory`를 제공하면 환경이 prompt를 소유하므로 `train_dataset` 없이 구성할 수 있다. AsyncGRPO는 메시지 레벨 롤아웃(`rollout_protocol="message"`)으로 멀티턴 대화의 재작성 흐름을 지원한다. 이 기능들은 데이터 공급 방식의 변화이며, rollout·KV cache 메모리 예산 설계는 그대로 필요하다.
 
 ### 23.6 online method와 ZeRO-3
 
@@ -2922,7 +2922,7 @@ Reranker:
 | 프레임워크 | 강점 | 메모리 기능 | 적합한 사용자 |
 | --- | --- | --- | --- |
 | Transformers + PEFT + TRL | 가장 넓은 model·trainer 생태계 | LoRA·QLoRA·checkpointing·packing·DPO·GRPO | 직접 Python 제어 |
-| torchtune (README 기준 유지보수 중단) | PyTorch-native recipe·교육성 | LoRA·QLoRA·full FT·activation 최적화 | 기존 recipe 유지·참고용, 신규 프로젝트 비권장 |
+| torchtune (개발 종료) | PyTorch-native recipe·교육성 | LoRA·QLoRA·full FT·activation 최적화 | 기존 recipe 유지·참고용, 신규 프로젝트 비권장 |
 | Accelerate | launch·FSDP·DeepSpeed abstraction | FSDP2·ZeRO·FP8·checkpoint | custom script 분산화 |
 | DeepSpeed | ZeRO·offload·pipeline | CPU/NVMe offload·ZeRO-1/2/3 | 대형 model·cluster |
 | TorchTitan | 최신 PyTorch 대규모 학습 stack | FSDP2·TP·PP·CP·DCP·low precision | server-scale 연구 |
@@ -3080,7 +3080,9 @@ Web UI는 편리하지만 최종 run의 전체 config를 version control에 저�
 
 ### 28.9 torchtune
 
-> **주의:** torchtune은 공식 README 기준으로 더 이상 활발히 유지보수되지 않는다(2025년 개발 중단). 다만 저장소는 meta-pytorch org로 이전된 뒤 2026-08-12까지 push가 이어지고 있어 README 표기와 실제 활동이 엇갈리므로, 채택 전 저장소 상태를 직접 확인한다. 기존 recipe와 설치본은 계속 동작하지만 신규 프로젝트에는 권장하지 않는다. PyTorch-native 대규모 학습이 필요하면 TorchTitan을, 범용 파인튜닝이면 Transformers·PEFT·TRL 계열을 먼저 검토한다.
+> **주의:** torchtune은 **개발이 종료됐다.** 공식 이슈 #2883이 "stopping active development, effective immediately"를 명시했고 지원 약속도 2025년까지였다. main 최종 커밋은 2026-04-23이며 그 커밋 자체가 종료 공지다(PyPI는 0.6.1/2025-04-07에서 정체). 저장소 push가 최근까지 찍히는 것은 pytorchbot의 nightly 브랜치 자동화로, 2026-08-17·18·21 커밋이 모두 동일한 트리 해시를 가리켜 코드 변화가 없다. meta-pytorch org 이전도 PyTorch 생태계 일괄 리네임이지 개발 재개가 아니다. 기존 recipe와 설치본은 계속 동작하지만 신규 프로젝트에는 쓰지 않는다.
+>
+> 대체재로 **torchforge를 제시하면 안 된다.** torchforge 역시 2026-04-23 같은 날 중단됐고 README가 "LLM training at PyTorch is being consolidated in torchtitan"이라고 밝힌다. 로컬·단일 GPU 파인튜닝은 Unsloth·Axolotl·LLaMA-Factory·ms-swift·TRL을, 대규모 분산 학습은 TorchTitan을 검토한다. 다만 TorchTitan은 대규모 학습 플랫폼이라 torchtune 같은 단일 GPU SFT/LoRA 레시피 도구의 1:1 대체는 아니다.
 
 ```bash
 tune ls
@@ -3597,7 +3599,7 @@ manifest·hash
 ### 31.4 torchtune·torchao
 
 - [torchtune documentation](https://docs.pytorch.org/torchtune/)
-- [torchtune repository](https://github.com/meta-pytorch/torchtune) — 공식 README 기준 유지보수 중단(2025년 개발 중단), 신규 프로젝트 비권장
+- [torchtune repository](https://github.com/meta-pytorch/torchtune) — 개발 종료(2025년 중단 선언, main 최종 커밋 2026-04-23), 신규 프로젝트 비권장
 - [torchtune memory optimization overview](https://docs.pytorch.org/torchtune/stable/tutorials/memory_optimizations.html)
 - [torchtune LoRA tutorial](https://docs.pytorch.org/torchtune/stable/tutorials/lora_finetune.html)
 - [torchtune QLoRA tutorial](https://docs.pytorch.org/torchtune/stable/tutorials/qlora_finetune.html)
@@ -3815,7 +3817,7 @@ MoE expert가 안 들어감
 
 ### 32.10 갱신 주의
 
-이 문서는 2026-08-13 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
+이 문서는 2026-08-22 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
 
 - model architecture와 remote code
 - PEFT·TRL·Transformers·PyTorch API

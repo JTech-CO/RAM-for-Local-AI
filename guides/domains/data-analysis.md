@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG 가이드](./productivity-rag.md)
 
-> **최종 검증일:** 2026-08-13 (KST)  
+> **최종 검증일:** 2026-08-22 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`; PyTorch/Transformers·Sentence Transformers·scikit-learn 호환 런타임 병행  
 > **범위:** CSV·Parquet·Arrow·데이터베이스 분석, Text-to-SQL, Python/R 코드 생성과 실행, 탐색적 데이터 분석(EDA), 통계·머신러닝, 표형 파운데이션 모델, 시계열 예측, 차트·보고서 생성 및 제한된 분석 에이전트
 
@@ -19,7 +19,7 @@
 - Q2·Q3·Q4 양자화가 컬럼명, JOIN, 날짜·단위, JSON·tool call 안정성에 어떤 영향을 주는가?
 - 표형 파운데이션 모델과 시계열 파운데이션 모델은 일반 LLM과 어떻게 분리해 배치할 것인가?
 
-모델 저장소와 양자화 파일은 계속 수정된다. 아래 크기는 2026-08-13에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, shard 수, 총크기, 라이선스, revision, 런타임 호환성**을 다시 확인한다.
+모델 저장소와 양자화 파일은 계속 수정된다. 아래 크기는 2026-08-22에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, shard 수, 총크기, 라이선스, revision, 런타임 호환성**을 다시 확인한다.
 
 > **핵심 원칙:** 데이터 분석에서는 메모리를 거의 전부 차지하는 대형 Q2 모델보다, 여유 있게 실행되는 Q4 모델과 DuckDB/Python/R의 실제 실행 결과, 스키마·단위·통계 검증을 결합한 구성이 대체로 더 신뢰할 수 있다.
 
@@ -331,7 +331,7 @@ Q2만 들어간다
 | **Qwen3.6-27B** | 고품질 범용·코딩·수학·도구 사용 | 11.8 | 13.6 | **16.8** | Q3 24 GB / Q4 32 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.6-27B) |
 | **Muse-Glimmer-30B** | 약 30B dense + 이미지 입력, 24GB급 에이전틱 분석·코드 (2026-08 공개, Apache-2.0). 공식 GGUF에는 DFlash 드래프터 1.6 GB와 mmproj 1.4 GB가 별도로 붙는다 | 저장소 확인 | 저장소 확인 | **16.8 (공식)** | Q4 24 GB 최소 / 32 GB 권장 | [공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) · [원본](https://huggingface.co/meta-models/Muse-Glimmer-30B) |
 | **Qwen3.6-35B-A3B** | 35B 총/3B 활성 MoE, 분석 에이전트·비전·도구 | 12.3 | 16.6 | **22.1** | Q3 24–32 GB / Q4 32–48 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) |
-| **Nemotron-3.5-Lightning-30B-A3B** | 30B 총/3B 활성 MoE, 최대 1M 컨텍스트, 장문 스키마·로그 분석 (2026-08 공개, OpenMDW-1.1) | 저장소 확인 | 저장소 확인 | **약 25.4** | Q4 32 GB 최소 / 48 GB 권장 | [GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) |
+| **Nemotron-3.5-Lightning-30B-A3B** | 30B 총/3B 활성 MoE, 최대 1M 컨텍스트, 장문 스키마·로그 분석 (2026-08 공개, OpenMDW-1.1) | 저장소 확인 | 저장소 확인 | **18.90**(ggml-org Q4_0) | 32 GB | [ggml-org GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) · [unsloth UD-Q4_K_M 25.27 GB](https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) |
 
 ### 5.2 대형 모델
 
@@ -367,7 +367,7 @@ Q2만 들어간다
 
 Text-to-SQL 모델은 데이터베이스 스키마와 자연어 질문을 받아 SQL 후보를 생성한다. 범용 모델보다 작으면서도 SQL 생성에 유리할 수 있지만, **실행 권한을 직접 부여하는 것은 금지**해야 한다. 모델이 생성한 SQL은 항상 별도 검증 계층과 읽기 전용 계정으로 실행한다.
 
-2026-08-13 기준으로 이 절의 전용 모델 구성을 재확인했다. XiYanSQL-QwenCoder는 2504가 여전히 최신 공개판이고(2505·2506 등 후속 버전 자체가 미출시), OmniSQL과 Arctic-Text2SQL-R1도 후속 릴리스 없이 유지되고 있어 아래 선택표는 그대로 유효하다.
+2026-08-22 기준으로 이 절의 전용 모델 구성을 재확인했다. XiYanSQL-QwenCoder는 2504가 여전히 최신 공개판이고(2505·2506 등 후속 버전 자체가 미출시), OmniSQL과 Arctic-Text2SQL-R1도 후속 릴리스 없이 유지되고 있어 아래 선택표는 그대로 유효하다.
 
 ### 6.1 빠른 선택표
 
@@ -523,7 +523,7 @@ No external file/network access
 | 모델 | 공개 시점·규모 | 작업 | 현실적인 시작 메모리 | 라이선스·주의 | Hugging Face |
 | --- | --- | --- | ---: | --- | --- |
 | **LimiX-2M** | 2026, 약 2M parameters | 분류·회귀·결측치 보정 | 4–8 GB CPU/GPU 실험 | 모델 카드의 최상 성능 주장은 자체 검증 필요. 카드 내 라이선스 설명과 HF metadata가 상이할 수 있어 weight license를 직접 확인 | [모델](https://huggingface.co/stable-ai/LimiX-2M) |
-| **TabPFN-3** | 2026-05, 수억 parameter급 checkpoint | 분류·회귀, 특수 time-series/OOD checkpoint | 12–24 GB부터 소규모 실측; 행·feature·ensemble에 따라 증가 | 모델 weights는 `tabpfn-3-license-v1.0` — **연구·평가 전용, 상업·프로덕션 사용 금지**(엔터프라이즈 라이선스 별도). 상업 용도는 구버전 TabPFN v2 계열(`tabpfn_2_5`/`2_6`)을 검토하되, 해당 저장소의 라이선스가 상업 사용을 허용하는지 직접 확인 | [모델](https://huggingface.co/Prior-Labs/tabpfn_3) |
+| **TabPFN-3** | 2026-05, 수억 parameter급 checkpoint | 분류·회귀, 특수 time-series/OOD checkpoint | 12–24 GB부터 소규모 실측; 행·feature·ensemble에 따라 증가 | 모델 weights는 `tabpfn-3-license-v1.0` — **연구·평가 전용, 상업·프로덕션 사용 금지**(엔터프라이즈 라이선스 별도). 구버전 `tabpfn_2_5`·`2_6`도 **동일하게 상업·프로덕션 사용 금지**이며 금지 범위에 출력물과 사내 상업적 의사결정이 포함된다. 상업 용도는 [LimiX-2M](https://huggingface.co/stable-ai/LimiX-2M)(Apache-2.0)이나 [TabICL](https://huggingface.co/jingang/TabICL)(BSD-3-Clause)을 검토 | [모델](https://huggingface.co/Prior-Labs/tabpfn_3) |
 | **TabFM 1.0.0** | 2026-06-30, Google Research | zero-shot 분류·회귀 | 단일 약 6.6 GB checkpoint는 16–24 GB부터; 큰 context·ensemble은 24–48 GB 이상 실측 | 최대 10 classes, 최대 약 500 features 권장 범위. weight는 **비상업 라이선스**(tabfm-non-commercial-v1.0) — 상업·프로덕션 사용 금지 | [PyTorch](https://huggingface.co/google/tabfm-1.0.0-pytorch) · [코드](https://github.com/google-research/tabfm) |
 | **TabICLv2 / TabICL** | 2026 연구 계열 | 대규모 classification·regression | 작은 표부터 GPU 실측; 수만~수십만 행·고차원·offload 설정은 메모리 요구가 크게 달라짐 | 개인 계정에 올라온 [HF checkpoint](https://huggingface.co/jingang/TabICL)가 Apache-2.0으로 표기되어 상업 사용 대안 후보지만, 배포 주체와 라이선스를 직접 확인. 이 표기는 TabICL 기준이며 v2 전용 HF checkpoint 유무는 별도 확인 | [코드](https://github.com/soda-inria/tabicl) · [문서](https://tabicl.readthedocs.io/en/latest/) · [논문](https://huggingface.co/papers/2602.11139) |
 | **CatBoost/XGBoost/LightGBM** | 전통적 강력 baseline | 분류·회귀·ranking | 데이터 크기별 | foundation model이 항상 우월하지 않음 | [CatBoost](https://github.com/catboost/catboost) · [XGBoost](https://github.com/dmlc/xgboost) · [LightGBM](https://github.com/microsoft/LightGBM) |
@@ -543,7 +543,7 @@ TabFM은 숫자형·범주형 열이 섞인 표에서 학습 행을 context로 �
 - model weights는 TabFM Non-Commercial License v1.0
 - 소스 코드는 Apache 2.0
 
-weight가 비상업 라이선스이므로 상업·프로덕션 파이프라인에는 투입할 수 없다. 상업 용도라면 CatBoost 계열 baseline이나 Apache-2.0으로 표기된 [TabICL](https://huggingface.co/jingang/TabICL) checkpoint를 먼저 검토한다. 후자는 개인 계정 저장소이므로 배포 주체와 라이선스를 직접 확인한다.
+weight가 비상업 라이선스이므로 상업·프로덕션 파이프라인에는 투입할 수 없다. 상업 용도라면 CatBoost 계열 baseline이나 BSD-3-Clause로 표기된 [TabICL](https://huggingface.co/jingang/TabICL) checkpoint를 먼저 검토한다. 후자는 개인 계정 저장소이므로 배포 주체와 라이선스를 직접 확인한다.
 
 TabFM 저장소는 classification과 regression subfolder를 함께 포함하므로 repo 전체 크기를 단일 실행 checkpoint 크기로 오해하지 않는다.
 
@@ -602,7 +602,7 @@ proba = clf.predict_proba(X_test)
 - checkpoint가 pickle 기반 형식을 사용한다면 임의 코드 실행 위험을 고려한다.
 - 정확한 Hugging Face repo와 revision을 고정한다.
 - 인터넷·secret이 없는 격리 환경에서 최초 로드한다.
-- `tabpfn-3-license-v1.0`은 **연구·평가 전용**으로 상업·프로덕션 사용을 금지한다(엔터프라이즈 라이선스 별도). 상업 프로젝트는 구버전 TabPFN v2 계열(`tabpfn_2_5`/`2_6`)이나 Apache-2.0으로 표기된 [TabICL](https://huggingface.co/jingang/TabICL) checkpoint를 검토하되, 두 저장소 모두 현재 라이선스가 상업 사용을 허용하는지 직접 확인한다.
+- `tabpfn-3-license-v1.0`은 **연구·평가 전용**으로 상업·프로덕션 사용을 금지한다(엔터프라이즈 라이선스 별도). 구버전인 `tabpfn_2_5`(`tabpfn-2.5-license-v1.1`)와 `tabpfn_2_6`(`tabpfn-2.6-license-v1.0`)도 **마찬가지로 상업·프로덕션 사용을 금지하므로 상업 대안이 아니다.** 모델 카드는 모델과 파생물뿐 아니라 **출력물**까지 금지 대상으로 명시하며, 매출 제품·조달용 경쟁 벤치마킹·클라이언트 납품물·사내 상업적 의사결정이 모두 포함된다(상업용은 Prior Labs 별도 상용 라이선스 계약이 필요하다). 상업 프로젝트는 [LimiX-2M](https://huggingface.co/stable-ai/LimiX-2M)(Apache-2.0)이나 [TabICL](https://huggingface.co/jingang/TabICL)(BSD-3-Clause) checkpoint를 검토한다.
 
 ### 7.4 LimiX-2M
 
@@ -808,7 +808,7 @@ Moirai는 다양한 시계열 분포를 대상으로 하는 universal forecastin
 - probabilistic sample 수
 - 현재 `uni2ts` 또는 호환 패키지 버전
 
-Moirai 2.0 R small의 가중치는 2026-08-13 기준 **CC-BY-NC-4.0(비상업)**이다. 비상업적 라이선스가 적용되는 배포는 상업 시스템에 사용하지 않는다.
+Moirai 2.0 R small의 가중치는 2026-08-22 기준 **CC-BY-NC-4.0(비상업)**이다. 비상업적 라이선스가 적용되는 배포는 상업 시스템에 사용하지 않는다.
 
 ### 8.7 forecasting 기본 평가
 
@@ -3924,7 +3924,7 @@ report generation
 - [TabICL·TabICLv2 공식 코드](https://github.com/soda-inria/tabicl)
 - [TabICL 문서](https://tabicl.readthedocs.io/en/latest/)
 - [TabICLv2 논문](https://huggingface.co/papers/2602.11139)
-- [TabICL HF checkpoint (개인 계정, Apache-2.0 표기)](https://huggingface.co/jingang/TabICL)
+- [TabICL HF checkpoint (개인 계정, BSD-3-Clause 표기)](https://huggingface.co/jingang/TabICL)
 - [CatBoost](https://github.com/catboost/catboost)
 - [XGBoost](https://github.com/dmlc/xgboost)
 - [LightGBM](https://github.com/microsoft/LightGBM)

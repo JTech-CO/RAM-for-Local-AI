@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [비전·OCR](./vision-ocr.md) · [이미지 생성](./image-generation.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md)
 
-> **최종 검증일:** 2026-08-13 (KST)
+> **최종 검증일:** 2026-08-22 (KST)
 > **주요 실행 형식:** PyTorch·Transformers, NeMo, `qwen-asr`, `qwen-tts`, CTranslate2·`faster-whisper`, GGML·`whisper.cpp`·`audio.cpp`, vLLM·vLLM-Omni, ONNX Runtime, ExecuTorch, MLX
 > **범위:** 오프라인·스트리밍 ASR, 자막·타임스탬프, VAD·화자 분리, 음성 번역, TTS·보이스 클로닝·voice design, 오디오 질의응답·캡셔닝, 음성 대화, 노이즈 제거·소스 분리, 로컬 서비스 운영
 > **관련 문서:** [양자화](../operations/quantization.md) · [파인튜닝 메모리](../operations/fine-tuning-memory.md) · [서빙·동시성](../operations/serving-concurrency.md) · [런타임·하드웨어](../operations/runtime-hardware.md)
@@ -27,7 +27,7 @@
 
 또한 음성 모델의 양자화 명칭은 LLM과 다르다. `Q2_K`, `Q3_K_M`, `Q4_K_M`은 주로 GGUF·LLM backbone에서 사용되고, ASR·TTS에서는 BF16/FP16, FP8, CTranslate2 INT8, ONNX INT8, NeMo/TensorRT, MLX 4-bit·8-bit, `whisper.cpp`의 `q5_0`·`q8_0`이 더 흔하다. **Q4 파일이 존재한다는 이유만으로 audio encoder, speaker encoder, codec, vocoder까지 안전하게 양자화되었다고 가정하면 안 된다.**
 
-모델 카드·가중치·라이선스·런타임 지원은 계속 바뀐다. 아래 값은 2026-08-13에 확인한 대표값이며, 다운로드 직전 Hugging Face에서 **정확한 파일명, 총 다운로드 크기, 중복 형식, gated access, revision, 라이선스, 지원 언어와 현재 runtime 요구사항**을 다시 확인한다.
+모델 카드·가중치·라이선스·런타임 지원은 계속 바뀐다. 아래 값은 2026-08-22에 확인한 대표값이며, 다운로드 직전 Hugging Face에서 **정확한 파일명, 총 다운로드 크기, 중복 형식, gated access, revision, 라이선스, 지원 언어와 현재 runtime 요구사항**을 다시 확인한다.
 
 > **핵심 원칙:** 먼저 VAD·ASR·TTS를 각각 독립 평가하고, 필요한 경우에만 화자 분리·번역·LLM·voice cloning을 추가한다. 낮은 메모리에서는 모델 정밀도보다 동시 스트림, batch, 오디오 길이, `max_model_len`, TTS 생성 길이를 먼저 줄인다. 보이스 클로닝은 반드시 화자의 명시적 동의와 사용 권한을 확인한다.
 
@@ -584,7 +584,7 @@ Meta Omnilingual ASR 프로젝트는 1,600개 이상의 언어를 목표로 하�
 
 ### 6.8 2026년 공개된 추가 ASR 후보
 
-2026년 상반기에 Open ASR Leaderboard 상위권에 새 공개 모델이 다수 진입했다. 아래는 한국어를 지원 언어에 포함하는 대표 후보다 (2026-08-13 확인). 기존 기준선(Qwen3-ASR·Whisper)과 같은 평가셋에서 비교한 뒤 교체를 판단한다.
+2026년 상반기에 Open ASR Leaderboard 상위권에 새 공개 모델이 다수 진입했다. 아래는 한국어를 지원 언어에 포함하는 대표 후보다 (2026-08-22 확인). 기존 기준선(Qwen3-ASR·Whisper)과 같은 평가셋에서 비교한 뒤 교체를 판단한다.
 
 | 모델 | 규모 | 언어·특징 | 라이선스 | Hugging Face |
 |---|---|---|---|---|
@@ -761,7 +761,7 @@ metrics:
 | Core ML | Core ML | Apple on-device deployment | iOS·macOS product |
 | ONNX Runtime | ONNX INT8/FP16 | cross-platform, execution provider | Windows·Intel·edge |
 
-`whisper.cpp`는 저장소가 ggml-org 조직(`ggml-org/whisper.cpp`)으로 이전되었고, v1.9.0(2026-06)부터 Whisper 외에 **NVIDIA Parakeet 모델 지원**이 추가되었다. v1.9.2(2026-08-04)는 CJK 언어의 발화 길이 계산을 UTF-8 기준으로 수정해 한국어 세그먼트 처리가 개선되었고, VAD 사용 시 토큰 타임스탬프를 원본 오디오에 매핑하는 문제 수정과 VAD 세그먼트 API 노출이 포함되었다. 한국어 자막·타임스탬프 용도라면 v1.9.2 이상을 사용한다. 한편 `faster-whisper`는 v1.2.1(2025-10) 이후 릴리스가 없는 상태다(2026-08-13 기준).
+`whisper.cpp`는 저장소가 ggml-org 조직(`ggml-org/whisper.cpp`)으로 이전되었고, v1.9.0(2026-06)부터 Whisper 외에 **NVIDIA Parakeet 모델 지원**이 추가되었다. v1.9.2(2026-08-04)는 CJK 언어의 발화 길이 계산을 UTF-8 기준으로 수정해 한국어 세그먼트 처리가 개선되었고, VAD 사용 시 토큰 타임스탬프를 원본 오디오에 매핑하는 문제 수정과 VAD 세그먼트 API 노출이 포함되었다. 한국어 자막·타임스탬프 용도라면 v1.9.2 이상을 사용한다. 이후 v1.9.3(2026-08-20)이 나왔으나 GitHub상 pre-release이고 ggml 동기화·백엔드 최적화 위주라 오디오 기능 변화는 없다. 한편 `faster-whisper`는 v1.2.1(2025-10) 이후 릴리스가 없는 상태다(2026-08-22 기준).
 
 ### 8.3 `faster-whisper` compute type
 
@@ -818,7 +818,7 @@ batch worker 수를 늘릴 때는 각 worker의 모델 복제 메모리와 stora
 
 [`audio.cpp`](https://github.com/0xShug0/audio.cpp)는 2026년 등장한 순수 C++/GGML 통합 오디오 추론 엔진으로, "오디오판 llama.cpp"를 표방한다. Python 의존성 없이 TTS·ASR·VAD·화자 분리·voice conversion·음악 생성·코덱을 하나의 런타임에서 다루며, CUDA·HIP(ROCm)·Vulkan·Metal·CPU 백엔드를 지원한다.
 
-- v0.5(2026-07-31) 기준 **44개 모델 패밀리** 지원: TTS는 Qwen3-TTS·IndexTTS2·VibeVoice·Chatterbox·Fish S2 Pro·MOSS-TTS·OmniVoice 등, ASR는 Nemotron 3.5·Qwen3-ASR·Parakeet-TDT·SenseVoice·Fun-ASR-Nano·Voxtral Realtime 등, diarization은 Sortformer 계열이다. 지원 목록은 릴리스마다 바뀌므로 저장소 README에서 확인한다.
+- v0.6.1(2026-08-19) 기준 **50개 모델 패밀리·70여 종 변형** 지원(v0.5는 44개, v0.6은 49개): TTS는 Qwen3-TTS·IndexTTS2·VibeVoice·Chatterbox·Fish S2 Pro·MOSS-TTS·OmniVoice 등, ASR는 Nemotron 3.5·Qwen3-ASR·Parakeet-TDT·SenseVoice·Fun-ASR-Nano·Voxtral Realtime 등, diarization은 Sortformer 계열이다. 지원 목록은 릴리스마다 바뀌므로 저장소 README에서 확인한다. v0.6 계열에서는 서버 실행파일에 네이티브 WebUI가 내장되어 Python·Gradio 없이 웹 인터페이스를 쓸 수 있고, SenseVoice-Small이 한국어 오프라인·스트리밍 ASR 경로로 추가됐다.
 - FunAudioLLM이 이 런타임을 타깃으로 **공식 GGUF**를 발행하기 시작했다: [Fun-ASR-Nano-2512-GGUF](https://huggingface.co/FunAudioLLM/Fun-ASR-Nano-2512-GGUF)(2026-07-29, f16/q8_0; 라이선스가 원본 Apache 2.0과 달리 funasr-model-license-1.1로 표기되므로 주의)와 [SenseVoiceSmall-GGUF-audiocpp](https://huggingface.co/FunAudioLLM/SenseVoiceSmall-GGUF-audiocpp)(2026-08-12, Apache 2.0, 한국어 포함 5개 언어).
 - 신생 프로젝트이므로 모델별 양자화 품질·스트리밍 기능·API 안정성은 `whisper.cpp`·NeMo 같은 성숙 경로와 같은 평가셋에서 비교한 뒤 채택한다.
 
@@ -3826,7 +3826,7 @@ append가 아니라 revision replace를 사용한다.
 
 ## 26. 주요 출처와 저장소
 
-최종 검증일: **2026-08-13 KST**. 모델 파일·라이선스·runtime은 변경될 수 있으므로 다운로드 전에 현재 페이지를 다시 확인한다.
+최종 검증일: **2026-08-22 KST**. 모델 파일·라이선스·runtime은 변경될 수 있으므로 다운로드 전에 현재 페이지를 다시 확인한다.
 
 ### 26.1 ASR·강제 정렬
 

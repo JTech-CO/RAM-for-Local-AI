@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md)
 
-> **최종 검증일:** 2026-08-13 (KST)
+> **최종 검증일:** 2026-08-22 (KST)
 > **주요 실행 형식:** GGUF + `llama.cpp`, Transformers, vLLM/SGLang, PaddleOCR, Docling 및 고전 OCR 엔진
 > **범위:** 이미지 OCR, 스캔 PDF, 문서 레이아웃 복원, 표·수식·차트·스크린샷 이해, 구조화 추출, 다국어 OCR, 문서 RAG 전처리
 > **관련 문서:** [양자화](../operations/quantization.md) · [런타임·하드웨어](../operations/runtime-hardware.md) · [이미지 생성](./image-generation.md)
@@ -12,7 +12,7 @@
 
 비전 모델은 텍스트 LLM보다 메모리 계산이 복잡하다. GGUF 기반 멀티모달 모델은 일반적으로 **언어 모델 본체**와 **vision projector 또는 `mmproj`**를 함께 로드한다. 여기에 PDF 렌더링 이미지, 이미지 디코딩 버퍼, vision encoder의 중간 텐서, visual token, 텍스트 KV 캐시, 출력 버퍼가 추가된다. 따라서 본체 GGUF 파일 하나의 크기만 보고 실행 가능 여부를 판단하면 안 된다.
 
-모델 저장소와 파일명은 계속 수정된다. 아래 크기는 2026-08-13에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, 본체와 projector의 조합, 총크기, revision, 라이선스와 현재 런타임 호환성**을 다시 확인한다.
+모델 저장소와 파일명은 계속 수정된다. 아래 크기는 2026-08-22에 확인한 대표값이며, 다운로드 직전 반드시 Hugging Face에서 **정확한 파일명, 본체와 projector의 조합, 총크기, revision, 라이선스와 현재 런타임 호환성**을 다시 확인한다.
 
 > **핵심 원칙:** 먼저 PDF의 기존 텍스트 레이어를 사용하고, 일반 OCR·레이아웃 분석으로 처리한 뒤, VLM은 어려운 페이지·표·차트·수식·사진 영역에 선택적으로 적용하는 하이브리드 파이프라인이 대개 가장 빠르고 정확하며 메모리 효율적이다.
 
@@ -402,7 +402,7 @@ Gemma 4는 E2B, E4B, 12B, 26B-A4B, 31B 계열로 제공되는 멀티모달 모�
 - **E4B Q4:** 8–12 GB급의 성능 중심 선택
 - **12B Q4:** 12–16 GB급에서 문서 QA와 차트 추론의 균형
 - **26B-A4B Q4:** 24 GB급에서 복잡한 시각·텍스트 추론
-- **31B:** 밀집 31B로 2026-08-13 기준 좋아요 수가 계열에서 가장 많은 비전 지원 SKU다(다운로드는 26B-A4B와 비슷한 수준이다). [원본](https://huggingface.co/google/gemma-4-31B-it)과 공식 QAT `q4_0` GGUF가 제공되며, 27B급 밀집 모델과 비슷한 32 GB급 메모리 구간부터 실측한다.
+- **31B:** 밀집 31B로 2026-08-22 기준 좋아요 수가 계열에서 가장 많은 비전 지원 SKU다(다운로드는 26B-A4B와 비슷한 수준이다). [원본](https://huggingface.co/google/gemma-4-31B-it)과 공식 QAT `q4_0` GGUF가 제공되며, 27B급 밀집 모델과 비슷한 32 GB급 메모리 구간부터 실측한다.
 - Google은 E2B/E4B/12B/26B-A4B/31B 각각에 공식 QAT `q4_0` GGUF 저장소(`gemma-4-*-it-qat-q4_0-gguf`)를 별도로 제공한다.
 - 공식 ggml 저장소의 현재 파일명은 `Q4_0`이므로 `Q4_K_M`을 추정하지 않는다.
 - `mmproj`와 선택적 MTP/draft 파일을 혼동하지 않는다. 첫 배치에서는 본체와 필수 projector만 사용한다.
@@ -431,7 +431,7 @@ Qwen3.6은 문서 OCR만을 위한 전용 모델이 아니라 일반 reasoning·
 
 24 GB에서 27B Q4 파일 합계는 약 19.7 GB라 매우 빠듯하다. 32 GB를 실용적 시작점으로 보고 8K 이하 컨텍스트와 한 이미지부터 측정한다.
 
-2026년 2월 이후 Qwen 메인라인(Qwen3.5, Qwen3.6)은 별도 VL 파생 없이 본체가 이미지·비디오 입력을 받는 네이티브 멀티모달로 공개되고 있다. 2026-08-13 기준 "Qwen3.5-VL" 같은 별도 VL 라인은 출시되지 않았으며, 전용 VL 라인으로는 Qwen3-VL 시리즈(공식 GGUF 제공)가 최신이다.
+2026년 2월 이후 Qwen 메인라인(Qwen3.5, Qwen3.6)은 별도 VL 파생 없이 본체가 이미지·비디오 입력을 받는 네이티브 멀티모달로 공개되고 있다. 2026-08-22 기준 "Qwen3.5-VL" 같은 별도 VL 라인은 출시되지 않았으며, 전용 VL 라인으로는 Qwen3-VL 시리즈(공식 GGUF 제공)가 최신이다.
 
 ### 6.5 235B급 모델
 
@@ -509,7 +509,7 @@ llama-server -hf Qwen/Qwen3-VL-4B-Instruct-GGUF:Q4_K_M \
 
 ### 6.9 2026년 신규 확인 VLM
 
-2026-08-13 검증에서 확인한 신규 범용 VLM이다. 표의 정확한 GGUF 파일 크기는 저장소마다 다르므로 `--dry-run`으로 확인한 뒤 메모리를 산정한다.
+2026-08-22 검증에서 확인한 신규 범용 VLM이다. 표의 정확한 GGUF 파일 크기는 저장소마다 다르므로 `--dry-run`으로 확인한 뒤 메모리를 산정한다.
 
 | 모델 | 규모 | 라이선스 | 로컬 형식·특징 | 링크 |
 |---|---|---|---|---|
@@ -599,7 +599,7 @@ Spotting:
 
 ### 7.4 Unlimited-OCR
 
-Unlimited-OCR는 긴 문서를 one-shot 방식으로 파싱하려는 3B급 모델이다. 원본은 BF16이며, 아래 GGUF는 커뮤니티 변환(sahilchachra 등)이다. 2026-08-13 기준 공식 GGUF는 없고 `llama.cpp` 공식 multimodal 문서에도 기재되어 있지 않으므로, 커뮤니티 변환의 source revision과 실제 동작을 반드시 확인한다. MLX 계열은 mlx-community의 mxfp8 변환이 있다.
+Unlimited-OCR는 긴 문서를 one-shot 방식으로 파싱하려는 3B급 모델이다. 원본은 BF16이며, 아래 GGUF는 커뮤니티 변환(sahilchachra 등)이다. 2026-08-22 기준 공식 GGUF는 없고 `llama.cpp` 공식 multimodal 문서에도 기재되어 있지 않으므로, 커뮤니티 변환의 source revision과 실제 동작을 반드시 확인한다. MLX 계열은 mlx-community의 mxfp8 변환이 있다.
 
 | quant | 본체 | projector | 파일 합계 | 권장 해석 |
 |---|---:|---:|---:|---|
@@ -1560,7 +1560,7 @@ image → source-language OCR → source validation → translation
 
 ### 13.8 한국어 지원 대안 모델
 
-2026-08-13 기준 VARCO-VISION-2.0-1.7B-OCR의 후속 모델은 없고, 한국어 특화 OCR 신모델도 확인되지 않았다. 한국어를 명시적으로 지원하는 대안은 다음과 같다.
+2026-08-22 기준 VARCO-VISION-2.0-1.7B-OCR의 후속 모델은 없고, 한국어 특화 OCR 신모델도 확인되지 않았다. 한국어를 명시적으로 지원하는 대안은 다음과 같다.
 
 - **GLM-OCR:** 모델 카드가 지원 언어에 한국어를 명시하는 약 1.3B OCR 모델. MIT 라이선스와 ggml-org 공식 GGUF 덕분에 4–6 GB급 한국어 문서 OCR의 실용적 시작점이다.
 - **[EXAONE-4.5-33B](https://huggingface.co/LGAI-EXAONE/EXAONE-4.5-33B):** LG AI연구원의 한국어 지원 VLM(이미지+비디오 입력)으로 공식 GGUF·AWQ·FP8이 제공된다. 34.35B 규모이므로 Q4 기준 32 GB 이상 장착 메모리에서 실측하고, EXAONE 독자 라이선스의 사용 조건을 확인한다.
@@ -1986,7 +1986,7 @@ Hugging Face LFS/Xet metadata와 로컬 checksum을 배포 기록에 함께 둔�
 
 멀티모달 지원은 빠르게 변경된다. package manager 버전이 오래되면 모델을 인식하지 못할 수 있다.
 
-2026-08-13 기준 `llama.cpp` 공식 multimodal 문서는 **PaddleOCR-VL, GLM-OCR, DeepSeek-OCR, dots.ocr, HunyuanOCR** 다섯 OCR 특화 모델을 지원 목록에 명시한다. 이들 중에는 "특정 프롬프트 구조 필요" 주석이 붙은 항목이 있으므로 모델 카드의 공식 prompt를 그대로 사용한다. ggml-org 조직은 이들 OCR 모델과 Qianfan-OCR, LightOnOCR-2, MiniCPM-V-4.6 등의 **공식 GGUF 변환본**을 제공하므로, 같은 모델의 커뮤니티 변환보다 공식 저장소를 우선한다. Gemma 4(비전+오디오) 같은 범용 멀티모달 모델도 같은 문서의 지원 목록에 있다.
+2026-08-22 기준 `llama.cpp` 공식 multimodal 문서는 **PaddleOCR-VL, GLM-OCR, DeepSeek-OCR, dots.ocr, HunyuanOCR** 다섯 OCR 특화 모델을 지원 목록에 명시한다. 이들 중에는 "특정 프롬프트 구조 필요" 주석이 붙은 항목이 있으므로 모델 카드의 공식 prompt를 그대로 사용한다. ggml-org 조직은 이들 OCR 모델과 Qianfan-OCR, LightOnOCR-2, MiniCPM-V-4.6 등의 **공식 GGUF 변환본**을 제공하므로, 같은 모델의 커뮤니티 변환보다 공식 저장소를 우선한다. Gemma 4(비전+오디오) 같은 범용 멀티모달 모델도 같은 문서의 지원 목록에 있다.
 
 소스 빌드 예:
 
@@ -3638,7 +3638,7 @@ PaddleOCR 3.x는 API와 pipeline이 변경될 수 있다.
 
 ## 갱신 및 사용상 주의
 
-- 이 문서는 2026-08-13 KST 기준으로 모델 카드와 저장소를 확인한 선택 가이드다.
+- 이 문서는 2026-08-22 KST 기준으로 모델 카드와 저장소를 확인한 선택 가이드다.
 - Hugging Face 파일명, quant, projector, runtime API, 라이선스와 model revision은 변경될 수 있다.
 - 다운로드 직전 `hf download --dry-run`과 공식 model card를 다시 확인한다.
 - 의료·법률·재무·신원·접근 제어처럼 오류 비용이 큰 작업은 OCR/VLM 출력만으로 자동 확정하지 않는다.

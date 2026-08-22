@@ -1,7 +1,7 @@
 # 로컬 AI 모델 선택 가이드
 ## 버그바운티·사이버보안 연구·학습·프로그래밍용 — RAM/VRAM/Apple 통합 메모리별
 
-> **최종 검증일:** 2026-08-13 (KST)  
+> **최종 검증일:** 2026-08-22 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`  
 > **범위:** 승인된 버그바운티, 사내 보안 점검, CTF/교육, 악성코드 분석 샌드박스, 코드 감사, 보안 자동화 및 일반 프로그래밍
 
@@ -45,7 +45,7 @@
 | **24 GB 최소 / 32 GB 권장** | [Muse-Glimmer-30B](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) | Q4_K_M | 16.8 GB | 8K–16K | Meta의 24 GB VRAM 타깃 에이전트 특화. 이미지 입력 지원, projector·드래프터 별도 |
 | **32 GB** | [Qwen3.6-35B-A3B](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) | UD-Q4_K_M | 18.0 GB | 16K | 현재 중형 로컬 코딩/에이전트의 강력한 기본 선택 |
 | **32 GB** | [Gemma 4 31B](https://huggingface.co/unsloth/gemma-4-31B-it-GGUF) | Q4_K_M | 19.1 GB | 8K–16K | 범용 추론·멀티모달 분석. 영상/이미지는 추가 메모리 필요 |
-| **32 GB 최소 / 48 GB 권장** | [Nemotron-3.5-Lightning-30B-A3B](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) | Q4_K_M | 25.4 GB | 16K | 하이브리드 MoE·최대 1M 컨텍스트. 25.4 GB로 32 GB에서는 KV 여유가 작아 컨텍스트 실측 필요 |
+| **32 GB** | [Nemotron-3.5-Lightning-30B-A3B](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) | Q4_0 | 18.90 GB | 16K | 하이브리드 MoE·최대 1M 컨텍스트. ggml-org는 Q4_0만 제공한다. 더 높은 품질의 UD-Q4_K_M(25.27 GB)은 unsloth 배포이며 48 GB급이 안전 |
 | **48 GB** | [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | Q3_K_M | 33.3 GB | 8K–16K | 대형 코드베이스·에이전트. Q4 39.2 GB는 48 GB에서 빠듯함 |
 | **48 GB** | [Mistral Small 4 119B](https://huggingface.co/unsloth/Mistral-Small-4-119B-2603-GGUF) | IQ2/UD-Q2 | 34.9–40.2 GB | 8K | 품질 저하를 감수한 대형 모델 실험용 |
 | **64 GB** | [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | Q4_K_M | 39.2 GB* | 16K | 코드 에이전트의 실용 구간. 저장소별 Q4 크기 차이 확인 필요 |
@@ -209,9 +209,10 @@
 | **Gemma 4 26B-A4B** | 약 25B 저장/4B 활성 MoE, 멀티모달 | 10.5 GB | 11.3 GB | **13.6 GB** | 24–32 GB | [Unsloth GGUF](https://huggingface.co/unsloth/gemma-4-26B-A4B-it-GGUF) |
 | **Gemma 4 31B** | 대형 멀티모달·추론·문서 분석 | 11.8 GB | 13.2 GB | **19.1 GB** | Q3 24 GB, Q4 32 GB | [Unsloth GGUF](https://huggingface.co/unsloth/gemma-4-31B-it-GGUF) |
 | **Qwen3.6-27B** | 범용·코딩·에이전트 | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **19.1 GB** | 32 GB | [ggml-org GGUF](https://huggingface.co/ggml-org/Qwen3.6-27B-GGUF) |
+| **Qwen3.8-27B** | 27.78B dense 멀티모달, 범용·코딩·문서 분석 (Apache-2.0) | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **18.97 GB** | 32 GB | [ggml-org GGUF](https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.8-27B) |
 | **Qwen3.6-35B-A3B** | 35B 총/3B 활성 MoE, 프런트엔드·코딩·도구 사용·저장소 추론 | 12.3 GB | 15.4 GB | **18.0 GB** | Q3 24 GB, Q4 32 GB | [Unsloth GGUF](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) |
 | **Muse-Glimmer-30B** | 약 29.6B dense + 비전 인코더, 이미지 입력·에이전트 특화(Meta meta-models) | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **16.8 GB** | 24–32 GB | [공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) |
-| **Nemotron-3.5-Lightning-30B-A3B** | 30B 총/3B 활성 MoE, Mamba-2+MoE+어텐션 하이브리드, 최대 1M | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **25.4 GB** | 32 GB 최소, 48 GB 권장 | [ggml-org GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) |
+| **Nemotron-3.5-Lightning-30B-A3B** | 30B 총/3B 활성 MoE, Mamba-2+MoE+어텐션 하이브리드, 최대 1M | 공식 저장소에서 확인 필요 | 공식 저장소에서 확인 필요 | **18.90 GB**(ggml-org Q4_0) | 32 GB | [ggml-org GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) · [unsloth UD-Q4_K_M 25.27 GB](https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) |
 
 ### 이 구간의 추천
 
@@ -220,7 +221,7 @@
 - **추론/에이전트와 16 GB 최소 장비:** gpt-oss-20b. 단, 16 GB 통합 메모리에서는 브라우저·IDE를 정리하고 8K 컨텍스트부터 시작한다.
 - **스크린샷·UI·문서 이미지 분석:** Gemma 4 또는 Devstral 비전 기능. projector와 이미지 버퍼 용량을 별도로 남긴다.
 - **24–32 GB 비전·에이전트:** Muse-Glimmer-30B Q4(16.8 GB, Apache-2.0). 24 GB VRAM 타깃의 에이전트 특화 모델로 이미지 입력을 지원한다. 동봉된 DFlash 드래프터(약 1.6 GB)와 projector(약 1.4 GB)까지 올리면 합계가 약 19.8 GB이므로 24 GB에서는 KV 여유가 작다.
-- **긴 컨텍스트 하이브리드(32 GB 최소, 48 GB 권장):** Nemotron-3.5-Lightning-30B-A3B Q4(25.4 GB, OpenMDW-1.1). Mamba-2+MoE+어텐션 하이브리드로 최대 1M 컨텍스트를 표방하지만, 25.4 GB 가중치는 32 GB에서 KV 여유가 작으므로 컨텍스트를 실측으로 정하고, 긴 컨텍스트가 필요하면 48 GB급을 쓴다.
+- **긴 컨텍스트 하이브리드(32 GB):** Nemotron-3.5-Lightning-30B-A3B(OpenMDW-1.1). ggml-org 배포는 **Q4_0 18.90 GB**만 제공하며 이 크기면 32 GB에서 KV 여유를 확보할 수 있다. 더 높은 품질이 필요하면 unsloth **UD-Q4_K_M 25.27 GB**를 쓰되 32 GB에서는 여유가 작으므로 48 GB급을 권한다. 최대 1M 컨텍스트를 표방하지만 실제 컨텍스트는 실측으로 정한다.
 
 ## 4.3 대형: 80B–125B
 
@@ -668,7 +669,7 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 | **DeepSeek-V4-Flash-0731** | 284B 총/13B 활성 MoE(MTP 포함 실측 304B), CSA+HCA 하이브리드 어텐션, 최대 1M 컨텍스트, MIT. preview를 대체한 공식판 | UD-Q2_K_XL 약 96.8 GB, UD-IQ4_XS 약 136.7 GB, UD-Q4_K_XL 약 155.1 GB | Q2 128 GB, IQ4 192 GB, Q4 192–256 GB | [공식 기본 모델(0731)](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731) · [unsloth GGUF](https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF) · bartowski·lmstudio-community·ggml-org 판 존재 · Jinja 챗템플릿 미제공(전용 스크립트) |
 | **GLM-5.2** | 초대형 장문·에이전트 계열, 1M 컨텍스트 배포 존재 | 저장소 샤드 합계 확인 | 저비트도 384–512 GB 이상을 예상하고 실측 | [Unsloth GGUF](https://huggingface.co/unsloth/GLM-5.2-GGUF) |
 | **Kimi-K2.7-Code** | 장기 코드 에이전트·도구 사용 계열 | 저장소 샤드 합계 확인 | 384–768 GB+ 실험 구간 | [Unsloth GGUF](https://huggingface.co/unsloth/Kimi-K2.7-Code-GGUF) |
-| **DeepSeek-V4-Pro** | 약 1.6T 총/49B 활성급 초대형 MoE 계열 | 커뮤니티 Q2_K-XL이 약 535 GiB로 보고됨 | 768 GB–1 TB+ 권장 | [공식 기본 모델](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro) · [커뮤니티 GGUF](https://huggingface.co/teamblobfish/DeepSeek-V4-Pro-GGUF) · 특정 포크/Metal·CPU 제약 확인 · V4-Pro-0813 공식판은 API만 공개(2026-08-12), HF 가중치 미공개 |
+| **DeepSeek-V4-Pro** | 약 1.6T 총/49B 활성급 초대형 MoE 계열 | 커뮤니티 Q2_K-XL이 약 535 GiB로 보고됨 | 768 GB–1 TB+ 권장 | [공식 기본 모델](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro) · [커뮤니티 GGUF](https://huggingface.co/teamblobfish/DeepSeek-V4-Pro-GGUF) · 특정 포크/Metal·CPU 제약 확인 · 후속 [V4-Pro-0813](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro-0813)은 2026-08-13 가중치 공개(MIT, 네이티브 INT8/FP8), [unsloth GGUF](https://huggingface.co/unsloth/DeepSeek-V4-Pro-0813-GGUF) UD-Q4_K_XL 약 850 GB |
 | **Kimi K3** | 2.8T 총/104B 활성 MoE, MXFP4 QAT(4bit 사실상 네이티브), 1M 컨텍스트, 텍스트+이미지 입력. Kimi K3 License(MIT 변형·MIT 아님) | UD-Q2_K_XL 약 861 GB, UD-Q4_K_XL 약 1,509 GB | Q2 약 1 TB, Q4 1.5 TB+ | [공식 기본 모델](https://huggingface.co/moonshotai/Kimi-K3) · [unsloth GGUF](https://huggingface.co/unsloth/Kimi-K3-GGUF) · 초고사양 전용 |
 
 ### 초대형 모델에서 반드시 확인할 것
@@ -752,6 +753,7 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 - [OpenAI gpt-oss-120b](https://huggingface.co/openai/gpt-oss-120b)
 - [Devstral Small 2 24B GGUF](https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF)
 - [Qwen3.6-27B GGUF](https://huggingface.co/ggml-org/Qwen3.6-27B-GGUF)
+- [Qwen3.8-27B GGUF](https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF)
 - [Qwen3.6-35B-A3B GGUF](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF)
 - [Muse-Glimmer-30B GGUF (Meta meta-models)](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF)
 - [NVIDIA Nemotron-3.5-Lightning-30B-A3B GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF)
