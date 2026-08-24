@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-08-22 (KST)
+> **최종 검증일:** 2026-08-25 (KST)
 > **주요 도구:** Transformers·PEFT·TRL, bitsandbytes, torchtune (개발 종료), Accelerate·FSDP2, DeepSpeed ZeRO, TorchTitan, Axolotl, LLaMA-Factory, Unsloth, MLX-LM, Diffusers
 > **범위:** 언어·코드·수학 모델, VLM·OCR, 이미지 생성, 음성·오디오, 임베딩·reranker의 full fine-tuning·PEFT·선호학습·분산학습 메모리 계산과 검증
 > **관련 문서:** [양자화](./quantization.md) · [서빙·동시성](./serving-concurrency.md) · [런타임·하드웨어](./runtime-hardware.md)
@@ -1597,7 +1597,7 @@ micro-batch: 1–2
 accumulation: 8–32
 ```
 
-torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 해당 tutorial 페이지는 2026-08-22 재확인에서 정상 접근된다(31.4의 링크 참조). 다만 이 결과는 좋은 sanity check일 뿐 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 개발 종료 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
+torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 해당 tutorial 페이지는 2026-08-25 재확인에서도 정상 접근된다(31.4의 링크 참조). 다만 이 결과는 좋은 sanity check일 뿐 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 개발 종료 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
 
 ### 16.4 24GB
 
@@ -3817,7 +3817,7 @@ MoE expert가 안 들어감
 
 ### 32.10 갱신 주의
 
-이 문서는 2026-08-22 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
+이 문서는 2026-08-25 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
 
 - model architecture와 remote code
 - PEFT·TRL·Transformers·PyTorch API

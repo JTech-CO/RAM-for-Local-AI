@@ -1,7 +1,7 @@
 /* Generated from the RAM-for-Local-AI guide set. No network request is made. */
 window.RAMAI_CATALOG = {
   "schemaVersion": 1,
-  "verified": "2026-08-22",
+  "verified": "2026-08-25",
   "project": "RAM-for-Local-AI",
   "repository": {
     "url": "https://github.com/jtech-co/RAM-for-Local-AI",

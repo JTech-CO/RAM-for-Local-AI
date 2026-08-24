@@ -1,13 +1,13 @@
 # 로컬 AI 모델 선택 가이드
 ## 범용 프로그래밍·수학·과학·연구용 — RAM/VRAM/Apple 통합 메모리별
 
-> **최종 검증일:** 2026-08-22 (KST)  
+> **최종 검증일:** 2026-08-25 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`; Apple Silicon에서는 MLX도 병행 가능  
 > **범위:** 범용 프로그래밍, 저장소 수준 코딩 에이전트, 수학·과학 추론, 논문·기술문서 분석, RAG, 데이터 분석, Lean 4 형식증명 및 연구 자동화
 
 이 문서는 보유한 **시스템 RAM**, **GPU VRAM**, 또는 **Apple Silicon 통합 메모리**만 알아도 적절한 로컬 모델과 양자화를 고르고, Hugging Face에서 바로 내려받아 실행할 수 있도록 구성한 실전 가이드다.
 
-모델 파일과 양자화 저장소는 계속 수정된다. 아래 크기는 2026-08-22에 확인한 대표값이며, 다운로드 직전 반드시 모델 카드의 **파일명, 전체 shard 수, 총 크기, 라이선스, 수정일, 지원 백엔드**를 다시 확인해야 한다.
+모델 파일과 양자화 저장소는 계속 수정된다. 아래 크기는 2026-08-25에 확인한 대표값이며, 다운로드 직전 반드시 모델 카드의 **파일명, 전체 shard 수, 총 크기, 라이선스, 수정일, 지원 백엔드**를 다시 확인해야 한다.
 
 > **핵심 원칙:** 코딩·수학·과학에서는 메모리에 겨우 들어가는 큰 Q2 모델보다, 충분한 여유를 남긴 한 단계 작은 **Q4/Q5 모델**이 더 안정적인 경우가 많다.
 
@@ -991,7 +991,7 @@ llama-server \
 | **Qwen3.5 122B/397B 계열** | 대형 네이티브 멀티모달·에이전트 | 공식 가중치와 현재 GGUF/MLX 배포의 파일 목록을 직접 확인 | 저비트도 서버급 | [Qwen 조직](https://huggingface.co/Qwen) · [Qwen3.5 소개](https://qwen.ai/blog?id=qwen3.5) |
 | **Inkling-Small** | 276B 총/12B 활성 MoE; 텍스트·이미지·오디오 입력, Apache-2.0 (2026-07-27) | unsloth GGUF UD-IQ4_XS 약 127.4 GB, UD-Q4_K_M 약 162.5 GB. 128 GB급에는 들어가지 않으므로 상위 구간에서 실측 | 192 GB급부터 검토 | [공식](https://huggingface.co/thinkingmachines/Inkling-Small) · [Unsloth GGUF](https://huggingface.co/unsloth/Inkling-Small-GGUF) |
 | **Kimi K3** | 2.8T 총/104B 활성 MoE; 텍스트·이미지 입력, 1M 컨텍스트, MXFP4/MXFP8 QAT(가중치 공개 2026-07-27) | 2026-08-07 LLM-stats 종합·Artificial Analysis Intelligence Index 기준 오픈웨이트 1위이며, lmarena 메인 텍스트보드 ELO는 정착 중이다. unsloth UD-Q4_K_XL이 약 1,508.7 GB로 로컬은 초고사양 서버 전용. MIT가 아닌 Kimi K3 License 조건 확인 필요 | 512 GB–2 TB급 | [공식](https://huggingface.co/moonshotai/Kimi-K3) · [Unsloth GGUF](https://huggingface.co/unsloth/Kimi-K3-GGUF) |
-| **Qwen3.8-2.4T-A95B** | 2.4T 총/95B 활성 MoE; Qwen-Max급 최초 오픈 공개(2026-08-08), 텍스트 전용 추론 | 2026-08-22 기준 Q4 GGUF 미업로드(Q8_0 약 2,600 GB). 로컬 실행은 사실상 비현실적이므로 존재 확인 수준으로만 다룬다. 라이선스는 MIT 변형인 Qwen3.8-Max License | 로컬 비권장 | [공식](https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B) |
+| **Qwen3.8-2.4T-A95B** | 2.4T 총/95B 활성 MoE; Qwen-Max급 최초 오픈 공개(2026-08-08), 텍스트 전용 추론 | 2026-08-25 기준 Q4 GGUF 미업로드(Q8_0 약 2,600 GB). 로컬 실행은 사실상 비현실적이므로 존재 확인 수준으로만 다룬다. 라이선스는 MIT 변형인 Qwen3.8-Max License | 로컬 비권장 | [공식](https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B) |
 
 ## 한국어 초대형 오픈웨이트
 

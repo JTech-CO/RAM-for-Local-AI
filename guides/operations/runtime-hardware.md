@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-08-22 (KST)
+> **최종 검증일:** 2026-08-25 (KST)
 > **주요 하드웨어:** x86-64·Arm CPU, NVIDIA CUDA GPU, AMD ROCm/HIP GPU·APU, Apple Silicon, Intel CPU·Arc·Data Center GPU·NPU, Vulkan·WebGPU 지원 장치, 엣지·모바일 장치
 > **주요 런타임:** `llama.cpp`, Ollama, MLX-LM·MLX-VLM, vLLM, SGLang, TensorRT-LLM, OpenVINO GenAI·OVMS, PyTorch·Transformers, ONNX Runtime, MLC LLM·WebLLM, ExLlamaV3
 > **관련 문서:** [양자화](./quantization.md) · [파인튜닝 메모리](./fine-tuning-memory.md) · [서빙·동시성](./serving-concurrency.md)
@@ -34,7 +34,7 @@
 
 > **핵심 원칙:** 먼저 하드웨어와 운영체제가 공식 지원하는 런타임을 고르고, 그 런타임에서 최적화된 양자화 형식을 선택한다. 모델 파일이 메모리에 들어간다는 사실만으로 실용적인 속도·동시성·안정성이 보장되지는 않는다.
 
-지원 범위와 기본 버전은 빠르게 변한다. 이 문서의 버전 표기는 2026-08-22의 스냅샷이며, 실제 설치 직전에는 각 프로젝트의 **stable 문서, release notes, hardware matrix, security advisory**를 다시 확인한다. `latest`, `nightly`, `dev` 컨테이너 태그는 재현 가능한 배포에 사용하지 않는다.
+지원 범위와 기본 버전은 빠르게 변한다. 이 문서의 버전 표기는 2026-08-25의 스냅샷이며, 실제 설치 직전에는 각 프로젝트의 **stable 문서, release notes, hardware matrix, security advisory**를 다시 확인한다. `latest`, `nightly`, `dev` 컨테이너 태그는 재현 가능한 배포에 사용하지 않는다.
 
 ---
 
@@ -764,7 +764,7 @@ NVIDIA runtime의 kernel 지원은 제품명보다 compute capability에 의해 
 
 정확한 값은 [NVIDIA CUDA GPU compute capability](https://developer.nvidia.com/cuda/gpus)에서 확인한다.
 
-> **2026-08 하드웨어 시황 주의:** 2026년의 DRAM·GDDR7·LPDDR5X 가격 급등이 로컬 AI 장비의 가격과 출시 일정에 직접 영향을 주고 있다. RTX PRO 6000 Blackwell 96GB는 2025-04 출시가 약 $8,435에서 2026-08 NVIDIA 마켓플레이스 기준 $16,000 수준으로 올랐고, DGX Spark(GB10, 128GB 통합 메모리)는 $3,999에서 $4,699로 인상되었다. DRAM 계약가는 2026년 3분기에도 전분기 대비 13~18% 오른 것으로 보고된다. RTX 50 SUPER 리프레시는 2026-08-22 기준 미출시이며 공식 발표가 없다(연기·보류 보도만 존재). 발표되지 않은 SKU와 메모리 용량은 루머로 취급하고 구매 계획의 근거로 삼지 않는다. 가격과 가용성은 구매 시점에 다시 확인한다.
+> **2026-08 하드웨어 시황 주의:** 2026년의 DRAM·GDDR7·LPDDR5X 가격 급등이 로컬 AI 장비의 가격과 출시 일정에 직접 영향을 주고 있다. RTX PRO 6000 Blackwell 96GB는 2025-04 출시가 약 $8,435에서 2026-08 NVIDIA 마켓플레이스 기준 $16,000 수준으로 올랐고, DGX Spark(GB10, 128GB 통합 메모리)는 $3,999에서 $4,699로 인상되었다. DRAM 계약가는 2026년 3분기에도 전분기 대비 13~18% 오른 것으로 보고된다. RTX 50 SUPER 리프레시는 2026-08-25 기준 미출시이며 공식 발표가 없다(연기·보류 보도만 존재). 발표되지 않은 SKU와 메모리 용량은 루머로 취급하고 구매 계획의 근거로 삼지 않는다. 가격과 가용성은 구매 시점에 다시 확인한다.
 
 ### 9.2 driver·toolkit·wheel은 서로 다르다
 
@@ -909,7 +909,7 @@ GPU·APU 제품
   ∩ 사용할 quant·attention kernel
 ```
 
-> **검증일 스냅샷(2026-08-22):** ROCm 릴리스 라인이 이원화되어 있다. 기존 안정 라인은 7.2.x(Windows·Linux 단일 릴리스, RDNA3·RDNA4·Strix Halo 자동 감지)이고, TheRock 기반 신규 릴리스 트레인은 7.9–7.13 프리뷰를 거쳐 **7.14(2026-07-15)부터 production**으로 전환되어 Linux와 Windows를 함께 제공하며 RDNA4·Ryzen AI·Instinct MI350 계열을 지원한다. `llama.cpp` CI도 ROCm 7.14 타깃으로 이동했다. 어느 라인을 쓰든 설치 시점의 production release와 장치별 지원표를 다시 확인한다. `rocm/dev-*`나 nightly image가 동작한다는 사실은 production 지원을 의미하지 않는다.
+> **검증일 스냅샷(2026-08-25):** ROCm 릴리스 라인이 이원화되어 있다. 기존 안정 라인은 7.2.x(Windows·Linux 단일 릴리스, RDNA3·RDNA4·Strix Halo 자동 감지)이고, TheRock 기반 신규 릴리스 트레인은 7.9–7.13 프리뷰를 거쳐 **7.14(2026-07-15)부터 production**으로 전환되어 Linux와 Windows를 함께 제공하며 RDNA4·Ryzen AI·Instinct MI350 계열을 지원한다. `llama.cpp` CI도 ROCm 7.14 타깃으로 이동했다. 어느 라인을 쓰든 설치 시점의 production release와 장치별 지원표를 다시 확인한다. `rocm/dev-*`나 nightly image가 동작한다는 사실은 production 지원을 의미하지 않는다.
 
 ### 10.1 Instinct와 Radeon의 운영 차이
 
@@ -1159,7 +1159,7 @@ powermetrics --help
 
 이 표는 모델별 보장이 아니라 초기 용량 계획이다. 실제 MLX·GGUF artifact 크기와 KV 캐시를 다시 계산한다.
 
-**2026-08-22 기준 제품 현황:** M5(2025-10)는 최대 32GB·약 153GB/s, 2026-03-11 출시된 MacBook Pro 14/16의 M5 Pro는 최대 64GB·약 307GB/s, M5 Max는 최대 128GB이며 GPU 코어 수에 따라 약 460GB/s(32코어)에서 614GB/s(40코어)로 안내된다. Mac Studio의 M5 세대는 아직 출시되지 않았고 현행 모델은 M4 Max·M3 Ultra(최대 512GB)다. 여기 적은 용량·대역폭은 보도와 제품 페이지 요약을 근거로 한 값이므로, 구매·용량 계획 전에 Apple 공식 tech specs에서 구성별로 확정한다.
+**2026-08-25 기준 제품 현황:** M5(2025-10)는 최대 32GB·약 153GB/s, 2026-03-11 출시된 MacBook Pro 14/16의 M5 Pro는 최대 64GB·약 307GB/s, M5 Max는 최대 128GB이며 GPU 코어 수에 따라 약 460GB/s(32코어)에서 614GB/s(40코어)로 안내된다. Mac Studio의 M5 세대는 아직 출시되지 않았고 현행 모델은 M4 Max·M3 Ultra(최대 512GB)다. 여기 적은 용량·대역폭은 보도와 제품 페이지 요약을 근거로 한 값이므로, 구매·용량 계획 전에 Apple 공식 tech specs에서 구성별로 확정한다.
 
 ### 11.3 런타임 선택
 
@@ -1310,7 +1310,7 @@ Intel 환경은 CPU, Arc·Data Center GPU, Core Ultra NPU를 하나의 vendor �
 | Core Ultra NPU | OpenVINO NPU | 앱별 WinML·vendor 경로 |
 | 혼합 CPU+iGPU+NPU | OpenVINO AUTO·HETERO | 개별 device benchmark |
 
-**2026-08-22 기준 제품 현황:** Panther Lake 기반 Core Ultra 3 시리즈가 2026-01-27부터 판매되며 Xe3 기반 Arc B390 iGPU와 5세대 NPU를 포함한다(NPU TOPS 수치는 공식 자료에서 확인한다). 소비자용 Arc B770은 출시되지 않았고, 해당 다이는 32GB ECC GDDR6급 워크스테이션 카드인 Arc Pro B70·B65 계열로 전환되었다는 보도가 우세하다. 소비자 dGPU는 B580 12GB가 유지된다. 제품 라인 변화와 무관하게 Intel 로컬 AI 경로는 OpenVINO와 native PyTorch XPU 중심을 유지한다.
+**2026-08-25 기준 제품 현황:** Panther Lake 기반 Core Ultra 3 시리즈가 2026-01-27부터 판매되며 Xe3 기반 Arc B390 iGPU와 5세대 NPU를 포함한다(NPU TOPS 수치는 공식 자료에서 확인한다). 소비자용 Arc B770은 출시되지 않았고, 해당 다이는 32GB ECC GDDR6급 워크스테이션 카드인 Arc Pro B70·B65 계열로 전환되었다는 보도가 우세하다. 소비자 dGPU는 B580 12GB가 유지된다. 제품 라인 변화와 무관하게 Intel 로컬 AI 경로는 OpenVINO와 native PyTorch XPU 중심을 유지한다.
 
 ### 12.2 IPEX 상태
 
@@ -1880,7 +1880,7 @@ python -m pip freeze > requirements-mlx.txt
 
 macOS·Python·MLX·MLX-LM·MLX-VLM 버전을 함께 기록한다.
 
-MLX 코어와 MLX-LM의 릴리스 주기는 같지 않다. 2026-08-22 기준 MLX 코어는 v0.32.1(2026-08-18, 직전 v0.32.0에서 CUDA 백엔드 강화와 Windows CUDA 빌드 추가)인 반면 MLX-LM은 v0.31.3(2026-04-22) 이후 신규 릴리스가 없다. 코어 버전만 보고 MLX-LM의 기능·모델 지원 범위를 추정하지 않는다.
+MLX 코어와 MLX-LM의 릴리스 주기는 같지 않다. 2026-08-25 기준 MLX 코어는 v0.32.1(2026-08-18, 직전 v0.32.0에서 CUDA 백엔드 강화와 Windows CUDA 빌드 추가)인 반면 MLX-LM은 v0.31.3(2026-04-22) 이후 신규 릴리스가 없다. 코어 버전만 보고 MLX-LM의 기능·모델 지원 범위를 추정하지 않는다.
 
 ### 17.3 변환 전 dry-run
 
@@ -1994,7 +1994,7 @@ flash-attention·triton kernel
 container digest
 ```
 
-2026-08-22 기준 최신 릴리스는 v0.27.1(2026-08-11)이다. v0.27.0에서 PyTorch 2.13으로 이행했으므로 기존 PyTorch 2.12 기반 환경 위에 그대로 얹지 않는다. Blackwell·새 GPU는 최소 CUDA 요구사항을 별도로 확인한다.
+2026-08-25 기준 최신 릴리스는 v0.27.1(2026-08-11)이다. v0.27.0에서 PyTorch 2.13으로 이행했으므로 기존 PyTorch 2.12 기반 환경 위에 그대로 얹지 않는다. Blackwell·새 GPU는 최소 CUDA 요구사항을 별도로 확인한다.
 
 ### 18.3 독립 환경
 
@@ -2101,7 +2101,7 @@ SGLang은 RadixAttention·prefix caching, structured generation, agent·multimod
 
 공식 설치 문서는 NVIDIA CUDA, AMD ROCm, Apple Metal·MLX, Intel CPU·XPU, Jetson, Ascend 등 다양한 경로를 제공한다. 모든 backend에서 동일한 quant·attention·distributed 기능이 구현되었다고 가정하지 않는다.
 
-2026-08-22 기준 최신 릴리스는 v0.5.17(2026-08-08)이다. 네트워크·토크나이즈 계층이 Rust로 전환되어 고동시성 오버헤드가 줄었고, Unified Radix Cache가 세션·참조 인지형으로 바뀌어 멀티턴 에이전트·RL rollout의 prefix 재사용이 강화되었다. 가중치 캐시 기반 엔진 복구로 재시작 시간도 크게 짧아졌다. 이 기능들이 모든 backend에서 동일하게 제공되는 것은 아니므로 사용 중인 플랫폼의 지원 범위를 확인한다.
+2026-08-25 기준 최신 릴리스는 v0.5.18(2026-08-22)이다. 직전 v0.5.17(2026-08-08)에서 네트워크·토크나이즈 계층이 Rust로 전환되어 고동시성 오버헤드가 줄었고, Unified Radix Cache가 세션·참조 인지형으로 바뀌어 멀티턴 에이전트·RL rollout의 prefix 재사용이 강화되었으며, 가중치 캐시 기반 엔진 복구로 재시작 시간도 짧아졌다. v0.5.18은 기동 시 checkpoint 스테이징을 CUDA graph 캡처와 겹치는 `--startup-weight-load-mode overlap` opt-in을 추가했고(기본 경로 대비 기동 시간 단축), AMD에서 NVFP4 체크포인트를 로드 시점에 MXFP4로 온라인 재양자화하는 `--quantization quark_mxfp4`를 지원해 full-precision 사본을 보유하지 않는다. 다만 Triton·FlashInfer·Inductor·DeepGEMM·CUDA 드라이버 캐시가 `SGLANG_CACHE_DIR` 하나로 통합된 것은 breaking change이므로, 캐시 경로를 고정하거나 볼륨으로 마운트해 운영한다면 업그레이드 직후 1회 재컴파일을 예상한다. 이 기능들이 모든 backend에서 동일하게 제공되는 것은 아니므로 사용 중인 플랫폼의 지원 범위를 확인한다.
 
 ### 19.2 CUDA image 선택
 
@@ -2199,7 +2199,7 @@ TensorRT-LLM은 NVIDIA 지원 GPU에서 model graph와 kernel을 최적화해 �
 
 ### 20.1 공식 지원 하드웨어 확인
 
-아래 지원 계열은 2026-07-14에 확인한 support matrix 문서 기준이며, 2026-08-22 스냅샷에서는 재확인하지 않았다. 당시 주요 지원 계열에는 다음이 포함된다.
+아래 지원 계열은 2026-07-14에 확인한 support matrix 문서 기준이며, 2026-08-25 스냅샷에서도 재확인하지 않았다. 당시 주요 지원 계열에는 다음이 포함된다.
 
 - Blackwell: B200·GB200·B300·GB300·DGX Spark 계열
 - Hopper: H100·H200·GH200
@@ -2241,7 +2241,7 @@ Triton Server
 
 이 여섯 계층을 container digest와 함께 pin한다.
 
-릴리스 채널도 함께 고정한다. 2026-08-22 기준 안정판은 v1.2.1(2026-04-20)이고 v1.3.0은 rc 채널만 존재한다. rc에서만 제공되는 기능을 근거로 production 계획을 세우지 않는다.
+릴리스 채널도 함께 고정한다. 2026-08-25 기준 안정판은 v1.2.1(2026-04-20)이고 v1.3.0은 rc 채널만 존재한다. rc에서만 제공되는 기능을 근거로 production 계획을 세우지 않는다.
 
 ### 20.5 engine build 흐름
 
@@ -2307,7 +2307,7 @@ OpenVINO는 Intel CPU·GPU·NPU를 중심으로, 일부 범용 CPU 환경에서 
 - OpenVINO Model Server로 REST·gRPC serving
 - 소형 edge·enterprise 환경에서 device fallback이 필요한 경우
 
-2026-08-22 기준 최신 릴리스는 2026.3.0(2026-08-04)이다. EAGLE-3 speculative decoding이 LLM과 VLM으로 확장되었고, MoE 가중치의 디스크 offload와 lazy weight loading이 추가되어 대형 MoE의 메모리 요구가 완화되었다. NPU 지원 모델 범위도 계속 넓어지므로 설치 버전과 device 지원표를 함께 확인한다.
+2026-08-25 기준 최신 릴리스는 2026.3.0(2026-08-04)이다. EAGLE-3 speculative decoding이 LLM과 VLM으로 확장되었고, MoE 가중치의 디스크 offload와 lazy weight loading이 추가되어 대형 MoE의 메모리 요구가 완화되었다. NPU 지원 모델 범위도 계속 넓어지므로 설치 버전과 device 지원표를 함께 확인한다.
 
 ### 21.2 설치
 
