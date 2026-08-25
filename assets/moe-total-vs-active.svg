@@ -1,0 +1,97 @@
+<svg viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. MoE의 전체 파라미터와 활성 파라미터</title>
+<desc id="dsc">MoE 모델에서 전체 전문가 가중치는 격자 전체로서 GGUF 파일 크기와 필요 메모리를 결정하고, 토큰 1개는 라우터를 거쳐 그중 소수의 활성 전문가만 통과하므로 생성 속도와 계산량은 활성 파라미터가 좌우함을 보이는 개념도. NNB-ANB 표기에서 메모리 요구는 NNB(전체 저장 파라미터), 속도는 ANB(활성 파라미터)에 대응한다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+  .f-rt{ fill:#CC79A7; }
+  .pe{ stroke:#D55E00; fill:none; stroke-width:2.4; stroke-linecap:round; }
+  .pc{ stroke:#FFFFFF; fill:none; stroke-width:6; stroke-linecap:round; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <marker id="arE" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="#D55E00"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+  <clipPath id="gridClip"><path d="M342,82h74v58h-74z M424,82h74v58h-74z M506,82h74v58h-74z M588,82h74v58h-74z M342,148h74v58h-74z M424,148h74v58h-74z M506,148h74v58h-74z M588,148h74v58h-74z M342,214h74v58h-74z M424,214h74v58h-74z M506,214h74v58h-74z M588,214h74v58h-74z M342,280h74v58h-74z M424,280h74v58h-74z M506,280h74v58h-74z M588,280h74v58h-74z"/></clipPath>
+</defs>
+
+<!-- ===== 상단 표기 설명 ===== -->
+<text class="t13 mid" x="480" y="32">「NNB-ANB」 표기 — NNB: 전체 저장 파라미터, ANB: 토큰당 활성 파라미터</text>
+
+<!-- ===== 큰 상자: 전체 전문가 가중치 ===== -->
+<text class="t15 mid" x="502" y="58">전체 전문가 가중치 (전부 메모리 점유)</text>
+<rect class="s" x="330" y="70" width="344" height="280"/>
+
+<!-- 전문가 격자 4×4 (전부 채워짐) -->
+<rect class="f-w seg" x="342" y="82" width="74" height="58"/>
+<rect class="f-w seg" x="424" y="82" width="74" height="58"/>
+<rect class="f-w seg" x="506" y="82" width="74" height="58"/>
+<rect class="f-w seg" x="588" y="82" width="74" height="58"/>
+<rect class="f-w seg" x="342" y="148" width="74" height="58"/>
+<rect class="f-emph seg" x="424" y="148" width="74" height="58"/>
+<rect class="f-w seg" x="506" y="148" width="74" height="58"/>
+<rect class="f-w seg" x="588" y="148" width="74" height="58"/>
+<rect class="f-w seg" x="342" y="214" width="74" height="58"/>
+<rect class="f-w seg" x="424" y="214" width="74" height="58"/>
+<rect class="f-emph seg" x="506" y="214" width="74" height="58"/>
+<rect class="f-w seg" x="588" y="214" width="74" height="58"/>
+<rect class="f-w seg" x="342" y="280" width="74" height="58"/>
+<rect class="f-w seg" x="424" y="280" width="74" height="58"/>
+<rect class="f-w seg" x="506" y="280" width="74" height="58"/>
+<rect class="f-w seg" x="588" y="280" width="74" height="58"/>
+<text class="t12 wht mid" x="461" y="181">활성</text>
+<text class="t12 wht mid" x="543" y="247">활성</text>
+
+<!-- ===== 토큰 1개의 계산 경로 ===== -->
+<text class="t13" x="42" y="214">토큰 1개</text>
+<line class="s" x1="100" y1="210" x2="134" y2="210" marker-end="url(#ar)"/>
+<rect class="f-rt seg" x="140" y="186" width="120" height="48" rx="8"/>
+<text class="t13 wht mid" x="200" y="206">라우터</text>
+<text class="t12 wht mid" x="200" y="223">(router)</text>
+
+<!-- 경로 화살표: 흰 밑선(전문가 셀 위에서만) 위에 강조색 선 -->
+<g class="pc" clip-path="url(#gridClip)">
+  <line x1="262" y1="202" x2="422" y2="177"/>
+  <line x1="262" y1="218" x2="502" y2="243"/>
+  <line x1="500" y1="177" x2="694" y2="200"/>
+  <line x1="582" y1="243" x2="694" y2="220"/>
+</g>
+<line class="pe" x1="262" y1="202" x2="422" y2="177" marker-end="url(#arE)"/>
+<line class="pe" x1="262" y1="218" x2="502" y2="243" marker-end="url(#arE)"/>
+<line class="pe" x1="500" y1="177" x2="694" y2="200" marker-end="url(#arE)"/>
+<line class="pe" x1="582" y1="243" x2="694" y2="220" marker-end="url(#arE)"/>
+<text class="t13" x="706" y="216">출력</text>
+
+<!-- ===== 범례 ===== -->
+<rect class="f-w seg" x="48" y="289" width="14" height="14"/>
+<text class="t12" x="70" y="300">전문가 — 가중치 전체가 메모리에 상주</text>
+<rect class="f-emph seg" x="48" y="315" width="14" height="14"/>
+<text class="t12" x="70" y="326">이번 토큰의 활성 전문가 (2개)</text>
+
+<!-- ===== 두 갈래 결론 ===== -->
+<line class="s" x1="400" y1="356" x2="258" y2="404" marker-end="url(#ar)"/>
+<text class="t15 mid" x="210" y="428">메모리·파일 크기 = 전체 상자</text>
+<text class="t12 mid" x="210" y="447">GGUF 파일 크기는 전체 저장 파라미터(NNB)에 가깝다</text>
+
+<line class="s" x1="712" y1="232" x2="768" y2="404" marker-end="url(#ar)"/>
+<text class="t15 mid f-emph" x="750" y="428">생성 속도·계산량 = 활성 경로</text>
+<text class="t12 mid" x="750" y="447">토큰당 계산에는 활성 파라미터(ANB)만 참여</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="40" y="478">개념도: 전문가 수·활성 수·상자 비율은 예시이며, 실제 필요 메모리와 생성 속도는 대상 장비에서 실측으로 확인한다.</text>
+</svg>

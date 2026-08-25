@@ -163,6 +163,8 @@ M_total ≈ M_OS_and_UI
 
 따라서 “Q4 파일이 2.6 GB이므로 4 GB GPU에서 실행된다”는 결론은 잘못이다. CPU offload로 실행 자체는 가능할 수 있지만, 시스템 RAM·전송 비용·latency가 크게 늘어난다.
 
+![그림: 다운로드한 DiT/UNet GGUF 파일은 실행 peak 메모리 스택의 맨 아래 한 층일 뿐이며, 실제 peak는 텍스트 인코더·VAE·activation·runtime까지 모든 층의 합으로 결정된다](../../assets/image-pipeline-stack.svg)
+
 ### 2.3 대표 GGUF transformer 크기
 
 아래는 **DiT/UNet 본체만의 대표 크기**다. text encoder·VAE는 별도다.

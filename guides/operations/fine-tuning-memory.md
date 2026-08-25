@@ -280,6 +280,8 @@ steady resident memory
 
 분산학습에서는 checkpoint를 단일 full state dict로 모으는 순간, 평소 학습보다 큰 CPU RAM·VRAM이 필요할 수 있다. 가능한 경우 sharded state dict를 유지하고 별도 merge job을 사용한다.
 
+![그림: 한 training step 안의 시간축 메모리 변화 — forward에서 saved activations 누적, backward에서 gradients 추가, optimizer step의 순간 spike, checkpoint save의 model gather에서 최고 peak가 장착 메모리 한계를 넘는 개념도](../../assets/finetune-step-timeline.svg)
+
 ### 4.3 RAM·VRAM·통합 메모리 해석
 
 #### 전용 GPU
@@ -381,6 +383,8 @@ QLoRA model state
 ```
 
 `0.55–0.70 B/P`는 nominal 4-bit `0.5 B/P`에 quantization constants, block metadata, 일부 비양자화 tensor와 구현 차이를 더한 계획 범위다. 실제 checkpoint·runtime footprint는 architecture와 group size에 따라 달라진다.
+
+![그림: 학습 방식별 파라미터당 바이트(B/P) 스택 — 추론은 BF16 weights 2 B/P만, full fine-tuning은 weights·gradients·optimizer·master copy로 약 18 B/P, LoRA는 frozen base 2 B/P에 얇은 adapter 학습 state, QLoRA는 4-bit base 약 0.55~0.70 B/P. activation은 어느 방식이든 별도 계산.](../../assets/finetune-bytes-per-param.svg)
 
 ### 5.5 LoRA 파라미터 수
 

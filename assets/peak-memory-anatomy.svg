@@ -1,0 +1,81 @@
+<svg viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 파일 크기 판단과 실제 피크 메모리의 차이</title>
+<desc id="dsc">같은 모델·같은 장비에서, 가중치 파일 크기만 본 판단(왼쪽)은 장착 메모리 아래에 여유 있게 들어가 보이지만, 실제 피크(오른쪽)는 KV 캐시·런타임 버퍼·OS 점유·안전 여유가 누적되어 장착 메모리를 초과할 수 있음을 보이는 개념도. 세그먼트 순서는 개념 구분이며 실제 메모리 배치 순서가 아니다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 패널 제목 ===== -->
+<text class="t15 mid" x="235" y="34">① 파일 크기만 본 판단</text>
+<text class="t15 mid" x="620" y="34">② 실제 피크 메모리</text>
+
+<!-- ===== 장착 메모리 한계선 (두 패널 공통) ===== -->
+<line class="s d" x1="70" y1="120" x2="750" y2="120"/>
+<text class="t13" x="70" y="110">장착 메모리 (VRAM·통합 메모리)</text>
+
+<!-- ===== 바닥선 ===== -->
+<line class="s" x1="70" y1="420" x2="890" y2="420"/>
+
+<!-- ===== ① 왼쪽: 가중치만 ===== -->
+<rect class="f-w seg" x="175" y="270" width="120" height="150"/>
+<text class="t13 wht mid" x="235" y="352">가중치 파일</text>
+<!-- 여유처럼 보이는 구간 -->
+<line class="h d" x1="235" y1="130" x2="235" y2="260" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="t12" x="250" y="200">여유처럼 보임</text>
+<text class="t12 mid" x="235" y="452">“파일이 장착 메모리보다 작으니</text>
+<text class="t12 mid" x="235" y="470">충분하다”는 판단</text>
+
+<!-- ===== ② 오른쪽: 실제 피크 스택 ===== -->
+<!-- 아래에서 위: 가중치 150 / KV 100 / 버퍼 45 / OS 55 / 여유 30 -->
+<rect class="f-w seg"  x="560" y="270" width="120" height="150"/>
+<rect class="f-kv seg" x="560" y="170" width="120" height="100"/>
+<rect class="f-buf seg" x="560" y="125" width="120" height="45"/>
+<rect class="f-os seg" x="560" y="70"  width="120" height="55"/>
+<rect class="seg" fill="url(#hatch)" x="560" y="40" width="120" height="30"/>
+
+<text class="t13 wht mid" x="620" y="352">가중치</text>
+<text class="t13 wht mid" x="620" y="225">KV 캐시</text>
+
+<!-- 세그먼트 라벨 (오른쪽 지시선) -->
+<line class="h" x1="682" y1="147" x2="712" y2="147"/>
+<text class="t12" x="718" y="151">런타임·멀티모달 버퍼</text>
+<line class="h" x1="682" y1="97" x2="712" y2="97"/>
+<text class="t12" x="718" y="101">OS·브라우저·IDE 점유</text>
+<line class="h" x1="682" y1="55" x2="712" y2="55"/>
+<text class="t12" x="718" y="59">운영 안전 여유</text>
+
+<!-- KV 성장 화살표 -->
+<line class="s" x1="530" y1="265" x2="530" y2="175" marker-end="url(#ar)"/>
+<text class="t12 end" x="518" y="200">컨텍스트 길이·</text>
+<text class="t12 end" x="518" y="217">동시 요청 수에</text>
+<text class="t12 end" x="518" y="234">비례해 증가</text>
+
+<!-- 초과 구간 강조 -->
+<path class="s" stroke="#D55E00" d="M760,120 h14 v-80 h-14" fill="none"/>
+<text class="t13 f-emph" x="782" y="70">장착 용량 초과분</text>
+<text class="t12" x="782" y="90">→ OOM 또는 스왑·급감</text>
+
+<text class="t12 mid" x="620" y="452">긴 프롬프트·동시 요청·멀티모달 입력에서</text>
+<text class="t12 mid" x="620" y="470">피크가 한계선을 넘는다</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="70" y="493">세그먼트의 순서·비율은 개념 구분이며 실제 배치·크기가 아니다. 실측은 각 런타임의 peak RAM·VRAM으로 확인한다.</text>
+</svg>

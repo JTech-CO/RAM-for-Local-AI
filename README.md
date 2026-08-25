@@ -270,6 +270,7 @@ Q4 또는 하드웨어가 잘 지원하는 4-bit 형식
 ```text
 RAM-for-Local-AI/ # 이미지는 제외함
 ├── README.md
+├── assets/            # 가이드 본문 설명용 SVG 다이어그램
 ├── guides/
 │   ├── domains/
 │   │   ├── cybersecurity.md

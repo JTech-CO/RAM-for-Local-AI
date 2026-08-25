@@ -251,6 +251,8 @@ peak_inference_memory
 + allocator fragmentation
 ```
 
+![그림: 파일 크기만 본 판단과 실제 피크 메모리의 차이 — 가중치 위에 KV 캐시·런타임 버퍼·OS 점유·안전 여유가 쌓여 장착 메모리를 초과할 수 있다](../../assets/peak-memory-anatomy.svg)
+
 보수적으로 다음 여유를 시작점으로 둔다.
 
 | 환경 | 권장 초기 여유 | 이유 |

@@ -124,6 +124,8 @@ M_total ≈ M_OS
 
 GGUF 파일은 mmap으로 로드될 수 있어 실제 resident memory가 순간마다 다르지만, **파일이 저장장치에 존재한다는 사실과 안정적으로 실행할 메모리가 충분하다는 사실은 동일하지 않다**. GPU 전체 오프로딩, CPU mmap, Metal unified memory, 부분 오프로딩은 peak의 위치와 크기를 바꾼다.
 
+![그림: 저장소 파일 합계(본체 GGUF + mmproj)는 누적 막대의 두 구획만 덮지만, 실제 peak(M_total)는 OS·앱부터 vision encoder 런타임·이미지 디코딩 버퍼·visual token·KV 캐시·출력 여유까지 전체를 덮으며, visual token·KV 구획은 이미지 수·해상도에 비례해 커진다](../../assets/vision-memory-anatomy.svg)
+
 ### 2.2 본체와 projector 합산 예시
 
 | 모델·정밀도 | 언어 모델 본체 | vision projector | 파일 합계 | 보수적 장착 메모리 시작점 |

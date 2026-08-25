@@ -171,6 +171,8 @@ M_voice_agent ≈ M_ASR_resident
 
 그러나 매 요청마다 모델을 load/unload하면 latency와 storage I/O가 커진다. 개인용 저빈도 워크플로에서는 유효하지만 실시간 대화 서버에는 적합하지 않을 수 있다.
 
+![그림: 동시 상주와 순차 실행의 peak 메모리 차이 — 같은 ASR·화자 분리·LLM·TTS 구성이라도 모두 동시에 올리면 합계가 장착 메모리 한계선을 넘지만, 시간축을 따라 한 번에 하나씩 load/unload하면 각 시점의 peak가 한계선 아래에 머문다(대신 전환마다 시간·storage I/O 비용 발생)](../../assets/audio-resident-vs-sequential.svg)
+
 ### 2.2 오디오 자체의 메모리
 
 압축 파일 크기와 디코딩된 PCM 메모리는 다르다.

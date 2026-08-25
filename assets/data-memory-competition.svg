@@ -1,0 +1,81 @@
+<svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 데이터 분석 스택의 메모리 경쟁 구조</title>
+<desc id="dsc">장착된 총 메모리라는 하나의 풀을 OS·백그라운드, LLM 가중치, KV 캐시·런타임, 쿼리 엔진(DuckDB/Polars), Python/R 커널과 데이터 working set, 순차 실행되는 표형·시계열 모델, 여유가 나누어 쓰는 구조를 세로 스택으로 나타낸 개념도. 왼쪽의 GGUF 파일 크기 막대는 스택의 LLM 가중치 구획 하나에만 대응하며, working set은 JOIN·정렬 시 일시 팽창하고 메모리가 부족하면 NVMe로 spill된다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-pk{ fill:#CC79A7; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 제목 ===== -->
+<text class="t15 mid" x="460" y="34">데이터 분석 스택: 하나의 메모리 풀을 여럿이 나눈다</text>
+
+<!-- ===== 바닥선 ===== -->
+<line class="s" x1="100" y1="440" x2="880" y2="440"/>
+
+<!-- ===== 중앙 스택: 장착 총 메모리 ===== -->
+<text class="t13 mid" x="500" y="60">장착 메모리 전체 (M_total)</text>
+<!-- 아래에서 위: OS 45 / 가중치 90 / KV·런타임 45 / 쿼리 엔진 55 / 커널·working set 75 / 순차 실행 35 / 여유 25 -->
+<rect class="f-os seg" x="430" y="395" width="140" height="45"/>
+<rect class="f-w seg"  x="430" y="305" width="140" height="90"/>
+<rect class="f-kv seg" x="430" y="260" width="140" height="45"/>
+<rect class="f-buf seg" x="430" y="205" width="140" height="55"/>
+<rect class="f-pk seg" x="430" y="130" width="140" height="75"/>
+<rect class="s d" x="430" y="95" width="140" height="35"/>
+<rect class="seg" fill="url(#hatch)" x="430" y="70" width="140" height="25"/>
+
+<text class="t13 wht mid" x="500" y="355">LLM 가중치</text>
+<text class="t13 wht mid" x="500" y="287">KV 캐시·런타임</text>
+
+<!-- 세그먼트 라벨 (오른쪽 지시선) -->
+<line class="h" x1="572" y1="83" x2="598" y2="83"/>
+<text class="t12" x="604" y="87">여유 (headroom)</text>
+<line class="h" x1="572" y1="108" x2="598" y2="108"/>
+<text class="t12" x="604" y="112">순차 실행: 표형·시계열 모델</text>
+<text class="t11" x="604" y="128">(상주 대신 필요할 때만 로드)</text>
+<line class="h" x1="572" y1="168" x2="598" y2="168"/>
+<text class="t12" x="604" y="172">Python/R 커널 + 데이터 working set</text>
+<line class="h" x1="572" y1="232" x2="598" y2="232"/>
+<text class="t12" x="604" y="236">쿼리 엔진 (DuckDB/Polars)</text>
+<line class="h" x1="572" y1="417" x2="598" y2="417"/>
+<text class="t12" x="604" y="421">OS·백그라운드 서비스</text>
+
+<!-- working set 일시 팽창 화살표 (왼쪽) -->
+<line class="s" x1="400" y1="200" x2="400" y2="136" marker-end="url(#ar)"/>
+<text class="t12 end" x="388" y="158">JOIN·정렬 시</text>
+<text class="t12 end" x="388" y="175">일시 팽창</text>
+<text class="t11 end" x="388" y="191">(원본의 1.5–3배 이상도 가능)</text>
+
+<!-- NVMe spill 화살표 (아래로) -->
+<path class="s d" d="M420,210 C392,242 376,268 366,298" marker-end="url(#ar)"/>
+<text class="t12 end" x="350" y="250">메모리 부족 시</text>
+<text class="t12 end" x="350" y="266">spill</text>
+<rect class="s" x="316" y="302" width="96" height="28" rx="4"/>
+<text class="t12 mid" x="364" y="320">NVMe 디스크</text>
+
+<!-- ===== 왼쪽 단독 막대: GGUF 파일 크기 ===== -->
+<rect class="f-w seg" x="130" y="350" width="80" height="90"/>
+<text class="t12 mid" x="170" y="462">GGUF 파일 크기</text>
+<line class="h d" x1="216" y1="378" x2="424" y2="352" marker-end="url(#ar)"/>
+<text class="t12 mid" x="320" y="404">“LLM 가중치” 구획 하나에만 대응</text>
+<text class="t12 mid" x="320" y="422">(파일 크기 ≠ 전체 필요 메모리)</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="100" y="500">구획의 순서·비율은 개념 구분이며 실제 배치·크기가 아니다. 실제 배분은 작은 샘플 데이터로 각 구성 요소의 peak memory를 실측해 정한다.</text>
+</svg>

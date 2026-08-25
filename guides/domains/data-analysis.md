@@ -118,6 +118,8 @@ M_total ≈ M_OS
 
 여기에 브라우저, IDE, JupyterLab, GPU 디스플레이 사용량, DB 클라이언트와 백그라운드 서비스도 포함해야 한다. Apple Silicon에서는 이 항목들이 모두 통합 메모리를 공유한다.
 
+![그림: 장착 메모리라는 하나의 풀을 OS·백그라운드, LLM 가중치, KV 캐시·런타임, 쿼리 엔진(DuckDB/Polars), Python/R 커널과 데이터 working set, 순차 실행되는 표형·시계열 모델, 여유가 나누어 쓰는 구조. GGUF 파일 크기는 LLM 가중치 구획 하나에만 대응하며, working set은 JOIN·정렬 시 일시 팽창하고 부족하면 NVMe로 spill된다.](../../assets/data-memory-competition.svg)
+
 ### 2.2 데이터 파일 크기와 메모리 크기는 다르다
 
 | 저장 형식 | 디스크 특성 | 메모리 특성 | 권장 처리 |

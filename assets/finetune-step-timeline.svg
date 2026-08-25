@@ -1,0 +1,90 @@
+<svg viewBox="0 0 960 550" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 한 training step 안의 시간축 메모리 변화와 peak</title>
+<desc id="dsc">한 training step을 forward, backward, optimizer step, checkpoint save 구간으로 나눈 시간축에서 메모리 사용량이 변하는 모습을 그린 개념도. 바닥에는 가중치와 optimizer state로 이루어진 steady resident memory 띠가 일정하게 깔려 있고, forward에서 saved activations가 산처럼 누적되어 forward peak를 만들며, backward에서 activation이 해제되는 동안 gradients가 쌓여 더 높은 backward peak가 생기고, optimizer step에서 순간 spike가, checkpoint save의 model gather에서 가장 높은 peak가 나타나 장착 메모리 한계선을 넘는다. OOM은 평균 사용량이 아니라 이런 순간 peak에서 발생함을 보여준다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="#D55E00"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 상단: peak 순서 주석 (§4.2 ASCII 요약) ===== -->
+<text class="t13 mid" x="460" y="33">steady &lt; forward peak &lt; backward peak &lt; optimizer-step peak &lt; save·gather peak</text>
+
+<!-- ===== 구간 경계선 (채움 영역 뒤에 깔림) ===== -->
+<line class="h d" x1="340" y1="145" x2="340" y2="428"/>
+<line class="h d" x1="580" y1="145" x2="580" y2="428"/>
+<line class="h d" x1="710" y1="145" x2="710" y2="428"/>
+
+<!-- ===== 장착 메모리 한계선 ===== -->
+<line class="s d" x1="90" y1="120" x2="905" y2="120"/>
+<text class="t13" x="95" y="112">장착 메모리 한계 (VRAM·통합 메모리)</text>
+
+<!-- ===== 축 ===== -->
+<line class="s" x1="90" y1="435" x2="90" y2="70" marker-end="url(#ar)"/>
+<text class="t12" x="100" y="74">메모리</text>
+<line class="s" x1="90" y1="430" x2="905" y2="430" marker-end="url(#ar)"/>
+
+<!-- ===== 바닥 상주 띠: steady resident memory ===== -->
+<rect class="f-w seg" x="90" y="350" width="800" height="80"/>
+<text class="t13 wht mid" x="490" y="395">steady resident memory (가중치 · optimizer state)</text>
+
+<!-- ===== gradients 층: backward에서 누적, optimizer step 후 해제 ===== -->
+<polygon class="f-buf seg" points="340,350 460,290 710,290 710,350"/>
+<text class="t12 wht mid" x="645" y="318">gradients</text>
+
+<!-- ===== saved activations: forward 누적, backward 해제 ===== -->
+<polygon class="f-kv seg" points="90,350 340,225 420,195 580,290 460,290 340,350"/>
+<text class="t12 wht mid" x="280" y="312">saved activations</text>
+<text class="t12 wht mid" x="280" y="330">forward 누적 · backward 해제</text>
+
+<!-- ===== optimizer step 순간 spike ===== -->
+<polygon class="f-os seg" points="605,290 645,160 685,290"/>
+
+<!-- ===== checkpoint save · model gather spike (최고점) ===== -->
+<polygon class="f-emph seg" points="725,350 780,75 795,75 850,350"/>
+<text class="t12 wht mid" x="787" y="330">model gather</text>
+
+<!-- ===== peak 표시점과 라벨 ===== -->
+<circle cx="340" cy="225" r="3.5" fill="var(--stroke)"/>
+<text class="t12 end" x="332" y="205">forward peak</text>
+<circle cx="420" cy="195" r="3.5" fill="var(--stroke)"/>
+<text class="t12" x="432" y="184">backward peak</text>
+<circle cx="645" cy="160" r="3.5" fill="var(--stroke)"/>
+<text class="t12 end" x="632" y="140">optimizer-step peak</text>
+<circle cx="787" cy="75" r="3.5" fill="var(--stroke)"/>
+<text class="t12 f-emph" x="805" y="90">save·gather peak</text>
+
+<!-- ===== OOM 메시지 ===== -->
+<text class="t13 f-emph end" x="940" y="34">OOM은 평균 사용량이 아니라</text>
+<text class="t13 f-emph end" x="940" y="52">순간 peak에서 난다</text>
+<line x1="855" y1="60" x2="798" y2="70" stroke="#D55E00" stroke-width="2" fill="none" marker-end="url(#ar2)"/>
+
+<!-- ===== 하단 구간 라벨 ===== -->
+<text class="t13 mid" x="215" y="452">forward</text>
+<text class="t13 mid" x="460" y="452">backward</text>
+<text class="t13 mid" x="645" y="452">optimizer step</text>
+<text class="t13 mid" x="800" y="452">checkpoint save</text>
+<text class="t12 mid" x="490" y="478">← 한 training step 안의 시간 →</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="90" y="538">구간 길이와 높이 비율은 개념 구분이며 실측이 아니다. 실제 peak는 각 런타임의 최대 allocated·reserved memory 기록으로 확인한다.</text>
+</svg>

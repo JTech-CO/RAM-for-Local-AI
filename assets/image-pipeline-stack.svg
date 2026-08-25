@@ -1,0 +1,75 @@
+<svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 다운로드한 DiT/UNet GGUF 파일과 실행 peak 메모리 스택의 관계</title>
+<desc id="dsc">이미지 생성에서 다운로드한 DiT/UNet GGUF 파일(왼쪽)은 실행 시 메모리 스택(오른쪽)의 맨 아래 한 층에 해당할 뿐이며, 실제 실행 peak는 텍스트 인코더·tokenizer, VAE/decoder, activation·attention, 입력 이미지·mask·reference encoder, runtime·CUDA context, 안전 여유까지 모든 층의 합으로 결정됨을 보이는 개념도.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-act{ fill:#CC79A7; } .f-rt{ fill:#D55E00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 패널 제목 ===== -->
+<text class="t15 mid" x="220" y="34">① 다운로드한 파일</text>
+<text class="t15 mid" x="630" y="34">② 실행 peak 메모리 스택</text>
+
+<!-- ===== 바닥선 ===== -->
+<line class="s" x1="140" y1="430" x2="800" y2="430"/>
+
+<!-- ===== ① 왼쪽: 다운로드한 파일 단독 막대 ===== -->
+<rect class="f-w seg" x="160" y="340" width="120" height="90"/>
+<text class="t13 wht mid" x="220" y="390">DiT/UNet GGUF</text>
+<text class="t12 mid" x="220" y="452">파일 크기는 스택의</text>
+<text class="t12 mid" x="220" y="470">맨 아래 한 층만 알려준다</text>
+
+<!-- ===== 점선 연결: 파일 ↔ 스택 맨 아래 층 ===== -->
+<line class="h d" x1="282" y1="385" x2="546" y2="385" marker-end="url(#ar)"/>
+<text class="t12 mid" x="415" y="372">파일이 알려주는 것은 이 층뿐</text>
+
+<!-- ===== ② 오른쪽: 실행 peak 스택 (아래→위) ===== -->
+<rect class="f-w seg"   x="550" y="340" width="160" height="90"/>
+<rect class="f-kv seg"  x="550" y="275" width="160" height="65"/>
+<rect class="f-buf seg" x="550" y="240" width="160" height="35"/>
+<rect class="f-act seg" x="550" y="185" width="160" height="55"/>
+<rect class="f-os seg"  x="550" y="155" width="160" height="30"/>
+<rect class="f-rt seg"  x="550" y="120" width="160" height="35"/>
+<rect class="seg" fill="url(#hatch)" x="550" y="90" width="160" height="30"/>
+
+<!-- 세그먼트 내부 라벨 (흰색) -->
+<text class="t13 wht mid" x="630" y="390">DiT/UNet (GGUF)</text>
+<text class="t12 wht mid" x="630" y="312">텍스트 인코더·tokenizer</text>
+<text class="t12 wht mid" x="630" y="262">VAE / decoder</text>
+<text class="t12 wht mid" x="630" y="217">activation·attention</text>
+<text class="t12 wht mid" x="630" y="142">runtime·CUDA context</text>
+
+<!-- 얇은 층 라벨 (왼쪽 지시선) -->
+<line class="h" x1="548" y1="170" x2="520" y2="170"/>
+<text class="t12 end" x="514" y="174">입력 이미지·mask·reference encoder</text>
+<line class="h" x1="548" y1="105" x2="520" y2="105"/>
+<text class="t12 end" x="514" y="109">안전 여유(headroom)</text>
+
+<!-- 실행 peak 화살표 (스택 전체 높이) -->
+<line class="s" x1="740" y1="428" x2="740" y2="92" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="t15 f-emph" x="752" y="250">실행 peak</text>
+<text class="t12" x="752" y="270">모든 구성요소의 합</text>
+
+<text class="t12 mid" x="630" y="452">실행 peak는 모든 층의 합이며</text>
+<text class="t12 mid" x="630" y="470">해상도·batch·reference 수에 따라 변한다</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="40" y="500">각 층의 높이는 개념 구분이며 실제 비율이 아니다. 실측은 사용하는 runtime의 peak RAM·VRAM으로 확인한다.</text>
+</svg>

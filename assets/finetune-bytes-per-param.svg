@@ -1,0 +1,113 @@
+<svg viewBox="0 0 960 500" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 학습 방식별 파라미터당 바이트(B/P) 스택 비교</title>
+<desc id="dsc">같은 모델이라도 학습 방식에 따라 파라미터당 model state가 크게 다름을 보이는 개념도. 추론은 BF16 weights 2 B/P만, 고전적 mixed-precision AdamW full fine-tuning은 weights 2 + gradients 4 + optimizer 8 + master copy 4로 약 18 B/P, LoRA는 frozen BF16 base 2 B/P에 얇은 adapter 학습 state, QLoRA는 4-bit base 약 0.55~0.70 B/P에 adapter와 quant metadata·dequant workspace가 더해진다. activation은 어느 방식이든 거의 같고 별도로 계산한다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 제목 ===== -->
+<text class="t15" x="40" y="34">같은 모델, 학습 방식에 따라 달라지는 파라미터당 바이트(B/P)</text>
+
+<!-- ===== 상단 B/P 축 (27px = 1 B/P, x=250이 0) ===== -->
+<line class="h" x1="250" y1="64" x2="742" y2="64"/>
+<line class="h" x1="250" y1="60" x2="250" y2="68"/>
+<line class="h" x1="304" y1="60" x2="304" y2="68"/>
+<line class="h" x1="358" y1="60" x2="358" y2="68"/>
+<line class="h" x1="466" y1="60" x2="466" y2="68"/>
+<line class="h" x1="574" y1="60" x2="574" y2="68"/>
+<line class="h" x1="682" y1="60" x2="682" y2="68"/>
+<line class="h" x1="736" y1="60" x2="736" y2="68"/>
+<text class="t11 mid" x="250" y="56">0</text>
+<text class="t11 mid" x="304" y="56">2</text>
+<text class="t11 mid" x="358" y="56">4</text>
+<text class="t11 mid" x="466" y="56">8</text>
+<text class="t11 mid" x="574" y="56">12</text>
+<text class="t11 mid" x="682" y="56">16</text>
+<text class="t11 mid" x="736" y="56">18</text>
+<text class="t11" x="752" y="68">B/P</text>
+
+<!-- ===== activation 열 머리글 ===== -->
+<text class="t13 mid" x="860" y="52">activation</text>
+<text class="t11 mid" x="860" y="68">(별도 계산)</text>
+
+<!-- ===== ① 추론 ===== -->
+<text class="t15" x="40" y="103">① 추론</text>
+<text class="t12" x="40" y="121">BF16 weight만 적재</text>
+<rect class="f-w seg" x="250" y="88" width="54" height="36"/>
+<text class="t13 wht mid" x="277" y="110">2</text>
+<text class="t12" x="314" y="110">BF16 weights 2 B/P (기준선)</text>
+<text class="t15 mid" x="768" y="111">＋</text>
+<rect class="seg" fill="url(#hatch)" x="800" y="88" width="120" height="36"/>
+
+<!-- ===== ② Full fine-tuning ===== -->
+<text class="t15" x="40" y="195">② Full fine-tuning</text>
+<text class="t12" x="40" y="213">고전적 mixed-precision</text>
+<text class="t12" x="40" y="229">AdamW 기준</text>
+<text class="t13 end" x="736" y="172">합계 ≈ 18 B/P (activation 제외)</text>
+<rect class="f-w seg"    x="250" y="180" width="54"  height="36"/>
+<rect class="f-kv seg"   x="304" y="180" width="108" height="36"/>
+<rect class="f-os seg"   x="412" y="180" width="216" height="36"/>
+<rect class="seg" fill="#CC79A7" x="628" y="180" width="108" height="36"/>
+<text class="t13 wht mid" x="277" y="202">2</text>
+<text class="t13 wht mid" x="358" y="202">4</text>
+<text class="t13 wht mid" x="520" y="202">8</text>
+<text class="t13 wht mid" x="682" y="202">4</text>
+<text class="t12 mid" x="277" y="232">weights</text>
+<text class="t12 mid" x="358" y="232">gradients</text>
+<text class="t12 mid" x="520" y="232">optimizer state</text>
+<text class="t12 mid" x="682" y="232">master copy·FP32</text>
+<text class="t11" x="250" y="250">native BF16·fused optimizer 구현은 약 12 B/P — 항상 보장되는 값이 아닌 실측 전의 낮은 계획치</text>
+<text class="t15 mid" x="768" y="203">＋</text>
+<rect class="seg" fill="url(#hatch)" x="800" y="180" width="120" height="36"/>
+
+<!-- ===== ③ LoRA ===== -->
+<text class="t15" x="40" y="287">③ LoRA</text>
+<text class="t12" x="40" y="305">frozen BF16 base + adapter</text>
+<rect class="f-w seg" x="250" y="272" width="54" height="36"/>
+<rect class="f-emph seg" x="304" y="272" width="8" height="36"/>
+<text class="t13 wht mid" x="277" y="294">2</text>
+<line class="h" x1="313" y1="280" x2="330" y2="280"/>
+<text class="t12" x="334" y="284">adapter 학습 state ≈ P_adapter × 12~18 B</text>
+<text class="t11" x="334" y="300">base 대비 극히 작음 — rank·대상 module에 따라 달라짐</text>
+<text class="t11" x="250" y="326">base는 frozen — gradient·optimizer state 없음, BF16 weights는 그대로 resident</text>
+<text class="t15 mid" x="768" y="295">＋</text>
+<rect class="seg" fill="url(#hatch)" x="800" y="272" width="120" height="36"/>
+
+<!-- ===== ④ QLoRA ===== -->
+<text class="t15" x="40" y="379">④ QLoRA</text>
+<text class="t12" x="40" y="397">4-bit NF4 base + adapter</text>
+<rect class="f-buf seg" x="250" y="364" width="16" height="36"/>
+<rect class="f-emph seg" x="266" y="364" width="8" height="36"/>
+<rect class="seg" fill="var(--hint)" x="274" y="364" width="12" height="36"/>
+<line class="h" x1="270" y1="364" x2="270" y2="354"/>
+<text class="t12" x="278" y="352">adapter — 동일하게 12~18 B × P_adapter</text>
+<line class="h" x1="288" y1="382" x2="328" y2="382"/>
+<text class="t12" x="332" y="386">quant metadata·dequant workspace</text>
+<line class="h" x1="258" y1="402" x2="258" y2="412"/>
+<text class="t12" x="230" y="426">4-bit(NF4 등) base ≈ 0.55~0.70 B/P</text>
+<text class="t15 mid" x="768" y="387">＋</text>
+<rect class="seg" fill="url(#hatch)" x="800" y="364" width="120" height="36"/>
+<text class="t11 mid" x="860" y="420">어느 방식이든 거의 같음</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="40" y="464">막대 폭은 B/P 축에 비례한 개념도이며, activation 블록 폭은 축과 무관하다. 세그먼트 순서는 실제 메모리 배치가 아니다.</text>
+<text class="t11" x="40" y="482">합계는 구현·설정에 따라 달라지므로(§5.2 표), 실제 용량은 각 런타임의 peak VRAM·RAM 실측으로 확인한다.</text>
+</svg>

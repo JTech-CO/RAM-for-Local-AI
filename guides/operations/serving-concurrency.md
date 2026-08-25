@@ -293,6 +293,8 @@ KV budget
 
 초기 설정에서는 전체 VRAM의 마지막 수백 MiB까지 채우지 않는다. kernel·graph capture·새로운 request shape가 추가 메모리를 요구할 수 있으므로, 실측 후 여유를 줄인다.
 
+![그림: 장착 device memory에서 각 예약 항목을 차례로 깎고 남는 KV cache pool이 동시 요청 수의 실제 예산이 되는 구조. 파일 크기만 본 기대치(왼쪽)는 남는 공간을 과대평가한다.](../../assets/serving-kv-budget.svg)
+
 ### 3.4 “free VRAM”을 그대로 믿기 어려운 이유
 
 - 다른 process와 display가 메모리를 사용한다.

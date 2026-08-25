@@ -260,6 +260,8 @@ CPU·Apple 단일 슬롯:
 
 위 배수는 표준이 아니라 초기 예산을 위한 보수적 경험칙이다. 최종 값은 실행 중 peak RSS·VRAM으로 측정한다.
 
+![그림: 파일 크기만 본 판단과 실제 피크 메모리의 차이 — 가중치 위에 KV 캐시·런타임 버퍼·OS 점유·안전 여유가 쌓여 장착 메모리를 초과할 수 있다](../../assets/peak-memory-anatomy.svg)
+
 ### 3.4 KV 캐시 계산
 
 일반적인 decoder-only transformer의 KV cache는 다음처럼 근사할 수 있다.

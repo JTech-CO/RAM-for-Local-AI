@@ -1,0 +1,85 @@
+<svg viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. RAG 메모리 배분 — 권장 구성과 흔한 실수</title>
+<desc id="dsc">장착 메모리 전체를 100%로 놓은 가로 스택 막대 두 개를 비교하는 개념도. 위(권장)는 OS·앱, 총 메모리의 약 50–70%로 잡은 생성 모델 가중치, KV 캐시, 임베딩·reranker, 벡터 인덱스·문서 캐시, 여유가 모두 막대 안에 수납된다. 아래(흔한 실수)는 생성 모델 가중치를 75–85%까지 채워 KV 캐시·임베딩·reranker·벡터 인덱스·문서 캐시가 장착 메모리 한계선을 넘쳐 나가고 swap 또는 OOM으로 이어진다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-idx{ fill:#CC79A7; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 장착 메모리 한계선 (막대 뒤에 깔림, x=760 = 100%) ===== -->
+<line class="s d" x1="760" y1="50" x2="760" y2="316"/>
+<text class="t12" x="766" y="44">장착 메모리 한계 (100%)</text>
+
+<!-- ===== ① 권장 배분 ===== -->
+<text class="t15" x="40" y="36">① 권장 배분 — 검색 스택까지 막대 안에 수납</text>
+
+<!-- 위쪽 외부 라벨 (지시선) -->
+<line class="h" x1="685" y1="100" x2="685" y2="68"/>
+<text class="t12 mid" x="685" y="64">벡터 인덱스·문서 캐시</text>
+<line class="h" x1="631" y1="100" x2="631" y2="90"/>
+<text class="t12 mid" x="631" y="86">임베딩·reranker</text>
+<line class="h" x1="736" y1="100" x2="736" y2="90"/>
+<text class="t12 mid" x="736" y="86">여유</text>
+
+<!-- 막대: 80~760 = 100% / OS 10% · 가중치 55% · KV 12% · 임베딩 8% · 인덱스 8% · 여유 7% -->
+<rect class="f-os seg"  x="80"  y="100" width="68"  height="50"/>
+<rect class="f-w seg"   x="148" y="100" width="374" height="50"/>
+<rect class="f-kv seg"  x="522" y="100" width="82"  height="50"/>
+<rect class="f-buf seg" x="604" y="100" width="54"  height="50"/>
+<rect class="f-idx seg" x="658" y="100" width="54"  height="50"/>
+<rect class="seg" fill="url(#hatch)" x="712" y="100" width="48" height="50"/>
+
+<text class="t13 wht mid" x="114" y="130">OS·앱</text>
+<text class="t13 wht mid" x="335" y="130">생성 모델 가중치</text>
+<text class="t13 wht mid" x="563" y="130">KV 캐시</text>
+
+<!-- 가중치 목표 밴드 -->
+<line class="h" x1="148" y1="152" x2="148" y2="174"/>
+<line class="h" x1="522" y1="152" x2="522" y2="174"/>
+<line class="s" x1="152" y1="170" x2="518" y2="170" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="t12 mid" x="335" y="192">생성 모델 가중치 목표: 총 메모리의 약 50–70%</text>
+
+<!-- ===== ② 흔한 실수 ===== -->
+<text class="t15" x="40" y="240">② 흔한 실수 — 생성 가중치를 75–85%까지 채움</text>
+
+<!-- 위쪽 외부 라벨 (지시선) -->
+<line class="h" x1="889" y1="258" x2="889" y2="228"/>
+<text class="t12 end" x="935" y="224">벡터 인덱스·문서 캐시</text>
+<line class="h" x1="835" y1="258" x2="835" y2="248"/>
+<text class="t12 mid" x="835" y="244">임베딩·reranker</text>
+
+<!-- 막대: OS 10% + 가중치 85% = 95%, 나머지가 한계선 밖으로 넘침 -->
+<rect class="f-os seg"  x="80"  y="258" width="68"  height="50"/>
+<rect class="f-w seg"   x="148" y="258" width="578" height="50"/>
+<rect class="f-kv seg"  x="726" y="258" width="82"  height="50"/>
+<rect class="f-buf seg" x="808" y="258" width="54"  height="50"/>
+<rect class="f-idx seg" x="862" y="258" width="54"  height="50"/>
+
+<text class="t13 wht mid" x="114" y="288">OS·앱</text>
+<text class="t13 wht mid" x="437" y="288">생성 모델 가중치 (약 75–85%)</text>
+<text class="t13 wht mid" x="767" y="288">KV 캐시</text>
+
+<!-- 넘침 구간 강조 -->
+<path d="M762,314 v8 H914 v-8" fill="none" stroke="#D55E00" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<text class="t13 f-emph mid" x="830" y="338">장착 메모리 한계 초과 → swap·OOM</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="40" y="392">막대의 세그먼트 길이는 개념 비율이며 실측값이 아니다. 실제 배분은 8K 컨텍스트·단일 요청부터 peak memory를 측정해 확인한다.</text>
+</svg>

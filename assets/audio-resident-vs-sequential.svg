@@ -1,0 +1,92 @@
+<svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 동시 상주와 순차 실행의 peak 메모리 차이</title>
+<desc id="dsc">ASR·화자 분리·LLM·TTS를 모두 동시에 상주시키면(왼쪽) 합계가 장착 메모리 한계선을 넘지만, 같은 구성요소를 시간축을 따라 한 번에 하나씩 load·unload하며 순차 실행하면(오른쪽) 각 시점의 peak가 한계선 아래에 머문다는 개념도. 대신 전환마다 load/unload의 시간·storage I/O 비용이 생긴다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-pk{ fill:#CC79A7; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 패널 제목 ===== -->
+<text class="t15 mid" x="265" y="34">① 동시 상주 (모두 load)</text>
+<text class="t15 mid" x="677" y="34">② 순차 실행 (load → unload)</text>
+
+<!-- ===== 장착 메모리 한계선 (두 패널 공통) ===== -->
+<line class="s d" x1="70" y1="150" x2="890" y2="150"/>
+<text class="t13 end" x="888" y="140">장착 메모리 (VRAM·통합 메모리)</text>
+
+<!-- ===== 바닥선 ===== -->
+<line class="s" x1="70" y1="420" x2="430" y2="420"/>
+<line class="s" x1="470" y1="420" x2="888" y2="420" marker-end="url(#ar)"/>
+<text class="t12 end" x="886" y="440">시간</text>
+
+<!-- ===== ① 왼쪽: 동시 상주 스택 ===== -->
+<!-- 아래에서 위: ASR 90 / LLM+KV 130 / TTS 70 / 화자 분리 50 -->
+<rect class="f-w seg"  x="195" y="330" width="140" height="90"/>
+<rect class="f-kv seg" x="195" y="200" width="140" height="130"/>
+<rect class="f-os seg" x="195" y="130" width="140" height="70"/>
+<rect class="f-pk seg" x="195" y="80"  width="140" height="50"/>
+
+<text class="t13 wht mid" x="265" y="380">ASR</text>
+<text class="t13 wht mid" x="265" y="270">LLM + KV cache</text>
+
+<!-- 세그먼트 라벨 (왼쪽 지시선) -->
+<line class="h" x1="193" y1="165" x2="168" y2="165"/>
+<text class="t12 end" x="162" y="169">TTS</text>
+<line class="h" x1="193" y1="105" x2="168" y2="105"/>
+<text class="t12 end" x="162" y="109">화자 분리(diarization)</text>
+
+<!-- 초과 구간 강조 -->
+<path class="s" stroke="#D55E00" d="M343,150 h12 v-70 h-12" fill="none"/>
+<text class="t13 f-emph" x="363" y="105">한계선 초과분</text>
+<text class="t12" x="363" y="125">→ OOM·스왑 위험</text>
+
+<text class="t12 mid" x="265" y="466">네 구성요소를 동시에 올리면</text>
+<text class="t12 mid" x="265" y="484">합계 peak가 한계선을 넘는다</text>
+
+<!-- ===== ② 오른쪽: 순차 실행 계단 (블록 높이는 왼쪽과 동일) ===== -->
+<rect class="f-w seg"  x="480" y="330" width="85" height="90"/>
+<rect class="f-pk seg" x="583" y="370" width="85" height="50"/>
+<rect class="f-kv seg" x="686" y="290" width="85" height="130"/>
+<rect class="f-os seg" x="789" y="350" width="85" height="70"/>
+
+<text class="t12 mid" x="522" y="440">ASR</text>
+<text class="t12 mid" x="625" y="440">화자 분리</text>
+<text class="t12 mid" x="728" y="440">LLM</text>
+<text class="t12 mid" x="831" y="440">TTS</text>
+
+<!-- 전환(unload → load) 지점 -->
+<line class="h d" x1="574" y1="384" x2="574" y2="412"/>
+<line class="h d" x1="677" y1="384" x2="677" y2="412"/>
+<line class="h d" x1="780" y1="384" x2="780" y2="412"/>
+
+<text class="t12 mid" x="600" y="246">전환 시 load/unload</text>
+<text class="t12 mid" x="600" y="264">시간·storage I/O 비용</text>
+<line class="h" x1="590" y1="272" x2="576" y2="378" marker-end="url(#ar)"/>
+
+<!-- 가장 큰 단계의 여유 -->
+<line class="h d" x1="728" y1="158" x2="728" y2="282" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="t12" x="738" y="224">가장 큰 단계도 한계선 아래</text>
+
+<text class="t12 mid" x="677" y="466">같은 구성요소를 시간축으로 나누면</text>
+<text class="t12 mid" x="677" y="484">각 시점의 peak는 한계선 아래에 머문다</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="70" y="508">블록의 높이·비율은 개념 구분이며(VAD 등 경량 상주 성분은 생략) 실제 크기가 아니다. 실제 peak와 전환 latency는 대상 장비에서 실측으로 확인한다.</text>
+</svg>

@@ -1,0 +1,73 @@
+<svg viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. GGUF 파일 합계와 실제 peak 메모리의 해부</title>
+<desc id="dsc">비전·OCR 추론의 총메모리를 가로 누적 막대로 나타낸 개념도. 저장소의 파일 합계(본체 GGUF + mmproj)는 막대의 두 구획만 덮는 반면, 실제 peak(M_total)는 OS·앱, vision encoder 런타임, 이미지 디코딩 버퍼, visual token·KV 캐시, 출력·여유까지 전체를 덮는다. visual token·KV 캐시 구획은 이미지 수와 해상도에 비례해 커진다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .f-mm{ fill:#CC79A7; } .f-img{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 제목 ===== -->
+<text class="t15 mid" x="480" y="36">비전·OCR 추론의 peak 메모리 해부</text>
+
+<!-- ===== 위 브래킷: 실제 peak (전체) ===== -->
+<text class="t15 mid" x="480" y="82">실제 peak (M_total)</text>
+<path class="s" d="M60,104 v-12 h840 v12"/>
+
+<!-- ===== 구획 라벨 (막대 위 지시선) — 행 A ===== -->
+<text class="t12 mid" x="125" y="152">OS·앱</text>
+<line class="h" x1="125" y1="158" x2="125" y2="218"/>
+<text class="t12 mid" x="565" y="152">vision encoder 런타임</text>
+<line class="h" x1="565" y1="158" x2="565" y2="218"/>
+<text class="t12 end" x="898" y="152">출력·여유(headroom)</text>
+<line class="h" x1="870" y1="158" x2="870" y2="218"/>
+
+<!-- ===== 구획 라벨 — 행 B ===== -->
+<text class="t12 mid" x="475" y="186">mmproj (projector)</text>
+<line class="h" x1="475" y1="192" x2="475" y2="218"/>
+<text class="t12 mid" x="655" y="186">이미지 디코딩 버퍼</text>
+<line class="h" x1="655" y1="192" x2="655" y2="218"/>
+
+<!-- ===== 가로 누적 막대 (y 220–284) ===== -->
+<rect class="f-os seg"  x="60"  y="220" width="130" height="64"/>
+<rect class="f-w seg"   x="190" y="220" width="240" height="64"/>
+<rect class="f-mm seg"  x="430" y="220" width="90"  height="64"/>
+<rect class="f-buf seg" x="520" y="220" width="90"  height="64"/>
+<rect class="f-img seg" x="610" y="220" width="90"  height="64"/>
+<rect class="f-kv seg"  x="700" y="220" width="140" height="64"/>
+<rect class="seg" fill="url(#hatch)" x="840" y="220" width="60" height="64"/>
+
+<!-- 큰 구획 내부 라벨 -->
+<text class="t13 wht mid" x="310" y="258">LLM 본체 가중치</text>
+<text class="t13 wht mid" x="770" y="250">visual token·</text>
+<text class="t13 wht mid" x="770" y="268">KV 캐시</text>
+
+<!-- ===== 아래 브래킷: 저장소 파일 합계 (본체+mmproj만) ===== -->
+<path class="s" d="M190,296 v12 h330 v-12"/>
+<text class="t15 mid" x="355" y="332">저장소 파일 합계 (본체 GGUF + mmproj)</text>
+<text class="t13 f-emph mid" x="355" y="354">→ 실제 peak의 일부일 뿐</text>
+
+<!-- ===== visual token·KV 성장 화살표 ===== -->
+<line class="s" x1="770" y1="348" x2="770" y2="292" marker-end="url(#ar)"/>
+<text class="t12 mid" x="770" y="368">이미지 수·해상도에 비례</text>
+
+<!-- ===== 하단 주석 ===== -->
+<text class="t11" x="60" y="400">개념도: 구획의 폭은 상대 비율의 예시이며 실제 크기가 아니다. 실측은 실행 중 peak RAM·VRAM 측정으로 확인한다.</text>
+</svg>

@@ -1,0 +1,89 @@
+<svg viewBox="0 0 960 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 서빙 device memory 예산과 KV cache pool</title>
+<desc id="dsc">장착 device memory에서 display·OS·driver 예약, model weights, prefill workspace와 graph capture, adapter·draft model, communication buffer, fragmentation, 운영 여유를 차례로 깎고 남는 영역이 KV cache pool이며, 이 pool이 동시 요청 수의 실제 예산임을 보이는 개념도. 왼쪽의 얇은 막대는 모델 파일 크기만 보고 남는 공간을 전부 쓸 수 있다고 여기는 기대치를 대비한다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-ad{ fill:#CC79A7; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 패널 제목 ===== -->
+<text class="t15 mid" x="172" y="36">① 파일 크기만 본 기대치</text>
+<text class="t15 mid" x="505" y="36">② 서빙 시 실제 배치와 남는 예산</text>
+
+<!-- ===== 장착 메모리 전체(두 막대 공통 스케일) ===== -->
+<text class="t12" x="40" y="60">physical device memory (장착 전체)</text>
+<line class="s d" x1="40" y1="70" x2="600" y2="70"/>
+
+<!-- ===== 바닥선 ===== -->
+<line class="s" x1="110" y1="430" x2="640" y2="430"/>
+
+<!-- ===== ① 왼쪽 얇은 막대: 파일 크기만 본 기대치 ===== -->
+<rect class="h d" x="150" y="70" width="44" height="360"/>
+<rect class="f-w seg" x="150" y="320" width="44" height="110"/>
+<text class="t12 end" x="140" y="185">남는 공간이 전부</text>
+<text class="t12 end" x="140" y="202">KV처럼 보임</text>
+<text class="t12 end" x="140" y="370">weight 파일</text>
+<text class="t12 end" x="140" y="387">크기만 반영</text>
+<text class="t12 mid" x="172" y="456">장치 여유를 과대평가</text>
+
+<!-- ===== ② 실제 배치 스택 (위→아래) ===== -->
+<rect class="f-os seg" x="430" y="70" width="150" height="34"/>
+<rect class="f-w seg" x="430" y="104" width="150" height="110"/>
+<rect class="f-buf seg" x="430" y="214" width="150" height="40"/>
+<rect class="f-ad seg" x="430" y="254" width="150" height="28"/>
+<rect class="f-os seg" x="430" y="282" width="150" height="26"/>
+<rect class="seg" fill="url(#hatch)" x="430" y="308" width="150" height="24"/>
+<rect class="seg" fill="url(#hatch)" x="430" y="332" width="150" height="28"/>
+<rect class="f-kv" x="430" y="360" width="150" height="70" stroke="#D55E00" stroke-width="3"/>
+
+<!-- 막대 내부 라벨 -->
+<text class="t13 wht mid" x="505" y="155">model weights</text>
+<text class="t12 wht mid" x="505" y="173">(상주 가중치)</text>
+<text class="t13 wht mid" x="505" y="399">KV cache pool</text>
+
+<!-- 세그먼트 라벨 (오른쪽 지시선) -->
+<line class="h" x1="584" y1="87" x2="612" y2="87"/>
+<text class="t12" x="618" y="91">display·OS·driver 예약</text>
+<line class="h" x1="584" y1="234" x2="612" y2="234"/>
+<text class="t12" x="618" y="238">peak prefill/workspace·graph capture</text>
+<line class="h" x1="584" y1="268" x2="612" y2="268"/>
+<text class="t12" x="618" y="272">adapter(LoRA)·draft model</text>
+<line class="h" x1="584" y1="295" x2="612" y2="295"/>
+<text class="t12" x="618" y="299">communication buffer (TP·PP·EP)</text>
+<line class="h" x1="584" y1="320" x2="612" y2="320"/>
+<text class="t12" x="618" y="324">fragmentation</text>
+<line class="h" x1="584" y1="346" x2="612" y2="346"/>
+<text class="t12" x="618" y="350">운영 여유 (operational headroom)</text>
+
+<!-- KV pool 강조 라벨 -->
+<line x1="584" y1="385" x2="612" y2="385" stroke="#D55E00" stroke-width="1.6"/>
+<text class="t13 f-emph" x="618" y="382" font-weight="600">KV cache pool = 동시 요청 수의 실제 예산</text>
+<text class="t12" x="618" y="402">위 항목을 깎은 나머지가 KV budget</text>
+
+<!-- KV 소진 화살표 (왼쪽) -->
+<line class="s" x1="411" y1="366" x2="411" y2="424" marker-end="url(#ar)"/>
+<text class="t12 end" x="399" y="388">동시 요청·컨텍스트가</text>
+<text class="t12 end" x="399" y="405">늘면 여기서 소진</text>
+
+<text class="t12 mid" x="505" y="456">같은 장치라도 남는 pool만큼만 동시성이 나온다</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="40" y="500">세그먼트 순서·비율은 개념 구분이며 실제 크기·배치가 아니다. 실측은 startup 직후 idle과 load test 중 peak 메모리로 확인한다.</text>
+</svg>
