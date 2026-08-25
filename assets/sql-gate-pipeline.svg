@@ -1,0 +1,132 @@
+<svg viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 안전한 Text-to-SQL 파이프라인의 다단 게이트</title>
+<desc id="dsc">자연어 질문을 명세화하고 스키마를 검색해 SQL 후보를 생성한 뒤, 구문·allowlist 검사, 읽기 전용 정책 검사, 실행 계획·비용 게이트를 차례로 통과해야 read-only 실행과 결과 검증에 도달하는 세로 흐름도. 실행 게이트 이전 단계는 DB에 닿지 않는 영역으로 묶여 있고, 질문이 모호하면 왼쪽 분기로 질문을 되묻는다. 각 게이트의 실패는 오른쪽의 제한된 repair loop를 거쳐 SQL 후보 생성으로 되돌아가며, 최대 3회를 초과하면 사람에게 이관한다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== "DB에 닿지 않음" 영역 브래킷 (노드 1~7 배경) ===== -->
+<rect x="296" y="22" width="328" height="422" style="fill:#56B4E9;fill-opacity:.08;stroke:var(--hint);stroke-width:1.2;stroke-dasharray:5 4"/>
+<line class="h" x1="628" y1="36" x2="646" y2="36"/>
+<text class="t12" x="652" y="40">DB에 닿지 않음</text>
+<text class="t11" x="652" y="56">SQL 생성과 정적 검증만 수행</text>
+
+<!-- ===== 메인 세로 흐름 노드 ===== -->
+<!-- 1. 자연어 질문 -->
+<rect class="s" x="310" y="30" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="55">자연어 질문 (사용자 질문)</text>
+
+<!-- 2. 질문 명세화 -->
+<rect class="s" x="310" y="90" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="107">질문 명세화</text>
+<text class="t11 mid" x="460" y="122">의도·기간·단위·모집단 명확화</text>
+
+<!-- 3. 스키마 검색 -->
+<rect class="s" x="310" y="150" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="167">스키마 검색 (schema retrieval)</text>
+<text class="t11 mid" x="460" y="182">권한을 반영한 schema·metric·example 검색</text>
+
+<!-- 4. SQL 후보 생성 -->
+<rect class="s" x="310" y="210" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="227">SQL 후보 생성</text>
+<text class="t11 mid" x="460" y="242">target dialect·제약 조건 포함</text>
+
+<!-- 5. 게이트 ① 구문·allowlist -->
+<rect class="seg" fill="#0072B2" fill-opacity="0.15" x="310" y="270" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="287">① 구문·allowlist 검사</text>
+<text class="t11 mid" x="460" y="302">단일 statement 확인·AST parse·allowlist</text>
+
+<!-- 6. 게이트 ② 정책 검사 -->
+<rect class="seg" fill="#009E73" fill-opacity="0.15" x="310" y="330" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="347">② 정책 검사 (읽기 전용)</text>
+<text class="t11 mid" x="460" y="362">SELECT-only·table/column ACL·함수 차단</text>
+
+<!-- 7. 게이트 ③ 실행 계획·비용 -->
+<rect class="seg" fill="#56B4E9" fill-opacity="0.18" x="310" y="390" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="407">③ 실행 계획·비용 게이트</text>
+<text class="t11 mid" x="460" y="422">EXPLAIN·dry-run·estimated cost 검사</text>
+
+<!-- 8. read-only 실행 -->
+<rect class="seg" fill="#E69F00" fill-opacity="0.18" x="310" y="450" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="467">read-only 실행</text>
+<text class="t11 mid" x="460" y="482">읽기 전용 계정·timeout·row/scan limit</text>
+
+<!-- 9. 결과 검증 -->
+<rect class="seg" fill="#CC79A7" fill-opacity="0.18" x="310" y="510" width="300" height="40" rx="6"/>
+<text class="t13 mid" x="460" y="527">결과 검증</text>
+<text class="t11 mid" x="460" y="542">결과 불변식·reconciliation·빈 결과 검사</text>
+
+<!-- ===== 통과 화살표 ===== -->
+<line class="s" x1="460" y1="70"  x2="460" y2="88"  marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="130" x2="460" y2="148" marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="190" x2="460" y2="208" marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="250" x2="460" y2="268" marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="310" x2="460" y2="328" marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="370" x2="460" y2="388" marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="430" x2="460" y2="448" marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="490" x2="460" y2="508" marker-end="url(#ar)"/>
+<text class="t12" x="470" y="324">통과</text>
+<text class="t12" x="470" y="384">통과</text>
+<text class="t12" x="470" y="442">통과</text>
+
+<!-- ===== 왼쪽 분기: 질문 되묻기 ===== -->
+<rect class="s" x="80" y="90" width="180" height="40" rx="6"/>
+<text class="t13 mid" x="170" y="107">질문 되묻기</text>
+<text class="t11 mid" x="170" y="122">clarification 상태 반환</text>
+<line class="s" x1="310" y1="110" x2="264" y2="110" marker-end="url(#ar)"/>
+<text class="t12 mid" x="288" y="103">모호함</text>
+<path class="s" d="M170,90 V50 H306" marker-end="url(#ar)"/>
+<text class="t11" x="178" y="44">사용자 답변 반영</text>
+
+<!-- ===== 신뢰 누적 안내 ===== -->
+<line class="s" x1="70" y1="270" x2="70" y2="548" marker-end="url(#ar)"/>
+<text class="t12" x="84" y="406">게이트를 통과할수록</text>
+<text class="t12" x="84" y="424">신뢰가 누적된다</text>
+<text class="t11 end" x="292" y="474">여기서부터 DB에 접촉</text>
+
+<!-- ===== 오른쪽 분기: 제한된 repair loop ===== -->
+<line class="h" x1="610" y1="290" x2="694" y2="290" marker-end="url(#ar)"/>
+<line class="h" x1="610" y1="350" x2="694" y2="350" marker-end="url(#ar)"/>
+<line class="h" x1="610" y1="410" x2="694" y2="410" marker-end="url(#ar)"/>
+<line class="h" x1="610" y1="530" x2="694" y2="530" marker-end="url(#ar)"/>
+<text class="t12" x="626" y="283">실패</text>
+<text class="t12" x="626" y="343">실패</text>
+<text class="t12" x="626" y="403">실패</text>
+<text class="t12" x="626" y="523">실패</text>
+<path class="s d" d="M700,530 V230 H614" marker-end="url(#ar)"/>
+<text class="t12" x="630" y="224">후보 재생성</text>
+<text class="t13" x="712" y="250">제한된 repair loop</text>
+<text class="t12" x="712" y="268">최대 3회 재시도</text>
+
+<!-- ===== 사람에게 이관 (강조) ===== -->
+<line class="s" x1="700" y1="470" x2="759" y2="470" marker-end="url(#ar)"/>
+<text class="t12 f-emph" x="704" y="463">제한 초과</text>
+<rect x="765" y="450" width="160" height="40" rx="6" style="fill:none;stroke:#D55E00;stroke-width:2"/>
+<text class="t13 f-emph mid" x="845" y="467">사람에게 이관</text>
+<text class="t11 mid" x="845" y="483">자동 repair 중단</text>
+
+<!-- ===== 최종 출력 ===== -->
+<line class="s" x1="460" y1="550" x2="460" y2="560" marker-end="url(#ar)"/>
+<text class="t12 mid" x="460" y="576">통과 시 실행 결과만 근거로 서술·차트 생성</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="20" y="594">게이트 구성과 순서는 개념도이며, 실제 정책·반복 한도·비용 임계값은 배포 환경에서 실측·조정이 필요하다.</text>
+</svg>

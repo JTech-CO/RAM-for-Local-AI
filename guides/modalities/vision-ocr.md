@@ -356,6 +356,8 @@ Document understanding
 
 ### 5.3 하이브리드 결정 트리
 
+![그림: 문서 OCR 에스컬레이션 사다리 — text layer가 충분하면 직접 추출 + layout 보정으로 끝내고, 없거나 깨졌으면 페이지 유형에 따라 단순 본문은 고전 OCR, 표·수식·복잡 레이아웃은 OCR VLM, 차트·그림·사진은 범용 VLM으로 보낸다. 아래 단계로 갈수록 비용·메모리·지연이 증가하며, 검증에 실패하면 한 단계 위(더 비싼) 경로로 재시도한다.](../../assets/ocr-escalation-ladder.svg)
+
 ```text
 PDF 입력
  ├─ text layer가 충분함 ──> 직접 추출 + layout 보정

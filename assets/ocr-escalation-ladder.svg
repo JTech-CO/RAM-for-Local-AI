@@ -1,0 +1,94 @@
+<svg viewBox="0 0 960 530" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 문서 OCR 에스컬레이션 사다리 — 싼 경로부터 시도하고 필요할 때만 올라간다</title>
+<desc id="dsc">PDF·문서 입력에서 text layer가 충분하면 직접 추출 + layout 보정으로 끝내고(가장 싸고 빠름), 없거나 깨졌으면 페이지 유형에 따라 단순 본문은 고전 OCR, 표·수식·복잡 레이아웃은 OCR VLM, 차트·그림·사진은 범용 VLM(가장 비쌈)으로 보내는 의사결정 흐름. 아래 단계로 갈수록 비용·메모리·지연이 증가하며, 각 경로의 결과 검증에 실패하면 한 단계 위(더 비싼) 경로로 재시도한다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+  .blk{ fill:#1F2328; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 입력 ===== -->
+<rect class="s" x="120" y="28" width="180" height="36"/>
+<text class="t13 mid" x="210" y="51">PDF·문서 입력</text>
+<line class="s" x1="210" y1="64" x2="210" y2="92" marker-end="url(#ar)"/>
+
+<!-- ===== 분기 1: text layer ===== -->
+<rect class="s" x="95" y="96" width="230" height="40"/>
+<text class="t13 mid" x="210" y="121">text layer가 충분한가?</text>
+
+<!-- 예 → ① 직접 추출 -->
+<line class="s" x1="325" y1="116" x2="472" y2="116" marker-end="url(#ar)"/>
+<text class="t12" x="336" y="109">예</text>
+
+<!-- 아니오 → 페이지 유형 -->
+<line class="s" x1="210" y1="136" x2="210" y2="184" marker-end="url(#ar)"/>
+<text class="t12" x="220" y="164">아니오(없음·깨짐)</text>
+
+<!-- ===== 분기 2: 페이지 유형 ===== -->
+<rect class="s" x="110" y="188" width="200" height="40"/>
+<text class="t13 mid" x="210" y="213">페이지 유형은?</text>
+
+<!-- 단순 본문 → ② 고전 OCR -->
+<line class="s" x1="310" y1="208" x2="472" y2="208" marker-end="url(#ar)"/>
+<text class="t12 mid" x="392" y="201">단순 본문</text>
+
+<!-- 표·수식·복잡 레이아웃 → ③ OCR VLM -->
+<path class="s" d="M240,228 V308 H472" marker-end="url(#ar)"/>
+<text class="t12 mid" x="368" y="300">표·수식·복잡 레이아웃</text>
+
+<!-- 차트·그림·사진 → ④ 범용 VLM -->
+<path class="s" d="M180,228 V408 H472" marker-end="url(#ar)"/>
+<text class="t12 mid" x="330" y="400">차트·그림·사진</text>
+
+<!-- ===== 경로 사다리 (위 = 싸다, 아래 = 비싸다) ===== -->
+<rect class="f-kv seg" x="480" y="88" width="340" height="56"/>
+<text class="t13 wht mid" x="650" y="112">① 직접 추출 + layout 보정</text>
+<text class="t12 wht mid" x="650" y="132">text layer 활용 · 가장 싸고 빠름 · 원문 보존</text>
+
+<rect class="f-buf seg" x="480" y="180" width="340" height="56"/>
+<text class="t13 blk mid" x="650" y="204">② 고전 OCR (경량 전용 엔진)</text>
+<text class="t12 blk mid" x="650" y="224">대량 인식 · bbox·confidence 제공</text>
+
+<rect class="f-os seg" x="480" y="280" width="340" height="56"/>
+<text class="t13 blk mid" x="650" y="304">③ OCR VLM (문서 파싱 전용)</text>
+<text class="t12 blk mid" x="650" y="324">표·수식·레이아웃 → Markdown 복원</text>
+
+<rect class="f-emph seg" x="480" y="380" width="340" height="56"/>
+<text class="t13 wht mid" x="650" y="404">④ 범용 VLM (가장 비쌈)</text>
+<text class="t12 wht mid" x="650" y="424">차트·사진 의미 추론 · 문서 QA·검증</text>
+
+<!-- ===== 검증 실패 시 한 단계 위(더 비싼) 경로로 재시도 ===== -->
+<path class="h d" d="M820,124 H852 V200 H826" marker-end="url(#ar)"/>
+<path class="h d" d="M820,224 H852 V300 H826" marker-end="url(#ar)"/>
+<path class="h d" d="M820,324 H852 V400 H826" marker-end="url(#ar)"/>
+
+<!-- ===== 비용 축 ===== -->
+<text class="t11 mid" x="890" y="86">낮음</text>
+<line class="s" x1="890" y1="96" x2="890" y2="438" marker-end="url(#ar)"/>
+<text class="t13" transform="rotate(90 908 140)" x="908" y="140">비용·메모리·지연 증가</text>
+<text class="t11 mid" x="890" y="456">높음</text>
+
+<!-- ===== 범례 ===== -->
+<line class="h d" x1="60" y1="470" x2="104" y2="470" marker-end="url(#ar)"/>
+<text class="t12" x="114" y="474">결과 검증에 실패하면 한 단계 위(더 비싼) 경로로 재시도</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="60" y="502">개념도다. 분기 기준과 단계별 비용·정확도는 문서 구성·엔진·모델에 따라 다르므로 실제 pipeline에서 페이지 단위로 실측·검증한다.</text>
+</svg>

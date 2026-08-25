@@ -360,6 +360,8 @@ LLM은 대부분 transformer weight가 메모리의 중심이지만, 오디오 �
 
 > **권장:** Whisper는 Q5/Q8, 일반 ASR은 INT8 또는 BF16, TTS는 BF16/FP16을 먼저 평가한다. Q4는 LLM backbone에만 적용하고 speech tokenizer·codec·vocoder는 높은 정밀도로 유지하는 구성이 흔하다.
 
+![그림: 오디오 파이프라인 체인(오디오 입력 → audio encoder → projector → LLM backbone → speech tokenizer·codec → vocoder → 오디오 출력)에서 GGUF Q4·GPTQ 양자화 대상은 보통 LLM backbone 한 블록뿐이고 나머지 구성요소는 대부분 BF16/FP16으로 유지된다. 저장소의 Q4 파일 크기는 backbone만 덮지만, 실행 시 전체 메모리는 모델 weights + encoder/codec/vocoder + session cache + OS 여유까지 체인 전체를 합산한다](../../assets/audio-quant-scope.svg)
+
 ### 4.3 구성요소별 양자화 민감도
 
 | 구성요소 | 낮은 비트에서 나타날 수 있는 문제 | 권장 시작점 |

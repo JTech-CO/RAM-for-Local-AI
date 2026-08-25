@@ -1,0 +1,96 @@
+<svg viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 온라인 서빙에서 요청 1건의 시간축 해부와 지연 지표의 위치</title>
+<desc id="dsc">요청 도착 후 gateway queue, tokenizer/render, engine queue, prefill을 거쳐 첫 토큰이 나오고, 이후 decode 토큰이 불균일한 간격(지터)으로 이어져 마지막 토큰에서 완료되는 시간축. 아래에 TTFT(도착부터 첫 토큰), ITL·TPOT(토큰 사이 간격), E2EL(도착부터 완료)의 측정 구간을 표시했다. 동시 요청·KV pool 포화 시 queue 구간이, 긴 입력·prefix cache 미스 시 prefill 구간이 길어진다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+  .q{ fill:#E69F00; fill-opacity:.28; }
+  .tk{ fill:#56B4E9; fill-opacity:.30; }
+  .tok{ stroke:#009E73; stroke-width:3; stroke-linecap:round; fill:none; }
+  .ft{ stroke:#D55E00; stroke-width:3; stroke-linecap:round; fill:none; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 제목 ===== -->
+<text class="t15 mid" x="480" y="32">온라인 서빙 — 요청 1건의 시간축 해부</text>
+
+<!-- ===== 상단 주석 (병목 조건) ===== -->
+<text class="t12 mid" x="262" y="75">동시 요청·KV pool 포화 시 여기가 길어진다</text>
+<line class="h d" x1="142" y1="84" x2="142" y2="158" marker-end="url(#ar)"/>
+<line class="h d" x1="382" y1="84" x2="382" y2="158" marker-end="url(#ar)"/>
+<text class="t12 mid" x="554" y="75">긴 입력·prefix cache 미스 시 증가</text>
+<line class="h d" x1="554" y1="84" x2="554" y2="158" marker-end="url(#ar)"/>
+
+<!-- ===== 시간축 ===== -->
+<line class="s" x1="40" y1="210" x2="930" y2="210" marker-end="url(#ar)"/>
+<text class="t12 end" x="928" y="230">시간</text>
+
+<!-- ===== 요청 도착 ===== -->
+<text class="t13 mid" x="70" y="140">요청 도착</text>
+<line class="s" x1="70" y1="148" x2="70" y2="224"/>
+
+<!-- ===== 단계 상자 ===== -->
+<rect class="q seg" x="86" y="166" width="112" height="44"/>
+<text class="t12 mid" x="142" y="192">gateway queue</text>
+<rect class="tk seg" x="204" y="166" width="116" height="44"/>
+<text class="t12 mid" x="262" y="192">tokenizer·render</text>
+<rect class="q seg" x="326" y="166" width="112" height="44"/>
+<text class="t12 mid" x="382" y="192">engine queue</text>
+<rect class="f-w seg" x="444" y="166" width="220" height="44"/>
+<text class="t13 wht mid" x="554" y="186">prefill</text>
+<text class="t11 wht mid" x="554" y="203">(입력 길이에 비례)</text>
+
+<!-- ===== 첫 토큰과 decode 토큰 (불균일 간격 = 지터) ===== -->
+<text class="t13 f-emph mid" x="676" y="140">첫 토큰</text>
+<line class="ft" x1="676" y1="148" x2="676" y2="218"/>
+<text class="t12 mid" x="776" y="112">이후 decode 토큰 — 간격 불균일(지터)</text>
+<line class="tok" x1="700" y1="172" x2="700" y2="210"/>
+<line class="tok" x1="714" y1="172" x2="714" y2="210"/>
+<line class="tok" x1="745" y1="172" x2="745" y2="210"/>
+<line class="tok" x1="757" y1="172" x2="757" y2="210"/>
+<line class="tok" x1="785" y1="172" x2="785" y2="210"/>
+<line class="tok" x1="815" y1="172" x2="815" y2="210"/>
+<line class="tok" x1="827" y1="172" x2="827" y2="210"/>
+<line class="tok" x1="856" y1="172" x2="856" y2="210"/>
+<text class="t13 mid" x="870" y="140">마지막 토큰 · 완료</text>
+<line class="tok" x1="884" y1="155" x2="884" y2="215"/>
+
+<!-- ===== 측정 구간 안내선 ===== -->
+<line class="h d" x1="70" y1="224" x2="70" y2="318"/>
+<line class="h d" x1="676" y1="224" x2="676" y2="256"/>
+<line class="h d" x1="884" y1="224" x2="884" y2="318"/>
+<line class="h d" x1="785" y1="214" x2="785" y2="256"/>
+<line class="h d" x1="815" y1="214" x2="815" y2="256"/>
+
+<!-- TTFT -->
+<line class="h" x1="74" y1="256" x2="672" y2="256" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="t13 mid" x="373" y="278">TTFT — 요청 도착부터 첫 토큰까지</text>
+
+<!-- ITL·TPOT -->
+<line class="h" x1="789" y1="256" x2="811" y2="256" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="t13 mid" x="800" y="278">ITL·TPOT</text>
+<text class="t11 mid" x="800" y="295">인접 토큰 간격 · TPOT는 평균</text>
+
+<!-- E2EL -->
+<line class="h" x1="74" y1="318" x2="880" y2="318" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="t13 mid" x="477" y="340">E2EL — 요청 전체 완료 시간 (도착 → 완료)</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="24" y="400">개념도이며 구간 길이는 실제 비율이 아니다 — 지터·구간별 시간은 실측이 필요하다. client/network·stream flush 구간은 생략했다.</text>
+</svg>

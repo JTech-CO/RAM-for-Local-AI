@@ -1,0 +1,119 @@
+<svg viewBox="0 0 960 470" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. RAG 인덱싱·질의 이중 파이프라인과 공유 인덱스</title>
+<desc id="dsc">위 레인은 오프라인 인덱싱 흐름(수집, 파싱·정규화, 보안·ACL·중복 제거, 구조 인식 청킹, 임베딩)이 dense 벡터 인덱스와 BM25·sparse 인덱스 두 저장소에 미리 쓰는 경로를, 아래 레인은 온라인 질의 흐름(질의 정규화·필터, dense/sparse 병렬 검색, fusion, reranker, 생성 모델 컨텍스트)이 같은 인덱스를 읽기만 하는 경로를 보인다. 검색에서 생성으로 갈수록 후보 수가 줄어드는 넓음에서 좁음의 흐름을 함께 나타낸 개념도.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 상단 레인: 인덱싱(오프라인) ===== -->
+<text class="t15" x="36" y="40">인덱싱 (오프라인)</text>
+<text class="t12" x="180" y="40">— 문서를 미리 색인으로 만드는 쓰기 경로</text>
+
+<rect class="s" x="36" y="56" width="124" height="52"/>
+<text class="t13 mid" x="98" y="78">수집</text>
+<text class="t11 mid" x="98" y="96">파일·웹·메일·위키·DB</text>
+<line class="s" x1="160" y1="82" x2="182" y2="82" marker-end="url(#ar)"/>
+
+<rect class="s" x="186" y="56" width="124" height="52"/>
+<text class="t13 mid" x="248" y="78">파싱·정규화</text>
+<text class="t11 mid" x="248" y="96">PDF·HTML·OCR 등</text>
+<line class="s" x1="310" y1="82" x2="332" y2="82" marker-end="url(#ar)"/>
+
+<rect class="s" x="336" y="56" width="124" height="52"/>
+<text class="t13 mid" x="398" y="78">보안·ACL</text>
+<text class="t13 mid" x="398" y="96">중복 제거</text>
+<line class="s" x1="460" y1="82" x2="482" y2="82" marker-end="url(#ar)"/>
+
+<rect class="s" x="486" y="56" width="124" height="52"/>
+<text class="t13 mid" x="548" y="78">구조 인식 청킹</text>
+<text class="t11 mid" x="548" y="96">제목·절·표 유지</text>
+<line class="s" x1="610" y1="82" x2="632" y2="82" marker-end="url(#ar)"/>
+
+<rect class="s" x="636" y="56" width="124" height="52"/>
+<text class="t13 mid" x="698" y="78">임베딩</text>
+<text class="t11 mid" x="698" y="96">색인 생성(쓰기)</text>
+
+<!-- 쓰기 경로: 임베딩 → 두 저장소 분기 -->
+<path class="s" d="M698,108 V140 H280"/>
+<line class="s" x1="280" y1="140" x2="280" y2="166" marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="140" x2="460" y2="166" marker-end="url(#ar)"/>
+<text class="t12" x="706" y="130">쓰기</text>
+
+<!-- ===== 중간 밴드: 공유 인덱스 ===== -->
+<line class="h d" x1="36" y1="156" x2="938" y2="156"/>
+<line class="h d" x1="36" y1="252" x2="938" y2="252"/>
+<text class="t15" x="36" y="200">공유 인덱스</text>
+
+<rect class="f-w seg" x="200" y="170" width="160" height="48"/>
+<text class="t13 wht mid" x="280" y="189">dense 벡터 인덱스</text>
+<text class="t12 wht mid" x="280" y="207">(임베딩 벡터)</text>
+
+<rect class="f-kv seg" x="380" y="170" width="160" height="48"/>
+<text class="t13 wht mid" x="460" y="189">BM25·sparse 인덱스</text>
+<text class="t12 wht mid" x="460" y="207">(키워드·metadata)</text>
+
+<text class="t12" x="556" y="190">인덱스는 미리 만들어 두고,</text>
+<text class="t12" x="556" y="208">질의 시에는 읽기만 한다</text>
+
+<!-- 읽기 경로: 저장소 → 병렬 검색 -->
+<line class="s" x1="280" y1="218" x2="280" y2="288" marker-end="url(#ar)"/>
+<line class="s" x1="460" y1="218" x2="460" y2="288" marker-end="url(#ar)"/>
+<text class="t12" x="288" y="246">읽기</text>
+<text class="t12" x="468" y="246">읽기</text>
+
+<!-- ===== 하단 레인: 질의(온라인) ===== -->
+<text class="t15" x="36" y="282">질의 (온라인)</text>
+
+<rect class="s" x="36" y="292" width="150" height="60"/>
+<text class="t13 mid" x="111" y="327">질의 정규화·필터</text>
+<line class="s" x1="186" y1="322" x2="208" y2="322" marker-end="url(#ar)"/>
+
+<rect class="s" x="212" y="292" width="300" height="60"/>
+<line class="h d" x1="362" y1="296" x2="362" y2="348"/>
+<text class="t13 mid" x="287" y="318">dense 검색</text>
+<text class="t11 mid" x="287" y="338">(dense vector)</text>
+<text class="t13 mid" x="437" y="318">sparse 검색</text>
+<text class="t11 mid" x="437" y="338">(BM25·키워드)</text>
+<line class="s" x1="512" y1="322" x2="534" y2="322" marker-end="url(#ar)"/>
+
+<rect class="s" x="538" y="292" width="110" height="60"/>
+<text class="t13 mid" x="593" y="318">fusion</text>
+<text class="t11 mid" x="593" y="338">(결합)</text>
+<line class="s" x1="648" y1="322" x2="670" y2="322" marker-end="url(#ar)"/>
+
+<polygon class="s" points="674,292 768,310 768,334 674,352"/>
+<text class="t13 mid" x="721" y="326">reranker</text>
+<text class="t12 mid" x="721" y="372">상위 후보 재평가</text>
+<line class="s" x1="768" y1="322" x2="790" y2="322" marker-end="url(#ar)"/>
+
+<rect class="s" x="794" y="292" width="144" height="60"/>
+<text class="t13 mid" x="866" y="318">생성 모델 컨텍스트</text>
+<text class="t11 mid" x="866" y="338">프롬프트 조립 → 생성</text>
+
+<!-- 후보 축소(넓음 → 좁음) -->
+<polygon fill="url(#hatch)" stroke="var(--hint)" stroke-width="1" points="212,384 938,390 938,398 212,404"/>
+<text class="t11" x="212" y="420">후보 많음</text>
+<text class="t11 mid" x="575" y="420">fusion·rerank를 거치며 후보가 줄어든다</text>
+<text class="t11 end" x="938" y="420">상위 후보만 남음</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="36" y="454">단계 구성은 9.1 권장 파이프라인의 개념도이며, 청크 크기·후보 수·인덱스 구성은 문서 유형과 평가 결과로 실측해 조정한다.</text>
+</svg>

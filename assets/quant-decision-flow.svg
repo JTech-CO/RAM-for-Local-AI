@@ -1,0 +1,88 @@
+<svg viewBox="0 0 960 580" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 메모리 예산에 따른 양자화 선택 판단 흐름</title>
+<desc id="dsc">Q4 weights와 시작 컨텍스트의 KV, 운영 여유가 장착 메모리에 함께 들어가면 Q4로 시작하고, 품질 여유가 있으면 Q5/Q6를 검토한다. 5~15% 정도 초과하면 context·KV dtype·동시 슬롯을 줄여 같은 기준으로 재판정하고, 그래도 초과하면 실제 작업셋 품질 검증을 전제로 Q3를 검토한다. Q3도 간신히 들어가면 한 단계 작은 모델의 Q4/Q5와 반드시 비교하며(권장 경로), Q2·IQ2는 기능 확인·초대형 모델 탐색용 최후 수단이다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 판정 1: Q4 + KV + 운영 여유 ===== -->
+<rect class="s" x="70" y="44" width="320" height="92" rx="10"/>
+<text class="t13 mid" x="230" y="74">Q4 weights + 시작 컨텍스트 KV</text>
+<text class="t13 mid" x="230" y="92">+ 운영 여유(15~25%)가</text>
+<text class="t13 mid" x="230" y="110">장착 메모리에 들어가는가?</text>
+
+<!-- 예 → Q4로 시작 -->
+<line class="s" x1="390" y1="90" x2="462" y2="90" marker-end="url(#ar)"/>
+<text class="t12 mid" x="426" y="80">예</text>
+<rect class="f-kv seg" x="470" y="64" width="150" height="52" rx="8"/>
+<text class="t13 wht mid" x="545" y="96">Q4로 시작</text>
+
+<!-- 이후 점선: Q5/Q6 검토 -->
+<line class="h d" x1="620" y1="90" x2="672" y2="90" marker-end="url(#ar)"/>
+<rect class="h d" x="680" y="58" width="220" height="64" rx="8"/>
+<text class="t12 mid" x="790" y="84">품질 여유가 있으면</text>
+<text class="t12 mid" x="790" y="102">Q5/Q6 검토</text>
+
+<!-- 아니오 → 축소 후 재판정 -->
+<line class="s" x1="230" y1="136" x2="230" y2="190" marker-end="url(#ar)"/>
+<text class="t12" x="242" y="168">아니오 (5~15% 정도 초과)</text>
+<rect class="s" x="70" y="196" width="320" height="60" rx="10"/>
+<text class="t13 mid" x="230" y="220">context·KV dtype·동시 슬롯 축소</text>
+<text class="t12 mid" x="230" y="240">후 같은 기준으로 재판정</text>
+
+<!-- 재판정 루프 -->
+<path class="s" d="M70,226 H38 V90 H64" marker-end="url(#ar)"/>
+
+<!-- 그래도 초과 → Q3 검토 -->
+<line class="s" x1="230" y1="256" x2="230" y2="300" marker-end="url(#ar)"/>
+<text class="t12" x="242" y="282">그래도 초과</text>
+<rect class="s" x="70" y="306" width="320" height="60" rx="10"/>
+<text class="t13 mid" x="230" y="330">Q3 검토</text>
+<text class="t12 mid" x="230" y="348">(실제 작업셋 품질 평가·자동 검증 전제)</text>
+
+<!-- Q3도 간신히 들어감 → 분기 -->
+<path class="s" d="M230,366 V396 H605"/>
+<text class="t12" x="242" y="388">Q3도 간신히 들어감</text>
+<line class="s" x1="230" y1="396" x2="230" y2="430" marker-end="url(#ar)"/>
+<line class="s" x1="605" y1="396" x2="605" y2="430" marker-end="url(#ar)"/>
+<text class="t12 f-kv" x="242" y="420" font-weight="600">권장 경로</text>
+<text class="t12 f-emph" x="617" y="420">최후 수단</text>
+
+<!-- 권장: 한 단계 작은 모델 Q4/Q5 -->
+<rect class="f-kv seg" x="70" y="436" width="320" height="60" rx="10"/>
+<text class="t13 wht mid" x="230" y="460">한 단계 작은 모델의 Q4/Q5와 비교</text>
+<text class="t12 wht mid" x="230" y="479">(여유 있는 안정적 구성)</text>
+
+<!-- 최후 수단: Q2·IQ2 -->
+<rect class="s" style="stroke:#D55E00" x="470" y="436" width="270" height="60" rx="10"/>
+<text class="t13 f-emph mid" x="605" y="460" font-weight="600">Q2·IQ2 — 최후 수단</text>
+<text class="t12 mid" x="605" y="479">(기능 확인·초대형 모델 탐색용)</text>
+
+<!-- 두 경로 비교 -->
+<line class="h d" x1="398" y1="472" x2="462" y2="472" marker-start="url(#ar)" marker-end="url(#ar)"/>
+<text class="t12 mid" x="430" y="462">반드시 비교</text>
+
+<!-- 핵심 메시지 -->
+<text class="t13 f-emph mid" x="480" y="538" font-weight="600">간신히 들어가는 큰 모델 Q2보다, 여유 있는 작은 모델 Q4가 대체로 안정적이다</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="70" y="564">비율 밴드(15~25%, 5~15%)는 개념적 경험 규칙이며, 실제 판단은 각 런타임의 peak RAM·VRAM 실측으로 확인한다.</text>
+</svg>

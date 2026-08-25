@@ -1,0 +1,89 @@
+<svg viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="ttl dsc">
+<title id="ttl">그림. 오디오 파이프라인에서 양자화가 실제로 적용되는 범위</title>
+<desc id="dsc">오디오 입력부터 audio encoder, projector, LLM backbone, speech tokenizer·codec, vocoder를 거쳐 오디오 출력에 이르는 파이프라인 체인에서, GGUF Q4·GPTQ 양자화 대상은 보통 LLM backbone 한 블록뿐이고 audio encoder·projector·speech tokenizer·codec·vocoder는 대부분 BF16/FP16으로 유지됨을 보이는 개념도. 저장소의 Q4 파일 크기는 backbone 블록만 덮지만, 실행 시 전체 메모리는 체인 전체와 activation·session cache까지 합산된다.</desc>
+<style>
+  :root{ --stroke:#1F2328; --hint:#8B949E; }
+  @media (prefers-color-scheme:dark){ :root{ --stroke:#E6EDF3; } }
+  .s{ stroke:var(--stroke); fill:none; stroke-width:2; stroke-linejoin:round; stroke-linecap:round; }
+  .h{ stroke:var(--hint); fill:none; stroke-width:1.2; }
+  .d{ stroke-dasharray:5 4; }
+  text{ fill:var(--stroke); font-family:system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif; }
+  .t15{ font-size:15px; font-weight:600; } .t13{ font-size:13px; } .t12{ font-size:12px; } .t11{ font-size:11px; fill:var(--hint); }
+  .mid{ text-anchor:middle; } .end{ text-anchor:end; }
+  .f-w{ fill:#0072B2; } .f-kv{ fill:#009E73; } .f-buf{ fill:#56B4E9; } .f-os{ fill:#E69F00; } .f-emph{ fill:#D55E00; }
+  .seg{ stroke:var(--stroke); stroke-width:1.4; }
+  .wht{ fill:#FFFFFF; font-weight:600; }
+  .lite{ fill:#E69F00; fill-opacity:0.35; }
+</style>
+<defs>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M0,0 L10,5 L0,10 Z" fill="var(--stroke)"/>
+  </marker>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <line x1="0" y1="0" x2="0" y2="7" stroke="var(--hint)" stroke-width="1.4"/>
+  </pattern>
+</defs>
+
+<!-- ===== 제목 ===== -->
+<text class="t15 mid" x="480" y="38">LLM backbone Q4 파일이 있다 ≠ 오디오 파이프라인 전체가 4-bit</text>
+
+<!-- ===== 범례 ===== -->
+<rect class="f-w seg" x="32" y="59" width="18" height="13"/>
+<text class="t12" x="58" y="70">GGUF Q4·GPTQ 양자화 대상 — 보통 LLM backbone만</text>
+<rect class="lite seg" x="32" y="83" width="18" height="13"/>
+<text class="t12" x="58" y="94">대부분 BF16/FP16 유지 — audio encoder·projector·speech tokenizer·codec·vocoder</text>
+
+<!-- ===== 경로 구분 힌트 ===== -->
+<text class="t11 mid" x="259" y="142">오디오 이해 경로</text>
+<line class="h" x1="146" y1="148" x2="372" y2="148"/>
+<text class="t11 mid" x="681" y="142">TTS 출력 경로</text>
+<line class="h" x1="548" y1="148" x2="814" y2="148"/>
+
+<!-- ===== 파이프라인 블록 체인 (y=156~228) ===== -->
+<!-- 오디오 입력 -->
+<rect class="s" x="32" y="156" width="88" height="72" rx="8"/>
+<text class="t13 mid" x="76" y="196">오디오 입력</text>
+<!-- audio encoder -->
+<rect class="lite seg" x="146" y="156" width="110" height="72"/>
+<text class="t13 mid" x="201" y="186">audio encoder</text>
+<text class="t11 mid" x="201" y="208">BF16/FP16</text>
+<!-- projector -->
+<rect class="lite seg" x="282" y="156" width="90" height="72"/>
+<text class="t13 mid" x="327" y="186">projector</text>
+<text class="t11 mid" x="327" y="208">BF16/FP16</text>
+<!-- LLM backbone -->
+<rect class="f-w seg" x="398" y="156" width="124" height="72"/>
+<text class="t13 wht mid" x="460" y="186">LLM backbone</text>
+<text class="t11 wht mid" x="460" y="208">GGUF Q4·GPTQ</text>
+<!-- speech tokenizer·codec -->
+<rect class="lite seg" x="548" y="156" width="152" height="72"/>
+<text class="t13 mid" x="624" y="186">speech tokenizer·codec</text>
+<text class="t11 mid" x="624" y="208">BF16/FP16</text>
+<!-- vocoder -->
+<rect class="lite seg" x="726" y="156" width="88" height="72"/>
+<text class="t13 mid" x="770" y="186">vocoder</text>
+<text class="t11 mid" x="770" y="208">BF16/FP16</text>
+<!-- 오디오 출력 -->
+<rect class="s" x="840" y="156" width="88" height="72" rx="8"/>
+<text class="t13 mid" x="884" y="196">오디오 출력</text>
+
+<!-- ===== 블록 간 화살표 ===== -->
+<line class="s" x1="120" y1="192" x2="143" y2="192" marker-end="url(#ar)"/>
+<line class="s" x1="256" y1="192" x2="279" y2="192" marker-end="url(#ar)"/>
+<line class="s" x1="372" y1="192" x2="395" y2="192" marker-end="url(#ar)"/>
+<line class="s" x1="522" y1="192" x2="545" y2="192" marker-end="url(#ar)"/>
+<line class="s" x1="700" y1="192" x2="723" y2="192" marker-end="url(#ar)"/>
+<line class="s" x1="814" y1="192" x2="837" y2="192" marker-end="url(#ar)"/>
+
+<!-- ===== 브래킷 1: 저장소의 Q4 파일 크기 (backbone만) ===== -->
+<path class="s" style="stroke:#0072B2" d="M398,240 v8 h124 v-8"/>
+<text class="t12 mid f-w" x="460" y="268">저장소의 Q4 파일 크기가 덮는 범위</text>
+
+<!-- ===== 브래킷 2: 실행 시 전체 메모리 (체인 전체) ===== -->
+<path class="s" style="stroke:#D55E00" d="M32,292 v8 h896 v-8"/>
+<text class="t13 mid f-emph" x="480" y="322">실행 시 전체 메모리가 덮는 범위</text>
+<text class="t12 mid" x="480" y="344">(모델 weights + encoder/codec/vocoder + session cache + OS 여유 합산)</text>
+
+<!-- 하단 주석 -->
+<text class="t11" x="32" y="400">개념도이며 블록 크기는 파라미터 비율이 아니다. 실제 양자화 범위는 배포별 quant 구성 확인과 런타임 peak 실측이 필요하다.</text>
+</svg>

@@ -794,6 +794,8 @@ TTFT
 
 서버의 `time_to_first_token`만 보면 gateway queue와 client network가 빠질 수 있다. end-to-end와 engine-level metric을 분리한다.
 
+![그림: 온라인 서빙에서 요청 1건의 시간축 해부 — gateway queue·tokenizer·engine queue·prefill을 거쳐 첫 토큰이 나오고 이후 decode 토큰이 불균일한 간격(지터)으로 이어지며, TTFT(도착→첫 토큰)·ITL/TPOT(토큰 사이 간격)·E2EL(도착→완료)이 각각 어느 구간을 재는지 표시한 개념도](../../assets/serving-request-timeline.svg)
+
 ### 8.3 TPOT와 ITL
 
 TPOT는 전체 decode 시간을 output token 수로 나눈 평균이다. ITL histogram은 간헐적인 긴 멈춤을 더 잘 보여준다. 긴 prefill이 decode iteration을 방해하면 평균 TPOT는 괜찮아도 p99 ITL이 나빠질 수 있다.

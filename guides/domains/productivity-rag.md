@@ -610,6 +610,8 @@ Concurrency: 1–4개 슬롯에서 시작
 
 ### 9.1 권장 파이프라인
 
+![그림: RAG 이중 파이프라인 — 인덱싱(오프라인)이 dense 벡터·BM25 sparse 인덱스를 미리 만들고, 질의(온라인)는 이를 읽어 병렬 검색 → fusion → reranker를 거치며 후보를 좁혀 생성 컨텍스트를 만든다](../../assets/rag-dual-pipeline.svg)
+
 ```text
 [수집]
   파일/웹/메일/위키/DB
