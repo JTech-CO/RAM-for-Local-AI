@@ -1,7 +1,7 @@
 # 로컬 AI 모델 선택 가이드
 ## 버그바운티·사이버보안 연구·학습·프로그래밍용 — RAM/VRAM/Apple 통합 메모리별
 
-> **최종 검증일:** 2026-08-25 (KST)  
+> **최종 검증일:** 2026-09-15 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`  
 > **범위:** 승인된 버그바운티, 사내 보안 점검, CTF/교육, 악성코드 분석 샌드박스, 코드 감사, 보안 자동화 및 일반 프로그래밍
 
@@ -670,7 +670,9 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 
 | 모델 | 알려진 구조/특성 | 커뮤니티 GGUF 대표 크기 | 현실적 메모리 | 링크·주의사항 |
 |---|---|---:|---:|---|
-| **DeepSeek-V4-Flash-0731** | 284B 총/13B 활성 MoE(MTP 포함 실측 304B), CSA+HCA 하이브리드 어텐션, 최대 1M 컨텍스트, MIT. preview를 대체한 공식판 | UD-Q2_K_XL 약 96.8 GB, UD-IQ4_XS 약 136.7 GB, UD-Q4_K_XL 약 155.1 GB | Q2 128 GB, IQ4 192 GB, Q4 192–256 GB | [공식 기본 모델(0731)](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731) · [unsloth GGUF](https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF) · bartowski·lmstudio-community·ggml-org 판 존재 · Jinja 챗템플릿 미제공(전용 스크립트) |
+| **DeepSeek-V4-Flash-0731** | 284B 총/13B 활성 MoE(MTP 포함 실측 304B), CSA+HCA 하이브리드 어텐션, 최대 1M 컨텍스트, MIT. preview를 대체한 공식판 | UD-Q2_K_XL 약 96.8 GB, UD-IQ4_XS 약 136.7 GB, UD-Q4_K_XL 약 155.1 GB | Q2 128 GB, IQ4 192 GB, Q4 192–256 GB | [공식 기본 모델(0731)](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731) · [unsloth GGUF](https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF) · bartowski·lmstudio-community·ggml-org 판 존재 · Jinja 챗템플릿 미제공(전용 스크립트) · 후속 [V4.1-Flash](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash)(2026-09-10, MIT)는 safetensors 기준 약 763B·텍스트+이미지 입력으로 규모가 커졌고 llama.cpp 변환 PR(#28696)이 미병합이라, 로컬 기본값은 0731을 유지 |
+| **GLM-5.3** | GLM-5.2 후속 초대형 MoE(2026-08-25 가중치 공개). 아키텍처가 5.2와 같은 `glm_moe_dsa`라 llama.cpp 기존 경로로 로드된다. **라이선스가 5.2의 MIT에서 별도 조건(HF 태그 `other`)으로 바뀌었으므로** 상업 사용 전 모델 카드를 확인 | UD-Q2_K_XL 약 253.9 GB, UD-IQ4_XS 약 365.3 GB, UD-Q4_K_XL 약 467.3 GB | Q2 384 GB, IQ4 512 GB, Q4 512–768 GB | [공식](https://huggingface.co/zai-org/GLM-5.3) · [unsloth GGUF](https://huggingface.co/unsloth/GLM-5.3-GGUF) |
+| **GLM-5.3-Flash** | GLM-5.3의 경량 파생(2026-08-25), 텍스트+이미지 입력, MIT. 새 아키텍처(`glm5_next`)라 **2026-09-15 기준 llama.cpp 지원 PR(#27752 등)이 미병합**이며, GGUF가 먼저 올라왔지만 PR 빌드 없이는 로드되지 않을 수 있다 | UD-Q2_K_XL 약 108.7 GB, UD-IQ4_XS 약 156.8 GB, UD-Q4_K_XL 약 199.7 GB | Q2 192 GB(128 GB는 빠듯), IQ4 192–256 GB, Q4 256 GB | [공식](https://huggingface.co/zai-org/GLM-5.3-Flash) · [unsloth GGUF](https://huggingface.co/unsloth/GLM-5.3-Flash-GGUF) · 백엔드 병합 후 재확인 |
 | **GLM-5.2** | 초대형 장문·에이전트 계열, 1M 컨텍스트 배포 존재 | 저장소 샤드 합계 확인 | 저비트도 384–512 GB 이상을 예상하고 실측 | [Unsloth GGUF](https://huggingface.co/unsloth/GLM-5.2-GGUF) |
 | **Kimi-K2.7-Code** | 장기 코드 에이전트·도구 사용 계열 | 저장소 샤드 합계 확인 | 384–768 GB+ 실험 구간 | [Unsloth GGUF](https://huggingface.co/unsloth/Kimi-K2.7-Code-GGUF) |
 | **DeepSeek-V4-Pro** | 약 1.6T 총/49B 활성급 초대형 MoE 계열 | 커뮤니티 Q2_K-XL이 약 535 GiB로 보고됨 | 768 GB–1 TB+ 권장 | [공식 기본 모델](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro) · [커뮤니티 GGUF](https://huggingface.co/teamblobfish/DeepSeek-V4-Pro-GGUF) · 특정 포크/Metal·CPU 제약 확인 · 후속 [V4-Pro-0813](https://huggingface.co/deepseek-ai/DeepSeek-V4-Pro-0813)은 2026-08-13 가중치 공개(MIT, 네이티브 INT8/FP8), [unsloth GGUF](https://huggingface.co/unsloth/DeepSeek-V4-Pro-0813-GGUF) UD-Q4_K_XL 약 850 GB |
@@ -770,6 +772,11 @@ GQA, MLA, 슬라이딩 윈도, 하이브리드 어텐션 등 구조에 따라 �
 
 - [DeepSeek-V4-Flash-0731](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731)
 - [DeepSeek-V4-Flash-0731 GGUF (unsloth)](https://huggingface.co/unsloth/DeepSeek-V4-Flash-0731-GGUF)
+- [DeepSeek-V4.1-Flash](https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash)
+- [GLM-5.3](https://huggingface.co/zai-org/GLM-5.3)
+- [GLM-5.3 GGUF (unsloth)](https://huggingface.co/unsloth/GLM-5.3-GGUF)
+- [GLM-5.3-Flash](https://huggingface.co/zai-org/GLM-5.3-Flash)
+- [GLM-5.3-Flash GGUF (unsloth)](https://huggingface.co/unsloth/GLM-5.3-Flash-GGUF)
 - [GLM-5.2 GGUF](https://huggingface.co/unsloth/GLM-5.2-GGUF)
 - [Kimi-K2.7-Code GGUF](https://huggingface.co/unsloth/Kimi-K2.7-Code-GGUF)
 - [Kimi K3](https://huggingface.co/moonshotai/Kimi-K3)

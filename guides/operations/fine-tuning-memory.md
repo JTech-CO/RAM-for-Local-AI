@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-08-25 (KST)
+> **최종 검증일:** 2026-09-15 (KST)
 > **주요 도구:** Transformers·PEFT·TRL, bitsandbytes, torchtune (개발 종료), Accelerate·FSDP2, DeepSpeed ZeRO, TorchTitan, Axolotl, LLaMA-Factory, Unsloth, MLX-LM, Diffusers
 > **범위:** 언어·코드·수학 모델, VLM·OCR, 이미지 생성, 음성·오디오, 임베딩·reranker의 full fine-tuning·PEFT·선호학습·분산학습 메모리 계산과 검증
 > **관련 문서:** [양자화](./quantization.md) · [서빙·동시성](./serving-concurrency.md) · [런타임·하드웨어](./runtime-hardware.md)
@@ -921,8 +921,8 @@ vs 작은 모델 BF16 LoRA
 
 QLoRA의 frozen 4-bit base는 오랫동안 bitsandbytes NF4가 사실상 표준이었지만, 4-bit 학습 선택지는 넓어지고 있다.
 
-- **native FP4 base 위 LoRA**: Axolotl v0.18.0(2026-07-17)은 MoE expert를 NVFP4(Marlin/DeepGEMM)·MXFP4·bnb-4bit로 저장한 채 학습하는 4-bit expert MoE-LoRA/QLoRA를 지원한다. FP4 activation까지 사용하는 W4A4(SonicMoE) 경로는 데이터센터 GPU뿐 아니라 RTX 50xx(sm120) 같은 소비자 Blackwell GPU에서도 동작하고, `nvfp4_merge_aware` 모드는 NVFP4 base에 비트 일치 merge를 제공한다. NVFP4로 배포된 공식 체크포인트에서 재양자화 없이 직접 파인튜닝하는 경로가 실전화된 것이다.
-- **bitsandbytes 플랫폼 확대**: bitsandbytes 0.50.1(2026-08-13)은 RTX·DGX Spark 성능 개선과 Windows ARM64·AMD CDNA5 지원을 추가했다. 직전 0.50.0(2026-07-25)은 fused 4-bit GEMM으로 batch 2–64 구간의 4-bit 추론을 최대 4배 가속하고, ROCm 지원을 안정 단계로 승격했으며, Apple Silicon MPS 지원 범위도 넓혔다(전제 조건은 17.8 참고).
+- **native FP4 base 위 LoRA**: Axolotl v0.18.0(2026-07-17)은 MoE expert를 NVFP4(Marlin/DeepGEMM)·MXFP4·bnb-4bit로 저장한 채 학습하는 4-bit expert MoE-LoRA/QLoRA를 지원한다. FP4 activation까지 사용하는 W4A4(SonicMoE) 경로는 데이터센터 GPU뿐 아니라 RTX 50xx(sm120) 같은 소비자 Blackwell GPU에서도 동작하고, `nvfp4_merge_aware` 모드는 NVFP4 base에 비트 일치 merge를 제공한다. NVFP4로 배포된 공식 체크포인트에서 재양자화 없이 직접 파인튜닝하는 경로가 실전화된 것이다. 이어진 v0.19.0(2026-09-10)은 PyTorch 2.13 지원, 가중치를 {-1, 0, 1}로 제한해 학습하는 ternary(BitNet b1.58) QAT, 그리고 약 177B 멀티모달 MoE인 Qwen3.8-Flash-Next를 `ple_cpu_offload: true`로 단일 B300에서 최소 120 GiB로 파인튜닝하는 QLoRA·vision QLoRA·NVFP4 MoE-LoRA 설정을 추가했다.
+- **bitsandbytes 플랫폼 확대**: bitsandbytes 0.50.1(2026-08-13)은 RTX·DGX Spark 성능 개선과 Windows ARM64·AMD CDNA5 지원을 추가했고, 0.50.2(2026-08-27)는 Linux·Windows용 ROCm 10.0 빌드와 추가 AMD GPU 타깃을 prebuilt wheel에 포함하고 GB10에서 일부 4-bit GEMM shape를 가속했다. 직전 0.50.0(2026-07-25)은 fused 4-bit GEMM으로 batch 2–64 구간의 4-bit 추론을 최대 4배 가속하고, ROCm 지원을 안정 단계로 승격했으며, Apple Silicon MPS 지원 범위도 넓혔다(전제 조건은 17.8 참고).
 
 이 경로들은 지원 model·kernel·GPU 조합이 빠르게 변하므로, NF4 QLoRA 기준선과 같은 데이터·평가로 품질을 비교한 뒤 채택한다.
 
@@ -1601,7 +1601,7 @@ micro-batch: 1–2
 accumulation: 8–32
 ```
 
-torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 해당 tutorial 페이지는 2026-08-25 재확인에서도 정상 접근된다(31.4의 링크 참조). 다만 이 결과는 좋은 sanity check일 뿐 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 개발 종료 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
+torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 해당 tutorial 페이지는 2026-09-15 재확인에서도 정상 접근된다(31.4의 링크 참조). 다만 이 결과는 좋은 sanity check일 뿐 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 개발 종료 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
 
 ### 16.4 24GB
 
@@ -1938,7 +1938,7 @@ peak per rank
 
 단순히 전체 state를 GPU 수로 나눈 값보다 peak가 크다.
 
-PyTorch v2.13.0(2026-07-08)은 FSDP2에 `set_separate_reduce_scatter_group`을 추가했다. reduce-scatter에 전용 communicator를 배정해 all-gather와 오버랩하는 옵트인 기능으로, 통신이 병목인 구성에서 처리량을 높일 수 있다. 또한 Inductor의 `decomp_comms` 패스는 FSDP 하에서 Muon·Shampoo류 optimizer의 all-gather를 제거해 학습을 가속한다(게이트 플래그 필요).
+PyTorch v2.13.0(2026-07-08)은 FSDP2에 `set_separate_reduce_scatter_group`을 추가했다. reduce-scatter에 전용 communicator를 배정해 all-gather와 오버랩하는 옵트인 기능으로, 통신이 병목인 구성에서 처리량을 높일 수 있다. 또한 Inductor의 `decomp_comms` 패스는 FSDP 하에서 Muon·Shampoo류 optimizer의 all-gather를 제거해 학습을 가속한다(게이트 플래그 필요). 이어서 PyTorch v2.14.0(2026-09-02)은 비동기 communicator를 지원하는 실험적 `nccl2` backend(`TORCH_DIST_USE_NCCL2=1`로 선택)를 추가했다. 커스텀 Python process group은 `new_group()`에서 `backend` 키워드 인자를 받아야 하는 breaking change가 있으므로, 분산 학습 스크립트를 2.14로 올리기 전에 확인한다.
 
 ### 19.3 ZeRO 단계
 
@@ -2419,7 +2419,7 @@ num_generations ↓
 → reference log-prob 최적화
 ```
 
-TRL v1.10.0(2026-08-13)은 DistillationTrainer를 정식 승격하고(VLM 지원 포함) AsyncGRPO가 loop-owning agent 학습을 다루도록 확장했다. TRL v1.9부터는 GRPO·RLOO에 iterable/streaming dataset을 사용할 수 있고(이 경우 `max_steps` 지정 필수), `environment_factory`를 제공하면 환경이 prompt를 소유하므로 `train_dataset` 없이 구성할 수 있다. AsyncGRPO는 메시지 레벨 롤아웃(`rollout_protocol="message"`)으로 멀티턴 대화의 재작성 흐름을 지원한다. 이 기능들은 데이터 공급 방식의 변화이며, rollout·KV cache 메모리 예산 설계는 그대로 필요하다.
+TRL v1.10.0(2026-08-13)은 DistillationTrainer를 정식 승격하고(VLM 지원 포함) AsyncGRPO가 loop-owning agent 학습을 다루도록 확장했다. 이후 v1.11.0(2026-08-26)은 TRL 자체 서버 대신 vLLM 자체 서버를 쓰는 경로, 실험적 `AsyncDistillationTrainer`, Qwen3.8·Nemotron 3.5 Lightning·LFM2.5-VL 지원을 추가했고(v1.12.0은 v1.11.0의 실수 중복 릴리스), v1.13.0(2026-09-10)은 1M 토큰을 넘는 장문 시퀀스를 8×H100 단일 노드에서 스텝당 학습하는 long-context 가이드와 `trl.losses`의 fused linear loss를 추가했다. TRL v1.9부터는 GRPO·RLOO에 iterable/streaming dataset을 사용할 수 있고(이 경우 `max_steps` 지정 필수), `environment_factory`를 제공하면 환경이 prompt를 소유하므로 `train_dataset` 없이 구성할 수 있다. AsyncGRPO는 메시지 레벨 롤아웃(`rollout_protocol="message"`)으로 멀티턴 대화의 재작성 흐름을 지원한다. 이 기능들은 데이터 공급 방식의 변화이며, rollout·KV cache 메모리 예산 설계는 그대로 필요하다.
 
 ### 23.6 online method와 ZeRO-3
 
@@ -3821,7 +3821,7 @@ MoE expert가 안 들어감
 
 ### 32.10 갱신 주의
 
-이 문서는 2026-08-25 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
+이 문서는 2026-09-15 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
 
 - model architecture와 remote code
 - PEFT·TRL·Transformers·PyTorch API
