@@ -1100,3 +1100,10 @@ td.numeric {
     transition: none !important;
   }
 }
+
+.load-error {
+  margin: 0;
+  padding: 1rem;
+  color: #e6edf3;
+  font-family: system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+}

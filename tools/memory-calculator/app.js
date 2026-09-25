@@ -3,7 +3,10 @@
 
   const catalog = window.RAMAI_CATALOG;
   if (!catalog) {
-    document.body.innerHTML = '<p style="padding:1rem;color:#fff">catalog.js를 불러오지 못했습니다.</p>';
+    const fallback = document.createElement("p");
+    fallback.className = "load-error";
+    fallback.textContent = "catalog.js를 불러오지 못했습니다.";
+    document.body.replaceChildren(fallback);
     return;
   }
 
@@ -66,6 +69,11 @@
     if (!href || !/^https?:\/\//i.test(href)) return;
     anchor.target = "_blank";
     anchor.rel = "noopener noreferrer";
+  }
+
+  function externalHttpUrl(value) {
+    const url = String(value || "").trim();
+    return /^https?:\/\//i.test(url) ? url : "";
   }
 
   function applyRepositoryLinks() {
@@ -1072,7 +1080,8 @@
     const wrap = $("selectedLinks");
     wrap.replaceChildren();
     const links = [];
-    if (estimate.model.hf) links.push({ label: "Hugging Face", href: estimate.model.hf });
+    const modelHref = externalHttpUrl(estimate.model.hf);
+    if (modelHref) links.push({ label: "Hugging Face", href: modelHref });
     const modelGuide = guideById[estimate.model.guide];
     if (modelGuide) links.push({ label: modelGuide.label, href: repositoryFileUrl(modelGuide.path) });
     links.push({ label: "양자화 가이드", href: repositoryFileUrl(guideById.quantization.path) });
