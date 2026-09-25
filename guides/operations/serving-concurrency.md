@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-09-15 (KST)
+> **최종 검증일:** 2026-09-26 (KST)
 > **주요 런타임:** `llama.cpp`, Ollama, vLLM, SGLang, TensorRT-LLM, Hugging Face TGI, MLX-LM, Ray Serve, KServe·llm-d
 > **범위:** 생성형 LLM·MoE·VLM·OCR·임베딩·reranker·ASR·TTS의 온라인 추론 메모리, 동시성, 스케줄링, 분산 서빙, 관측성, 보안과 부하 시험
 > **관련 문서:** [양자화](./quantization.md) · [파인튜닝 메모리](./fine-tuning-memory.md) · [런타임·하드웨어](./runtime-hardware.md)
@@ -4430,7 +4430,7 @@ MoE
 
 ### 36.10 갱신 주의
 
-이 문서는 2026-09-15 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. serving runtime은 빠르게 변하므로 배포 직전에 다음을 다시 검증한다.
+이 문서는 2026-09-26 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. serving runtime은 빠르게 변하므로 배포 직전에 다음을 다시 검증한다.
 
 - CLI flag·기본값
 - model architecture·KV layout

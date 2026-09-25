@@ -1,13 +1,13 @@
 # 로컬 AI 모델 선택 가이드
 ## 범용 프로그래밍·수학·과학·연구용 — RAM/VRAM/Apple 통합 메모리별
 
-> **최종 검증일:** 2026-09-15 (KST)  
+> **최종 검증일:** 2026-09-26 (KST)  
 > **주요 실행 형식:** GGUF + `llama.cpp`; Apple Silicon에서는 MLX도 병행 가능  
 > **범위:** 범용 프로그래밍, 저장소 수준 코딩 에이전트, 수학·과학 추론, 논문·기술문서 분석, RAG, 데이터 분석, Lean 4 형식증명 및 연구 자동화
 
 이 문서는 보유한 **시스템 RAM**, **GPU VRAM**, 또는 **Apple Silicon 통합 메모리**만 알아도 적절한 로컬 모델과 양자화를 고르고, Hugging Face에서 바로 내려받아 실행할 수 있도록 구성한 실전 가이드다.
 
-모델 파일과 양자화 저장소는 계속 수정된다. 아래 크기는 2026-09-15에 확인한 대표값이며, 다운로드 직전 반드시 모델 카드의 **파일명, 전체 shard 수, 총 크기, 라이선스, 수정일, 지원 백엔드**를 다시 확인해야 한다.
+모델 파일과 양자화 저장소는 계속 수정된다. 아래 크기는 2026-09-26에 확인한 대표값이며, 다운로드 직전 반드시 모델 카드의 **파일명, 전체 shard 수, 총 크기, 라이선스, 수정일, 지원 백엔드**를 다시 확인해야 한다.
 
 > **핵심 원칙:** 코딩·수학·과학에서는 메모리에 겨우 들어가는 큰 Q2 모델보다, 충분한 여유를 남긴 한 단계 작은 **Q4/Q5 모델**이 더 안정적인 경우가 많다.
 
@@ -260,6 +260,7 @@ Q2로 내려도 일반 모델처럼 큰 절감이 없으므로, 대화 템플릿
 | **Devstral Small 2 24B** | 저장소 수준 소프트웨어 엔지니어링·비전 | 8.89–9.29 | 약 11.5 | **14.3** | 24–32 GB | [GGUF](https://huggingface.co/unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF) |
 | **Qwen3.6-27B** | 27B dense; 범용·코딩·수학·비전·도구 사용 | 11.8 | 13.6 | **16.8** | Q3 24 GB / Q4 32 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.6-27B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.6-27B) |
 | **Qwen3.8-27B** | 27.78B dense; 멀티모달(이미지 입력)·범용·코딩, 약 262K 컨텍스트 | 배포별 확인 | 배포별 확인 | **18.97** | 32 GB | [ggml-org GGUF](https://huggingface.co/ggml-org/Qwen3.8-27B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.8-27B) |
+| **MiMo-V2.6-Distill-Qwen-9B** | 9.41B dense(Qwen3.5 기반 distill); 멀티모달(이미지 입력)·추론, MIT. 비전 projector 약 0.9 GB 별도 | 3.6 | 4.5 | **5.8** | 12 GB Q4 / 16 GB 권장 | [bartowski GGUF](https://huggingface.co/bartowski/MiMo-V2.6-Distill-Qwen-9B-GGUF) · [ggml-org GGUF](https://huggingface.co/ggml-org/MiMo-V2.6-Distill-Qwen-9B-GGUF) · [공식](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B) |
 | **Muse-Glimmer-30B** | 약 30B dense + 비전 인코더; 24 GB급 에이전트·도구 사용 | 배포별 확인 | 배포별 확인 | **16.8 (공식)**; 비전 입력 시 mmproj 1.4 별도 | 24–32 GB | [공식 GGUF](https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF) · [공식](https://huggingface.co/meta-models/Muse-Glimmer-30B) |
 | **Qwen3.6-35B-A3B** | 35B 총/3B 활성 MoE; 범용 에이전트·코딩·비전 | 12.3 | 16.6 | **22.1** | Q3 24–32 GB / Q4 32 GB | [GGUF](https://huggingface.co/unsloth/Qwen3.6-35B-A3B-GGUF) · [공식](https://huggingface.co/Qwen/Qwen3.6-35B-A3B) |
 | **Nemotron-3.5-Lightning-30B-A3B** | 30B 총/3B 활성 하이브리드 MoE(Mamba-2+어텐션); 최대 1M 컨텍스트 | 배포별 확인 | 배포별 확인 | **18.90**(ggml-org Q4_0) | 32 GB | [ggml-org GGUF](https://huggingface.co/ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) · [unsloth UD-Q4_K_M 25.27 GB](https://huggingface.co/unsloth/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF) · [공식](https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16) |
@@ -998,6 +999,8 @@ llama-server \
 | **Qwen3.8-2.4T-A95B** | 2.4T 총/95B 활성 MoE; Qwen-Max급 최초 오픈 공개(2026-08-08), 텍스트 전용 추론 | 4비트급 GGUF는 unsloth UD-IQ4_XS 약 1,310.9 GB(29 shard)뿐이고 Q4_K 계열은 없다(Q8_0 약 2,600.2 GB). 로컬 실행은 사실상 비현실적이므로 존재 확인 수준으로만 다룬다. 라이선스는 MIT 변형인 Qwen3.8-Max License | 로컬 비권장 | [공식](https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B) · [Unsloth GGUF](https://huggingface.co/unsloth/Qwen3.8-2.4T-A95B-GGUF) |
 | **Qwen3.8-Flash-Next** | 약 177B 총 MoE(512 expert 중 10개 활성), 텍스트+이미지 입력, 262K 컨텍스트(2026-08-24 공개), `qwen-community-1.0` 라이선스 | llama.cpp master가 아키텍처(`qwen4_exp`)를 지원하고 unsloth GGUF가 UD-IQ4_XS 약 93.7 GB, UD-Q4_K_XL 약 111.3 GB로 배포된다. MTP 경로 PR은 미병합. 파인튜닝은 Axolotl v0.19.0이 QLoRA 설정을 제공 | IQ4 128 GB급(빠듯), Q4 192 GB급 | [공식](https://huggingface.co/Qwen/Qwen3.8-Flash-Next) · [Unsloth GGUF](https://huggingface.co/unsloth/Qwen3.8-Flash-Next-GGUF) |
 | **Hy4-preview** | Tencent 초대형 MoE(safetensors 기준 약 780B, 256 expert 중 8개+공유 expert 활성, 최대 1M 컨텍스트), Apache-2.0(2026-08-27, preview) | llama.cpp가 2026-09-04 아키텍처(`hy_v4`)를 병합했다. AngelSlim GGUF Q4_K_M 약 467.3 GB. preview이므로 정식판에서 구조·가중치가 바뀔 수 있다 | 512–768 GB급 | [공식](https://huggingface.co/tencent/Hy4-preview) · [AngelSlim GGUF](https://huggingface.co/AngelSlim/Hy4-preview-GGUF) |
+| **MiMo-V2.6-Flash-RL** | 310.76B 총/256 expert 중 8개 활성 MoE; 이미지·오디오·비디오 입력, 최대 1M 컨텍스트, MIT(2026-09-21) | ggml-org가 GGUF를 배포한다(MXFP4 약 167.4 GB, Q2_K 약 126.2 GB, 비전 projector 별도) | MXFP4 192 GB, Q2 128–192 GB | [공식](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Flash-RL) · [ggml-org GGUF](https://huggingface.co/ggml-org/MiMo-V2.6-Flash-RL-GGUF) |
+| **MiMo-V2.6-Pro-RL** | 1,024B 총/384 expert 중 8개 활성 MoE; 같은 계열 최상위, 최대 1M 컨텍스트, MIT(2026-09-21) | 2026-09-26 기준 주요 배포자의 GGUF가 없다. 규모상 로컬 실행이 비현실적이므로 존재 확인 수준으로만 다룬다 | 로컬 비권장 | [공식](https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL) |
 
 ## 한국어 초대형 오픈웨이트
 

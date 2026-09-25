@@ -3,7 +3,7 @@
 
 [← 메인 README](../../README.md) · [생산성·문서·RAG](../domains/productivity-rag.md) · [데이터 분석](../domains/data-analysis.md) · [비전·OCR](../modalities/vision-ocr.md) · [이미지 생성](../modalities/image-generation.md) · [오디오·음성](../modalities/audio-speech.md)
 
-> **최종 검증일:** 2026-09-15 (KST)
+> **최종 검증일:** 2026-09-26 (KST)
 > **주요 도구:** Transformers·PEFT·TRL, bitsandbytes, torchtune (개발 종료), Accelerate·FSDP2, DeepSpeed ZeRO, TorchTitan, Axolotl, LLaMA-Factory, Unsloth, MLX-LM, Diffusers
 > **범위:** 언어·코드·수학 모델, VLM·OCR, 이미지 생성, 음성·오디오, 임베딩·reranker의 full fine-tuning·PEFT·선호학습·분산학습 메모리 계산과 검증
 > **관련 문서:** [양자화](./quantization.md) · [서빙·동시성](./serving-concurrency.md) · [런타임·하드웨어](./runtime-hardware.md)
@@ -948,7 +948,7 @@ LoRA 생태계에는 rank scaling, magnitude decomposition과 data-aware initial
 | VeLoRA | activation 메모리 절감형 계열 | activation 메모리 절감 | activation이 병목인 환경 실험 |
 | BEFT | bias 미세조정 | trainable state 매우 작음 | 초경량 적응·빠른 탐색 |
 
-위 표의 HiRA·VeLoRA·BEFT는 PEFT v0.20.0(2026-07-28)에서 추가된 신규 기법 9종(GLoRA·MonteCLoRA·Uni-LoRA 등 포함)의 일부다. 같은 릴리스는 LoRA target module 자동 선택 기능인 `find_kappa_target_modules`(KappaTune)도 도입했다(8.3 참고). 신규 기법은 지원 layer·양자화 백엔드 조합이 제각각이므로, 기본 LoRA 기준선과 같은 데이터·설정에서 A/B 검증 후 채택한다.
+위 표의 HiRA·VeLoRA·BEFT는 PEFT v0.20.0(2026-07-28)에서 추가된 신규 기법 9종(GLoRA·MonteCLoRA·Uni-LoRA 등 포함)의 일부다. 같은 릴리스는 LoRA target module 자동 선택 기능인 `find_kappa_target_modules`(KappaTune)도 도입했다(8.3 참고). 신규 기법은 지원 layer·양자화 백엔드 조합이 제각각이므로, 기본 LoRA 기준선과 같은 데이터·설정에서 A/B 검증 후 채택한다. 이어진 v0.21.0(2026-09-15)은 Riemannian preconditioned LoRA optimizer와 KaSA·Super-Tuning·ShadowPEFT를 추가했고, state dict 처리를 리팩터링하고 OFT가 공통 양자화 백엔드를 쓰도록 바꿨다.
 
 ### 10.2 DoRA 메모리
 
@@ -1601,7 +1601,7 @@ micro-batch: 1–2
 accumulation: 8–32
 ```
 
-torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 해당 tutorial 페이지는 2026-09-15 재확인에서도 정상 접근된다(31.4의 링크 참조). 다만 이 결과는 좋은 sanity check일 뿐 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 개발 종료 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
+torchtune 공식 문서는 3B LoRA를 16GB 미만에서 실행하는 workflow와 7B QLoRA를 10GB 미만에서 실행하는 tutorial을 제공했다. 해당 tutorial 페이지는 2026-09-26 재확인에서도 정상 접근된다(31.4의 링크 참조). 다만 이 결과는 좋은 sanity check일 뿐 다른 model·dataset에 그대로 보장되지 않으며, torchtune 자체가 개발 종료 상태이므로(28.9 참고) 수치 감각의 참고용으로만 활용한다.
 
 ### 16.4 24GB
 
@@ -2419,7 +2419,7 @@ num_generations ↓
 → reference log-prob 최적화
 ```
 
-TRL v1.10.0(2026-08-13)은 DistillationTrainer를 정식 승격하고(VLM 지원 포함) AsyncGRPO가 loop-owning agent 학습을 다루도록 확장했다. 이후 v1.11.0(2026-08-26)은 TRL 자체 서버 대신 vLLM 자체 서버를 쓰는 경로, 실험적 `AsyncDistillationTrainer`, Qwen3.8·Nemotron 3.5 Lightning·LFM2.5-VL 지원을 추가했고(v1.12.0은 v1.11.0의 실수 중복 릴리스), v1.13.0(2026-09-10)은 1M 토큰을 넘는 장문 시퀀스를 8×H100 단일 노드에서 스텝당 학습하는 long-context 가이드와 `trl.losses`의 fused linear loss를 추가했다. TRL v1.9부터는 GRPO·RLOO에 iterable/streaming dataset을 사용할 수 있고(이 경우 `max_steps` 지정 필수), `environment_factory`를 제공하면 환경이 prompt를 소유하므로 `train_dataset` 없이 구성할 수 있다. AsyncGRPO는 메시지 레벨 롤아웃(`rollout_protocol="message"`)으로 멀티턴 대화의 재작성 흐름을 지원한다. 이 기능들은 데이터 공급 방식의 변화이며, rollout·KV cache 메모리 예산 설계는 그대로 필요하다.
+TRL v1.10.0(2026-08-13)은 DistillationTrainer를 정식 승격하고(VLM 지원 포함) AsyncGRPO가 loop-owning agent 학습을 다루도록 확장했다. 이후 v1.11.0(2026-08-26)은 TRL 자체 서버 대신 vLLM 자체 서버를 쓰는 경로, 실험적 `AsyncDistillationTrainer`, Qwen3.8·Nemotron 3.5 Lightning·LFM2.5-VL 지원을 추가했고(v1.12.0은 v1.11.0의 실수 중복 릴리스), v1.13.0(2026-09-10)은 1M 토큰을 넘는 장문 시퀀스를 8×H100 단일 노드에서 스텝당 학습하는 long-context 가이드와 `trl.losses`의 fused linear loss를 추가했다. 다만 **v1.14.0(2026-09-25)에서 `trl.losses`가 제거되고** DPO·KTO·GRPO가 각자 log-prob을 스트리밍하도록 바뀌었으며, fused Triton logprob+entropy 커널이 들어오고 실험적 trainer 6종이 삭제되었다. v1.13 기준으로 작성한 스크립트는 올리기 전에 이 breaking change를 확인한다. TRL v1.9부터는 GRPO·RLOO에 iterable/streaming dataset을 사용할 수 있고(이 경우 `max_steps` 지정 필수), `environment_factory`를 제공하면 환경이 prompt를 소유하므로 `train_dataset` 없이 구성할 수 있다. AsyncGRPO는 메시지 레벨 롤아웃(`rollout_protocol="message"`)으로 멀티턴 대화의 재작성 흐름을 지원한다. 이 기능들은 데이터 공급 방식의 변화이며, rollout·KV cache 메모리 예산 설계는 그대로 필요하다.
 
 ### 23.6 online method와 ZeRO-3
 
@@ -3653,7 +3653,7 @@ manifest·hash
 - [MLX](https://github.com/ml-explore/mlx)
 - [MLX-LM](https://github.com/ml-explore/mlx-lm)
 - [MLX-LM LoRA·QLoRA guide](https://github.com/ml-explore/mlx-lm/blob/main/mlx_lm/LORA.md)
-- [MLX-LM examples](https://github.com/ml-explore/mlx-lm/tree/main/mlx_lm/examples)
+- [MLX-LM examples](https://github.com/ml-explore/mlx-lm/tree/main/examples)
 
 ### 31.9 NVIDIA 대규모 학습
 
@@ -3821,7 +3821,7 @@ MoE expert가 안 들어감
 
 ### 32.10 갱신 주의
 
-이 문서는 2026-09-15 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
+이 문서는 2026-09-26 KST 기준으로 공식 문서와 원 저장소를 확인해 작성했다. 다음 항목은 학습 직전에 다시 검증한다.
 
 - model architecture와 remote code
 - PEFT·TRL·Transformers·PyTorch API
