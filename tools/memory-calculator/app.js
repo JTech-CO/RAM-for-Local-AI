@@ -1269,8 +1269,26 @@
     }
   }
 
+  function restorableValue(element, rawValue) {
+    if (rawValue === null || typeof rawValue === "object" || typeof rawValue === "function") return null;
+    const text = String(rawValue);
+
+    if (element.type !== "number" && element.type !== "range") {
+      return text.length > 256 ? null : text;
+    }
+
+    const numeric = Number(text);
+    if (!Number.isFinite(numeric)) return null;
+    const min = Number(element.min);
+    const max = Number(element.max);
+    let bounded = numeric;
+    if (Number.isFinite(min)) bounded = Math.max(min, bounded);
+    if (Number.isFinite(max)) bounded = Math.min(max, bounded);
+    return String(bounded);
+  }
+
   function applyState(state) {
-    if (!state || typeof state !== "object") return;
+    if (!state || typeof state !== "object" || Array.isArray(state)) return;
 
     if (state.domain && catalog.domains.some((domain) => domain.id === state.domain)) $("domain").value = state.domain;
     populateTasks(state.task);
@@ -1284,7 +1302,9 @@
       } else if ([...element.options || []].length && ![...element.options].some((option) => option.value === String(state[element.name]))) {
         return;
       } else {
-        element.value = String(state[element.name]);
+        const restored = restorableValue(element, state[element.name]);
+        if (restored === null) return;
+        element.value = restored;
       }
     });
   }
