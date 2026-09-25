@@ -138,6 +138,16 @@ GGUF, MLX, AWQ, GPTQ, `compressed-tensors`, safetensors는 같은 비트 수로 
 - 사용자 설정은 브라우저의 `localStorage`에만 저장될 수 있다.
 - Hugging Face와 가이드 링크는 사용자가 직접 클릭할 때만 열린다.
 
+### 브라우저 보안 조치
+
+정적 페이지에도 카탈로그 갱신 실수나 같은 오리진의 다른 페이지가 영향을 줄 수 있으므로 다음 방어 장치를 둔다.
+
+- `index.html`에 Content-Security-Policy 메타를 선언한다. 인라인 스크립트와 외부 스크립트·CDN·폰트가 없으므로 `script-src 'self'`로 동작하며 `object-src`와 `base-uri`는 차단한다.
+- Referrer-Policy는 `strict-origin-when-cross-origin`이다.
+- 카탈로그가 제공하는 모델 링크는 `http(s)` 스킴만 통과시키고, 외부 링크는 항상 `rel="noopener noreferrer"`와 함께 새 탭으로 연다.
+- `localStorage`에서 복원하는 값은 각 숫자 입력의 `min`·`max`로 제한하며, 유한수가 아닌 값·객체·과도하게 긴 문자열은 무시한다. GitHub Pages 사용자 사이트는 하나의 오리진을 모든 저장소가 공유하므로 저장된 상태를 신뢰하지 않는다.
+- 사용자 입력과 카탈로그 값은 `textContent`로만 출력하고 `eval`·`new Function`은 사용하지 않는다.
+
 ---
 
 ## 가이드 목록
