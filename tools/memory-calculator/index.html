@@ -8,16 +8,16 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'self'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Memory Calculator · RAM-for-Local-AI</title>
-  <link rel="stylesheet" href="./styles.css">
-  <script defer src="./catalog.js?v=2"></script>
-  <script defer src="./app.js?v=2"></script>
+  <link rel="stylesheet" href="./styles.css?v=3">
+  <script defer src="./catalog.js?v=3"></script>
+  <script defer src="./app.js?v=3"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">계산기로 건너뛰기</a>
 
   <header class="site-header">
     <div class="header-copy">
-      <p class="eyebrow">RAM-for-Local-AI / tools / memory-calculator</p>
+      <p class="eyebrow">RAM-for-Local-AI · 메모리 계산기</p>
       <h1>로컬 AI 메모리 계산기</h1>
       <p class="subtitle">모델 가중치만이 아니라 KV 캐시, 런타임 버퍼, RAG 인덱스, 데이터 working set, 이미지·오디오 파이프라인, 동시성 및 파인튜닝 상태를 함께 계산합니다.</p>
     </div>
@@ -42,9 +42,8 @@
       <form id="calculatorForm" class="control-column" autocomplete="off">
         <section class="terminal-panel" aria-labelledby="hardware-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="hardware-title">hardware</h2>
-            <span class="panel-comment"># 장착 용량과 메모리 구조</span>
+            <h2 id="hardware-title">하드웨어</h2>
+            <span class="panel-comment">장착 용량과 메모리 구조</span>
           </div>
 
           <div class="field-grid two-columns">
@@ -130,9 +129,8 @@
 
         <section class="terminal-panel" aria-labelledby="workload-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="workload-title">workload</h2>
-            <span class="panel-comment"># 분야·작업·런타임</span>
+            <h2 id="workload-title">작업 구성</h2>
+            <span class="panel-comment">분야·작업·런타임</span>
           </div>
 
           <div class="field-grid two-columns">
@@ -161,9 +159,8 @@
 
         <section class="terminal-panel" aria-labelledby="model-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="model-title">model</h2>
-            <span class="panel-comment"># 모델·양자화·컨텍스트</span>
+            <h2 id="model-title">모델·양자화</h2>
+            <span class="panel-comment">모델·양자화·컨텍스트</span>
           </div>
 
           <div class="field-grid two-columns">
@@ -246,9 +243,8 @@
 
         <section id="ragSection" class="terminal-panel conditional-panel" data-operation="rag" aria-labelledby="rag-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="rag-title">rag_stack</h2>
-            <span class="panel-comment"># 임베딩·reranker·벡터 인덱스</span>
+            <h2 id="rag-title">RAG 스택</h2>
+            <span class="panel-comment">임베딩·reranker·벡터 인덱스</span>
           </div>
           <div class="field-grid three-columns">
             <label class="field">
@@ -292,9 +288,8 @@
 
         <section id="dataSection" class="terminal-panel conditional-panel" data-domain="data-analysis" aria-labelledby="data-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="data-title">data_working_set</h2>
-            <span class="panel-comment"># DuckDB·Polars·pandas·Python/R</span>
+            <h2 id="data-title">데이터 작업 집합</h2>
+            <span class="panel-comment">DuckDB·Polars·pandas·Python/R</span>
           </div>
           <div class="field-grid four-columns">
             <label class="field">
@@ -318,9 +313,8 @@
 
         <section id="visionSection" class="terminal-panel conditional-panel" data-domain="vision-ocr" aria-labelledby="vision-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="vision-title">vision_input</h2>
-            <span class="panel-comment"># 이미지·PDF 페이지·visual token</span>
+            <h2 id="vision-title">비전 입력</h2>
+            <span class="panel-comment">이미지·PDF 페이지·visual token</span>
           </div>
           <div class="field-grid three-columns">
             <label class="field">
@@ -340,9 +334,8 @@
 
         <section id="imageGenerationSection" class="terminal-panel conditional-panel" data-domain="image-generation" aria-labelledby="image-generation-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="image-generation-title">image_pipeline</h2>
-            <span class="panel-comment"># 해상도·batch·ControlNet·LoRA</span>
+            <h2 id="image-generation-title">이미지 생성 파이프라인</h2>
+            <span class="panel-comment">해상도·batch·ControlNet·LoRA</span>
           </div>
           <div class="field-grid four-columns">
             <label class="field">
@@ -382,9 +375,8 @@
 
         <section id="audioSection" class="terminal-panel conditional-panel" data-domain="audio-speech" aria-labelledby="audio-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="audio-title">audio_pipeline</h2>
-            <span class="panel-comment"># 스트림·VAD·화자 분리·cascade</span>
+            <h2 id="audio-title">오디오 파이프라인</h2>
+            <span class="panel-comment">스트림·VAD·화자 분리·cascade</span>
           </div>
           <div class="field-grid three-columns">
             <label class="field">
@@ -408,9 +400,8 @@
 
         <section id="fineTuneSection" class="terminal-panel conditional-panel" data-operation="fine-tuning" aria-labelledby="fine-tune-title">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="fine-tune-title">fine_tuning</h2>
-            <span class="panel-comment"># 모델 상태·activation·optimizer</span>
+            <h2 id="fine-tune-title">파인튜닝</h2>
+            <span class="panel-comment">모델 상태·activation·optimizer</span>
           </div>
           <div class="field-grid four-columns">
             <label class="field">
@@ -463,9 +454,8 @@
       <aside class="result-column" aria-labelledby="result-title">
         <section class="result-panel sticky-result">
           <div class="panel-heading">
-            <span class="prompt" aria-hidden="true">$</span>
-            <h2 id="result-title">estimate</h2>
-            <span class="panel-comment"># 현재 설정</span>
+            <h2 id="result-title">계산 결과</h2>
+            <span class="panel-comment">현재 설정</span>
           </div>
 
           <div class="fit-banner" id="fitBanner" data-fit="neutral" aria-live="polite">
@@ -499,11 +489,11 @@
 
           <div class="memory-meter-group">
             <div class="meter-row" id="deviceMeterRow">
-              <div class="meter-label"><span>device</span><span id="deviceMeterText">—</span></div>
+              <div class="meter-label"><span>장치 메모리</span><span id="deviceMeterText">—</span></div>
               <div class="meter" role="progressbar" aria-label="장치 메모리 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="deviceMeter"></span></div>
             </div>
             <div class="meter-row" id="systemMeterRow">
-              <div class="meter-label"><span>system</span><span id="systemMeterText">—</span></div>
+              <div class="meter-label"><span>시스템 메모리</span><span id="systemMeterText">—</span></div>
               <div class="meter" role="progressbar" aria-label="시스템 메모리 사용률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="systemMeter"></span></div>
             </div>
           </div>
@@ -546,9 +536,8 @@
 
     <section class="terminal-panel recommendations-panel" aria-labelledby="recommendations-title">
       <div class="panel-heading">
-        <span class="prompt" aria-hidden="true">$</span>
-        <h2 id="recommendations-title">recommend</h2>
-        <span class="panel-comment"># 현재 하드웨어에서 여유가 남는 후보</span>
+        <h2 id="recommendations-title">추천 모델</h2>
+        <span class="panel-comment">현재 하드웨어에서 여유가 남는 후보</span>
       </div>
       <p class="section-copy">선택한 분야·작업에 맞는 모델마다 가능한 가장 높은 정밀도를 탐색합니다. “가능”은 메모리 적재 추정이며 품질·속도·런타임 호환성 보장은 아닙니다.</p>
       <div class="table-scroll">
@@ -563,9 +552,8 @@
 
     <section class="terminal-panel guides-panel" aria-labelledby="guides-title">
       <div class="panel-heading">
-        <span class="prompt" aria-hidden="true">$</span>
-        <h2 id="guides-title">man ram-for-local-ai</h2>
-        <span class="panel-comment"># 계산 근거가 되는 가이드</span>
+        <h2 id="guides-title">관련 가이드</h2>
+        <span class="panel-comment">계산 근거가 되는 가이드</span>
       </div>
       <div id="guideGrid" class="guide-grid"></div>
     </section>

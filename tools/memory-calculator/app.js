@@ -1224,7 +1224,7 @@
   }
 
   function renderGuides() {
-    const groupLabels = { domains: "domain", modalities: "modality", operations: "operation" };
+    const groupLabels = { domains: "분야", modalities: "모달리티", operations: "운영" };
     const grid = $("guideGrid");
     grid.replaceChildren();
     for (const [id, guide] of Object.entries(guideById)) {
